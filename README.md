@@ -1,6 +1,7 @@
+This is the repository for the project of Lycia Djemili & Georges Simak
 
-This is the repository for the project of Lycia Djemili & Georges Simak 
 # Historical Timeline Map - time-scroll
+
 Journey through time with our interactive historical mapping application. This project allows users to explore world history through an intuitive map interface, discovering events, cultural developments, and significant moments that shaped our world.
 
 ## Overview
@@ -24,6 +25,7 @@ The filtering system allows users to focus on specific types of events or geogra
 ### Prerequisites
 
 Before you begin, ensure you have installed:
+
 - Node.js (v16.0.0 or higher)
 - npm (v7.0.0 or higher)
 - Git
@@ -165,18 +167,21 @@ Additional documentation is available in the `docs/` directory:
 We have exciting plans for future development:
 
 Phase 1 (Current):
+
 - Basic map implementation
 - Timeline slider functionality
 - Simple event display system
 - Basic user interface
 
 Phase 2 (Upcoming):
+
 - Historical event database integration
 - Dynamic boundary changes
 - Event categorization system
 - Search functionality
 
 Phase 3 (Future):
+
 - User accounts
 - Bookmarking system
 - Advanced filtering
@@ -190,6 +195,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Acknowledgments
 
 We would like to thank:
+
 - The open-source community for their invaluable tools and libraries
 - Historical data providers for their comprehensive databases
 - Our contributors and supporters
@@ -203,6 +209,7 @@ Project Link: [https://github.com/yourusername/historical-timeline-map](https://
 ## Support
 
 If you're having issues, please:
+
 1. Check our [FAQ](./docs/FAQ.md)
 2. Search through [Issues](https://github.com/yourusername/historical-timeline-map/issues)
 3. Create a new issue if your problem persists
