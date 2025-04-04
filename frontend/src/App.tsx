@@ -115,6 +115,18 @@ function App() {
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [showEventDetail, setShowEventDetail] = useState(false);
   const [currentGlobalPeriod, setCurrentGlobalPeriod] = useState(GLOBAL_TIME_PERIODS[GLOBAL_TIME_PERIODS.length - 1].id);
+  
+  // New state variables for the landing page experience
+  const [selectedEra, setSelectedEra] = useState<string | null>(null);
+  const [isSystemReady, setIsSystemReady] = useState(false);
+  const [isPortalStabilized, setIsPortalStabilized] = useState(false);
+  const [availableEras] = useState([
+    { id: 'ancient', name: 'Ancient World' },
+    { id: 'medieval', name: 'Medieval Era' },
+    { id: 'renaissance', name: 'Renaissance' },
+    { id: 'industrial', name: 'Industrial Age' },
+    { id: 'modern', name: '21st Century' }
+  ]);
 
   const mapboxToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
   const cesiumToken = import.meta.env.VITE_CESIUM_ACCESS_TOKEN;
@@ -570,7 +582,45 @@ function App() {
     }, 1000);
   };
 
+  // Function to handle global time period change
+  const handleGlobalTimePeriodChange = (periodId: string) => {
+    setCurrentGlobalPeriod(periodId);
+  };
+
+  // New function to handle era selection on landing page
+  const handleEraSelection = (eraId: string) => {
+    setSelectedEra(eraId);
+    
+    // After a brief delay, update system status to ready
+    setTimeout(() => {
+      setIsSystemReady(true);
+      
+      // Fade out the hourglass sand timer after 2 seconds - using opacity for smooth transition
+      setTimeout(() => {
+        const sandTimer = document.querySelector('.loading-sand-timer');
+        if (sandTimer) {
+          sandTimer.classList.add('fade-out');
+          
+          // Wait for the fade out animation to complete before removing the active class
+          setTimeout(() => {
+            sandTimer.classList.remove('active');
+            sandTimer.classList.remove('fade-out');
+          }, 800);
+        }
+        
+        // After another delay, update portal status to stabilized
+        setTimeout(() => {
+          setIsPortalStabilized(true);
+        }, 600);
+      }, 2000);
+    }, 1000);
+  };
+
+  // Modified handle start journey function to check if system is ready
   const handleStartJourney = () => {
+    // Only allow journey to start if system is ready
+    if (!isSystemReady) return;
+    
     // Apply transition effects
     setTransitioning(true);
     
@@ -715,11 +765,6 @@ function App() {
     setShowEventDetail(false);
   };
   
-  // Function to handle global time period change
-  const handleGlobalTimePeriodChange = (periodId: string) => {
-    setCurrentGlobalPeriod(periodId);
-  };
-
   if (showLandingPage) {
     return (
       <>
@@ -727,14 +772,42 @@ function App() {
         {renderPortalEffect()}
         {renderTransitionOverlay()}
         <div className={`landing-page ${transitioning ? 'fade-out' : ''}`}>
+          <div className="floating-elements">
+            <div className="floating-element f1"></div>
+            <div className="floating-element f2"></div>
+            <div className="floating-element f3"></div>
+            <div className="floating-element f4"></div>
+            <div className="floating-element f5"></div>
+          </div>
           <div className="landing-content">
             <h1>Temporal Voyage Explorer</h1>
-            <p className="landing-subtitle">Journey through space and time to explore historical locations across our planet</p>
+            <p className="landing-subtitle">Select an era to begin your journey through space and time</p>
+            
+            {/* Era selection buttons */}
+            <div className="era-selection">
+              {availableEras.map(era => (
+                <button 
+                  key={era.id}
+                  className={`era-button ${selectedEra === era.id ? 'selected' : ''}`}
+                  onClick={() => handleEraSelection(era.id)}
+                  disabled={transitioning}
+                >
+                  {era.name}
+                </button>
+              ))}
+            </div>
+            
+            {/* Show loading sand timer when era is selected */}
+            <div className={`loading-sand-timer ${selectedEra ? 'active' : ''}`}>
+              <div className="hourglass">⏳</div>
+            </div>
             
             <div className="time-indicators">
               <div className="time-indicator">
                 <span className="time-label">Era</span>
-                <span className="time-value">21st Century</span>
+                <span className="time-value">
+                  {selectedEra ? availableEras.find(era => era.id === selectedEra)?.name : "Not Selected"}
+                </span>
               </div>
               <div className="time-indicator">
                 <span className="time-label">Destinations</span>
@@ -742,17 +815,31 @@ function App() {
               </div>
               <div className="time-indicator">
                 <span className="time-label">System</span>
-                <span className="time-value">Ready</span>
+                <span className={`time-value ${isSystemReady ? 'ready' : 'not-ready'}`}>
+                  {isSystemReady ? "Ready" : "Not Ready"}
+                </span>
+              </div>
+            </div>
+            
+            <div className={`status-container ${isPortalStabilized ? 'stabilized' : ''}`}>
+              <div className="status-ring"></div>
+              <div className="status-message">
+                {isPortalStabilized ? "Time Portal Stabilized" : "Stabilizing Time Portal..."}
               </div>
             </div>
             
             <button 
-              className="journey-button"
+              className={`journey-button ${isSystemReady ? 'ready' : 'disabled'}`}
               onClick={handleStartJourney}
-              disabled={transitioning}
+              disabled={transitioning || !isSystemReady}
             >
-              <span className="button-text">Initialize Time Portal</span>
+              <span className="button-text">
+                {isSystemReady ? "Initialize Time Portal" : "Awaiting Era Selection"}
+              </span>
+              <span className="button-icon">→</span>
             </button>
+            
+            <div className="version-info">v1.0.2 • Time Navigation System</div>
           </div>
         </div>
       </>
