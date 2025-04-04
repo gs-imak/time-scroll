@@ -93,15 +93,16 @@ export function MiniTimeline({
             style={{ left: getMarkerPosition(index) }}
           >
             <div className="flex flex-col items-center justify-center">
-              <div
-                className={`timeline-marker-dot ${index === currentPeriodIndex ? 'active' : 'inactive'} ${hoveredIndex === index ? 'hovered' : ''}`}
-              />
+              {/* Timeline dot removed */}
               
               <div 
                 className="timeline-marker-year"
                 style={{
                   opacity: hoveredIndex === index || currentPeriodIndex === index ? 1 : 0.6,
-                  transform: `translateY(${hoveredIndex === index ? '0' : '5px'}) scale(${hoveredIndex === index ? 1 : 0.9})`,
+                  transform: hoveredIndex === index ? 'scale(1.1)' : 'scale(1)',
+                  fontSize: '0.9rem',
+                  fontWeight: '500',
+                  marginTop: '0'
                 }}
               >
                 {period.year}
