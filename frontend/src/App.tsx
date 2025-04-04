@@ -28,10 +28,49 @@ const LOCATIONS = {
     name: "Pyramids of Giza",
     longitude: 31.1342,
     latitude: 29.9792,
-    height: 3000, // Lower height to get closer to the pyramids
+    height: 2000, // Lower height to get closer to the pyramids
     emoji: "🏛️"
   }
 };
+
+// Historical time periods for the Pyramids of Giza
+const PYRAMID_TIME_PERIODS = [
+  {
+    id: "construction-begin",
+    year: "2580 BCE",
+    title: "Construction Begins",
+    description: "Workers begin the massive project of building the Great Pyramid of Giza under Pharaoh Khufu's orders. The construction involves thousands of skilled workers, not slaves as commonly believed.",
+    imageUrl: null // You can add image URLs later
+  },
+  {
+    id: "construction-mid",
+    year: "2570 BCE",
+    title: "Mid-Construction",
+    description: "The Great Pyramid is half complete. Workers are using ramps and levers to move massive stone blocks weighing several tons each. The limestone casing that will eventually cover the pyramid is being prepared.",
+    imageUrl: null
+  },
+  {
+    id: "construction-complete",
+    year: "2560 BCE",
+    title: "Completion",
+    description: "The Great Pyramid is completed after approximately 20 years of construction. It stands 146.5 meters tall and is covered in polished white limestone, making it shine brilliantly in the sunlight.",
+    imageUrl: null
+  },
+  {
+    id: "middle-kingdom",
+    year: "2000 BCE",
+    title: "Middle Kingdom",
+    description: "After several centuries, the pyramids remain intact but their limestone casing begins to be removed for other construction projects. The complex is still an important religious and cultural site.",
+    imageUrl: null
+  },
+  {
+    id: "modern-era",
+    year: "Present Day",
+    title: "Modern Era",
+    description: "Today, the Great Pyramid stands without its smooth limestone casing, revealing the core masonry. It remains the oldest of the Seven Wonders of the Ancient World and the only one still intact.",
+    imageUrl: null
+  }
+];
 
 function App() {
   const viewerRef = useRef<HTMLDivElement | null>(null);
@@ -44,6 +83,9 @@ function App() {
   const [showPreloader, setShowPreloader] = useState(false);
   const [showPortalEffect, setShowPortalEffect] = useState(false);
   const [showTransitionOverlay, setShowTransitionOverlay] = useState(false);
+  const [currentLocation, setCurrentLocation] = useState<string | null>(null);
+  const [showTimeSlider, setShowTimeSlider] = useState(false);
+  const [currentTimePeriodIndex, setCurrentTimePeriodIndex] = useState(0);
 
   const mapboxToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
   const cesiumToken = import.meta.env.VITE_CESIUM_ACCESS_TOKEN;
@@ -281,11 +323,16 @@ function App() {
   const flyToNewYork = () => {
     const location = LOCATIONS.newYork;
     flyToLocation(location.longitude, location.latitude, location.height, location.name);
+    setCurrentLocation("newYork");
+    setShowTimeSlider(false);
   };
   
   const flyToEgypt = () => {
     const location = LOCATIONS.egypt;
     flyToLocation(location.longitude, location.latitude, location.height, location.name);
+    setCurrentLocation("egypt");
+    setShowTimeSlider(true);
+    setCurrentTimePeriodIndex(4); // Start with present day
   };
 
   const handleStartJourney = () => {
@@ -417,6 +464,39 @@ function App() {
           )}
         </div>
         <div id="cesiumContainer" ref={viewerRef} />
+        {showTimeSlider && currentLocation === "egypt" && (
+          <div className="time-travel-controls">
+            <div className="time-travel-info">
+              <h2>{PYRAMID_TIME_PERIODS[currentTimePeriodIndex].title}</h2>
+              <h3>{PYRAMID_TIME_PERIODS[currentTimePeriodIndex].year}</h3>
+              <p>{PYRAMID_TIME_PERIODS[currentTimePeriodIndex].description}</p>
+            </div>
+            <div className="time-slider-container">
+              <button 
+                className="time-nav-button"
+                disabled={currentTimePeriodIndex === 0}
+                onClick={() => setCurrentTimePeriodIndex(prev => Math.max(0, prev - 1))}
+              >
+                ◀ Earlier
+              </button>
+              <input
+                type="range"
+                min="0"
+                max={PYRAMID_TIME_PERIODS.length - 1}
+                value={currentTimePeriodIndex}
+                onChange={(e) => setCurrentTimePeriodIndex(parseInt(e.target.value))}
+                className="time-slider"
+              />
+              <button 
+                className="time-nav-button"
+                disabled={currentTimePeriodIndex === PYRAMID_TIME_PERIODS.length - 1}
+                onClick={() => setCurrentTimePeriodIndex(prev => Math.min(PYRAMID_TIME_PERIODS.length - 1, prev + 1))}
+              >
+                Later ▶
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );

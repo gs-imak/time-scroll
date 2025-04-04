@@ -587,4 +587,175 @@ button:disabled {
   background: linear-gradient(135deg, #003780, #0062b8) !important;
   box-shadow: 0 0 10px rgba(0, 136, 255, 0.4) !important;
   }
+
+/* Time Travel UI */
+.time-travel-controls {
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%;
+  max-width: 800px;
+  background: linear-gradient(145deg, rgba(2, 0, 36, 0.85) 0%, rgba(9, 9, 121, 0.85) 35%, rgba(0, 30, 60, 0.85) 100%);
+  border-radius: 10px;
+  padding: 20px;
+  color: white;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  animation: slideUp 0.5s ease-out forwards;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 50px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+.time-travel-info {
+  text-align: center;
+  padding-bottom: 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.time-travel-info h2 {
+  font-size: 1.8rem;
+  margin: 0 0 5px 0;
+  color: #60efff;
+  text-shadow: 0 0 10px rgba(96, 239, 255, 0.5);
+}
+
+.time-travel-info h3 {
+  font-size: 1.2rem;
+  margin: 0 0 15px 0;
+  color: #ffffff;
+  font-weight: normal;
+}
+
+.time-travel-info p {
+  font-size: 1rem;
+  line-height: 1.5;
+  margin: 0;
+  text-align: left;
+}
+
+.time-slider-container {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding-top: 10px;
+}
+
+.time-slider {
+  flex: 1;
+  height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: linear-gradient(90deg, #003366, #0066cc, #0099ff);
+  outline: none;
+  border-radius: 3px;
+}
+
+.time-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #60efff;
+  cursor: pointer;
+  box-shadow: 0 0 8px rgba(96, 239, 255, 0.8), 0 0 0 3px rgba(96, 239, 255, 0.3);
+}
+
+.time-slider::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #60efff;
+  cursor: pointer;
+  box-shadow: 0 0 8px rgba(96, 239, 255, 0.8), 0 0 0 3px rgba(96, 239, 255, 0.3);
+  border: none;
+}
+
+.time-nav-button {
+  background: linear-gradient(135deg, #004080, #0066cc);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.2s;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.time-nav-button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #0052a3, #0077e6);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+}
+
+.time-nav-button:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.time-nav-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Media queries for responsive design */
+@media (max-width: 768px) {
+  .time-travel-controls {
+    width: 90%;
+    padding: 15px;
+  }
+  
+  .time-travel-info h2 {
+    font-size: 1.4rem;
+  }
+  
+  .time-travel-info h3 {
+    font-size: 1rem;
+  }
+  
+  .time-nav-button {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .time-travel-controls {
+    width: 95%;
+    padding: 10px;
+  }
+  
+  .time-travel-info h2 {
+    font-size: 1.2rem;
+  }
+  
+  .time-slider-container {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .time-nav-button {
+    width: 100%;
+  }
+}
   
