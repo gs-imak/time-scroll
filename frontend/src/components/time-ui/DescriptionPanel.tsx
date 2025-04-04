@@ -35,6 +35,10 @@ export function DescriptionPanel({ isVisible, period, onClose }: DescriptionPane
     <div className={`description-panel ${isVisible ? 'visible' : ''}`}>
       <div className="description-header">
         <h3 className="description-title">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px', verticalAlign: 'middle' }}>
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
           Time Period Details
         </h3>
         <button className="close-button" onClick={onClose} aria-label="Close description">
