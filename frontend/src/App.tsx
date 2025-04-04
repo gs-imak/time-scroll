@@ -285,6 +285,16 @@ function App() {
     };
   }, [cesiumToken, mapboxToken, showLandingPage]);
 
+  useEffect(() => {
+    if (!cesiumLoaded || showLandingPage) return;
+    
+    // When the map is loaded, initialize the filtered events
+    // This ensures we have event markers instead of location pins
+    if (cesiumViewer.current) {
+      handleEventsFiltered(HISTORICAL_EVENTS);
+    }
+  }, [cesiumLoaded, showLandingPage]);
+
   // Function to create a pin with emoji
   const buildPin = (emoji: string) => {
     const canvas = document.createElement('canvas');
@@ -488,31 +498,35 @@ function App() {
   const addLocationPins = () => {
     if (!cesiumViewer.current) return;
     
-    Object.values(LOCATIONS).forEach(location => {
-      // Create a pin entity
-      cesiumViewer.current.entities.add({
-        name: location.name,
-        position: window.Cesium.Cartesian3.fromDegrees(location.longitude, location.latitude),
-        billboard: {
-          image: buildPin(location.emoji),
-          verticalOrigin: window.Cesium.VerticalOrigin.BOTTOM,
-          scale: 1.2,
-          heightReference: window.Cesium.HeightReference.CLAMP_TO_GROUND
-        },
-        label: {
-          text: location.name,
-          font: '16pt sans-serif',
-          style: window.Cesium.LabelStyle.FILL_AND_OUTLINE,
-          outlineWidth: 3,
-          verticalOrigin: window.Cesium.VerticalOrigin.TOP,
-          pixelOffset: new window.Cesium.Cartesian2(0, -35),
-          showBackground: true,
-          backgroundColor: new window.Cesium.Color(0.1, 0.1, 0.1, 0.8),
-          backgroundPadding: new window.Cesium.Cartesian2(10, 7),
-          horizontalOrigin: window.Cesium.HorizontalOrigin.CENTER
-        }
+    // Only add location pins if there are no events visible
+    // This prevents duplication with event markers
+    if (visibleEvents.length === 0) {
+      Object.values(LOCATIONS).forEach(location => {
+        // Create a pin entity
+        cesiumViewer.current.entities.add({
+          name: location.name,
+          position: window.Cesium.Cartesian3.fromDegrees(location.longitude, location.latitude),
+          billboard: {
+            image: buildPin(location.emoji),
+            verticalOrigin: window.Cesium.VerticalOrigin.BOTTOM,
+            scale: 1.2,
+            heightReference: window.Cesium.HeightReference.CLAMP_TO_GROUND
+          },
+          label: {
+            text: location.name,
+            font: '16pt sans-serif',
+            style: window.Cesium.LabelStyle.FILL_AND_OUTLINE,
+            outlineWidth: 3,
+            verticalOrigin: window.Cesium.VerticalOrigin.TOP,
+            pixelOffset: new window.Cesium.Cartesian2(0, -35),
+            showBackground: true,
+            backgroundColor: new window.Cesium.Color(0.1, 0.1, 0.1, 0.8),
+            backgroundPadding: new window.Cesium.Cartesian2(10, 7),
+            horizontalOrigin: window.Cesium.HorizontalOrigin.CENTER
+          }
+        });
       });
-    });
+    }
   };
 
   const flyToNewYork = () => {
@@ -533,10 +547,12 @@ function App() {
       setCurrentTimePeriodIndex(4); // Start with modern day view
       setSelectedPeriod(PYRAMID_TIME_PERIODS[4]); // Set the selected period for the description panel
       
-      // Clear any existing entities and add visualization after camera has finished moving
+      // Clear any existing entities
       if (cesiumViewer.current) {
         cesiumViewer.current.entities.removeAll();
-        addLocationPins();
+        
+        // Don't automatically add location pins - let the event system handle this
+        // addLocationPins();
         
         // Add the visualization for modern era
         addTimePeriodVisualization("modern-era");
@@ -658,8 +674,8 @@ function App() {
       // Remove existing event markers
       cesiumViewer.current.entities.removeAll();
       
-      // Add location pins
-      addLocationPins();
+      // Don't add location pins again - they clash with event markers
+      // addLocationPins();
       
       // Add filtered event markers
       filteredEvents.forEach(event => {
@@ -775,8 +791,8 @@ function App() {
           <div className="time-travel-effect"></div>
         )}
         
-        {/* Global time slider for filtering events by time period */}
-        {cesiumLoaded && !showLandingPage && (
+        {/* Global time slider for filtering events by time period - only show when not viewing a specific location timeline */}
+        {cesiumLoaded && !showLandingPage && currentLocation !== "egypt" && (
           <GlobalTimeSlider 
             timePeriods={GLOBAL_TIME_PERIODS}
             events={HISTORICAL_EVENTS}
