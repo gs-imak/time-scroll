@@ -3,11 +3,215 @@ body, html, #root, .App {
     padding: 0;
     width: 100%;
     height: 100%;
-    font-family: sans-serif;
+    font-family: 'Inter', 'Roboto', sans-serif;
   }
   
-  #cesiumContainer {
+  .cesium-container {
     width: 100%;
-    height: 90vh;
+    height: 100vh;
+    position: relative;
+  }
+  
+  /* Animation keyframes for various effects */
+  @keyframes pulse {
+    0% {
+      transform: scale(0.95);
+      opacity: 0.7;
+    }
+    50% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    100% {
+      transform: scale(0.95);
+      opacity: 0.7;
+    }
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
+  @keyframes fadeOut {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+  
+  @keyframes ripple {
+    0% {
+      transform: scale(0.8);
+      opacity: 0;
+    }
+    50% {
+      opacity: 0.5;
+    }
+    100% {
+      transform: scale(1.5);
+      opacity: 0;
+    }
+  }
+  
+  /* Time travel visual effect */
+  .time-travel-effect {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at center, rgba(56, 189, 248, 0.1) 0%, rgba(14, 165, 233, 0.4) 50%, rgba(2, 6, 23, 0.8) 100%);
+    z-index: 100;
+    pointer-events: none;
+    animation: fadeIn 0.5s ease-in, fadeOut 0.5s ease-out 1s forwards;
+  }
+  
+  /* Fix Cesium attribution to be less obtrusive */
+  .cesium-widget-credits {
+    display: none !important;
+  }
+  
+  /* Ensure proper z-index stacking for time UI components */
+  .fixed {
+    position: fixed !important;
+  }
+  
+  .z-50 {
+    z-index: 50 !important;
+  }
+  
+  /* Basic utility classes for the components since we're not using Tailwind */
+  .absolute {
+    position: absolute;
+  }
+  
+  .relative {
+    position: relative;
+  }
+  
+  .flex {
+    display: flex;
+  }
+  
+  .items-center {
+    align-items: center;
+  }
+  
+  .justify-center {
+    justify-content: center;
+  }
+  
+  .justify-between {
+    justify-content: space-between;
+  }
+  
+  .inset-0 {
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+  }
+  
+  .rounded-full {
+    border-radius: 9999px;
+  }
+  
+  .rounded {
+    border-radius: 0.25rem;
+  }
+  
+  .w-full {
+    width: 100%;
+  }
+  
+  .h-full {
+    height: 100%;
+  }
+  
+  .whitespace-nowrap {
+    white-space: nowrap;
+  }
+  
+  .transform {
+    transform: translate(-50%, -50%);
+  }
+  
+  .transition-all {
+    transition: all 0.3s ease;
+  }
+  
+  .pointer-events-none {
+    pointer-events: none;
+  }
+  
+  .text-white {
+    color: white;
+  }
+  
+  .text-center {
+    text-align: center;
+  }
+  
+  .text-xs {
+    font-size: 0.75rem;
+  }
+  
+  .text-sm {
+    font-size: 0.875rem;
+  }
+  
+  .text-lg {
+    font-size: 1.125rem;
+  }
+  
+  .font-medium {
+    font-weight: 500;
+  }
+  
+  .font-semibold {
+    font-weight: 600;
+  }
+  
+  .font-bold {
+    font-weight: 700;
+  }
+  
+  .opacity-70 {
+    opacity: 0.7;
+  }
+  
+  .mt-1 {
+    margin-top: 0.25rem;
+  }
+  
+  .mt-2 {
+    margin-top: 0.5rem;
+  }
+  
+  .mb-4 {
+    margin-bottom: 1rem;
+  }
+  
+  .my-6 {
+    margin-top: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  /* Ensure background blur works in all browsers */
+  @supports ((-webkit-backdrop-filter: blur(8px)) or (backdrop-filter: blur(8px))) {
+    .glassmorphism {
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+    }
   }
   

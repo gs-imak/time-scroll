@@ -1,0 +1,431 @@
+/* Time UI Components Styles */
+
+/* Animation keyframes */
+@keyframes pulse {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.95);
+    opacity: 0.7;
+  }
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+/* Mini Timeline */
+.timeline-track {
+  position: relative;
+  height: 4px;
+  width: 100%;
+  margin: 24px 0;
+  border-radius: 9999px;
+  background-color: rgba(148, 163, 184, 0.3);
+}
+
+.timeline-active-segment {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  border-radius: 9999px;
+  background: linear-gradient(to right, #3b82f6, #38bdf8);
+  transition: width 500ms ease-out;
+}
+
+.timeline-marker {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  transition: all 300ms ease;
+  cursor: pointer;
+}
+
+.timeline-marker-dot {
+  height: 16px;
+  width: 16px;
+  border-radius: 9999px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 300ms ease;
+}
+
+.timeline-marker-dot.active {
+  background-color: #38bdf8;
+  transform: scale(1.25);
+}
+
+.timeline-marker-dot.inactive {
+  background-color: rgba(255, 255, 255, 0.4);
+}
+
+.timeline-marker-dot.hovered {
+  transform: scale(1.5);
+}
+
+.timeline-marker-year {
+  margin-top: 8px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: transform 300ms ease, opacity 300ms ease;
+}
+
+.timeline-tooltip {
+  position: absolute;
+  top: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 12px;
+  border-radius: 8px;
+  white-space: nowrap;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: opacity 200ms ease;
+  z-index: 2;
+}
+
+/* Time Dial */
+.time-dial {
+  width: 180px;
+  height: 180px;
+}
+
+.dial-outer {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 30px rgba(14, 165, 233, 0.15), 0 0 10px rgba(14, 165, 233, 0.1) inset;
+}
+
+.dial-segment-marker {
+  position: absolute;
+  transform-origin: center center;
+}
+
+.dial-marker-line {
+  height: 12px;
+  width: 4px;
+  border-radius: 9999px;
+  transition: all 300ms ease;
+}
+
+.dial-marker-line.active {
+  background-color: rgb(56, 189, 248);
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.8);
+  transform: scale(1.5);
+}
+
+.dial-marker-line.inactive {
+  background-color: rgba(255, 255, 255, 0.5);
+}
+
+.dial-inner {
+  width: 75%;
+  height: 75%;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle, rgba(15, 23, 42, 0.9) 0%, rgba(15, 23, 42, 0.7) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.dial-gradient {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  opacity: 0.1;
+  animation: pulse 2s infinite;
+}
+
+.dial-content {
+  text-align: center;
+  z-index: 10;
+}
+
+.dial-year {
+  color: rgb(56, 189, 248);
+  font-size: 1.125rem;
+  font-weight: 700;
+  text-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+}
+
+.dial-title {
+  color: white;
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+  opacity: 0.7;
+}
+
+.dial-pointer {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 4px;
+  height: 20px;
+  transform: translate(-50%, -50%);
+  background-color: rgb(56, 189, 248);
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.8);
+}
+
+.dial-tooltip {
+  position: absolute;
+  top: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 12px;
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.9);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  z-index: 60;
+  white-space: nowrap;
+}
+
+.dial-tooltip-year {
+  color: rgb(125, 211, 252);
+  font-size: 0.75rem;
+}
+
+.dial-tooltip-title {
+  color: white;
+  font-size: 0.75rem;
+}
+
+/* Era Transition */
+.era-transition {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  pointer-events: none;
+  transition: opacity 800ms cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: opacity;
+}
+
+.era-transition-content {
+  text-align: center;
+  z-index: 1010;
+  position: relative;
+}
+
+.era-location {
+  color: white;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  font-size: clamp(2rem, 5vw, 4.5rem);
+  text-shadow: 0 0 20px rgba(0, 0, 0, 0.5), 0 0 40px rgba(0, 0, 0, 0.3);
+}
+
+.era-year {
+  color: rgb(125, 211, 252);
+  font-weight: 600;
+  font-size: clamp(1.5rem, 4vw, 3.75rem);
+  text-shadow: 0 0 15px rgba(56, 189, 248, 0.5), 0 0 30px rgba(14, 165, 233, 0.3);
+}
+
+.era-bg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at center, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.8) 100%);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 1001;
+}
+
+.era-rings {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 1002;
+}
+
+.era-ring {
+  position: absolute;
+  border-radius: 9999px;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+.era-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at center, transparent 30%, rgba(0,0,0,0.6) 100%);
+  z-index: 1003;
+}
+
+/* Time Period Description Panel */
+.description-panel {
+  position: fixed;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 320px;
+  max-height: 80vh;
+  overflow-y: auto;
+  background: rgba(15, 23, 42, 0.9);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 12px;
+  border: 2px solid rgba(56, 189, 248, 0.6);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 20px rgba(56, 189, 248, 0.3);
+  padding: 20px;
+  z-index: 60;
+  transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-50%) translateX(-50px);
+}
+
+.description-panel.visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(-50%) translateX(0);
+}
+
+.description-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.description-title {
+  color: white;
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.description-year {
+  color: rgb(125, 211, 252);
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.description-content {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin-bottom: 0;
+}
+
+.close-button {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: white;
+  font-size: 18px;
+  transition: background 150ms ease;
+}
+
+.close-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.info-button {
+  position: absolute;
+  right: -48px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(56, 189, 248, 0.8);
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: white;
+  font-size: 22px;
+  transition: all 150ms ease;
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.9);
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
+  z-index: 100;
+  padding: 0;
+  line-height: 1;
+  animation: pulse 2s infinite;
+}
+
+.info-button:hover {
+  background: rgba(56, 189, 248, 1);
+  transform: translateY(-50%) scale(1.15);
+  box-shadow: 0 0 25px rgba(56, 189, 248, 1);
+}
+
+.info-button::after {
+  content: "Show Time Period Info";
+  position: absolute;
+  right: 55px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(15, 23, 42, 0.9);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  border: 1px solid rgba(56, 189, 248, 0.6);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  z-index: 101;
+}
+
+.info-button:hover::after {
+  opacity: 1;
+  transform: translateY(-50%) translateX(-5px);
+} 

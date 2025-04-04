@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
+import './App.css';
 import './styles/cesium.css';
+import { MiniTimeline, TimeDial, EraTransition, DescriptionPanel } from './components/time-ui';
 
 // Access Cesium as a global variable with proper typing
 declare global {
@@ -88,6 +90,10 @@ function App() {
   const [currentTimePeriodIndex, setCurrentTimePeriodIndex] = useState(0);
   const [activeOverlay, setActiveOverlay] = useState<any>(null);
   const [showVisualEffect, setShowVisualEffect] = useState(false);
+  const [showEraTransition, setShowEraTransition] = useState(false);
+  const [transitionData, setTransitionData] = useState({ location: '', year: '' });
+  const [showDescriptionPanel, setShowDescriptionPanel] = useState(false);
+  const [selectedPeriod, setSelectedPeriod] = useState<typeof PYRAMID_TIME_PERIODS[0] | null>(null);
 
   const mapboxToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
   const cesiumToken = import.meta.env.VITE_CESIUM_ACCESS_TOKEN;
@@ -331,57 +337,41 @@ function App() {
 
   // Function to handle time period changes and update the map visualization
   const handleTimePeriodChange = (periodIndex: number) => {
-    if (!cesiumViewer.current) return;
+    if (!cesiumViewer.current || periodIndex === currentTimePeriodIndex) return;
     
-    // Set the current time period index
-    setCurrentTimePeriodIndex(periodIndex);
+    // Show transition effect
+    setShowEraTransition(true);
+    setTransitionData({
+      location: LOCATIONS[currentLocation as keyof typeof LOCATIONS].name,
+      year: PYRAMID_TIME_PERIODS[periodIndex].year
+    });
     
-    // Clear any existing overlays
+    // Update the selected period for the description panel
+    setSelectedPeriod(PYRAMID_TIME_PERIODS[periodIndex]);
+    
+    // Clear any existing overlays immediately
     if (activeOverlay) {
       try {
         cesiumViewer.current.entities.remove(activeOverlay);
+        setActiveOverlay(null);
       } catch (e) {
         console.error("Error removing overlay:", e);
       }
-      setActiveOverlay(null);
     }
     
-    // Remove all previous time period entities
-    cesiumViewer.current.entities.removeAll();
+    // Update state immediately to avoid lag
+    setCurrentTimePeriodIndex(periodIndex);
     
-    // Add location pins back
+    // Clear previous visualizations and add location pins back
+    cesiumViewer.current.entities.removeAll();
     addLocationPins();
     
-    // Show a transition effect
-    setShowVisualEffect(true);
-    setTimeout(() => setShowVisualEffect(false), 1500);
+    // Add visualization for the new period
+    const newPeriodId = PYRAMID_TIME_PERIODS[periodIndex].id;
+    addTimePeriodVisualization(newPeriodId);
     
-    // Add different visual elements based on the selected time period
-    try {
-      switch(periodIndex) {
-        case 0: // Construction Begins (2580 BCE)
-          addTimePeriodVisualization("construction-begin");
-          break;
-          
-        case 1: // Mid-Construction (2570 BCE)
-          addTimePeriodVisualization("construction-mid");
-          break;
-          
-        case 2: // Completion (2560 BCE)
-          addTimePeriodVisualization("construction-complete");
-          break;
-          
-        case 3: // Middle Kingdom (2000 BCE)
-          addTimePeriodVisualization("middle-kingdom");
-          break;
-          
-        case 4: // Modern Era (Present Day)
-          addTimePeriodVisualization("modern-era");
-          break;
-      }
-    } catch (error) {
-      console.error("Error changing time period:", error);
-    }
+    // The transition will automatically fade out and call onTransitionComplete
+    // We don't need to manually set showEraTransition to false here
   };
   
   // Function to add visualization for a specific time period
@@ -515,11 +505,32 @@ function App() {
     const location = LOCATIONS.egypt;
     flyToLocation(location.longitude, location.latitude, location.height, location.name);
     setCurrentLocation("egypt");
-    setShowTimeSlider(true);
-    // Start with modern day view
-    setCurrentTimePeriodIndex(4);
-    // Apply the modern day appearance with a delay to allow the camera to settle
-    setTimeout(() => handleTimePeriodChange(4), 2000);
+    
+    // Set the default time period to modern era (index 4)
+    setTimeout(() => {
+      // Set data first before showing transition
+      setCurrentTimePeriodIndex(4); // Start with modern day view
+      setSelectedPeriod(PYRAMID_TIME_PERIODS[4]); // Set the selected period for the description panel
+      
+      // Clear any existing entities and add visualization after camera has finished moving
+      if (cesiumViewer.current) {
+        cesiumViewer.current.entities.removeAll();
+        addLocationPins();
+        
+        // Add the visualization for modern era
+        addTimePeriodVisualization("modern-era");
+      }
+      
+      // Then show transition effect for better user experience
+      // This delay ensures the visualization is already loaded before showing the transition
+      setTimeout(() => {
+        setTransitionData({
+          location: location.name,
+          year: PYRAMID_TIME_PERIODS[4].year
+        });
+        setShowEraTransition(true);
+      }, 500);
+    }, 1000);
   };
 
   const handleStartJourney = () => {
@@ -581,6 +592,26 @@ function App() {
     return (
       <div className={`transition-overlay ${showTransitionOverlay ? 'active' : ''}`}></div>
     );
+  };
+
+  // Function to handle showing the description panel
+  const handleInfoClick = (period: typeof PYRAMID_TIME_PERIODS[0]) => {
+    console.log("Showing description for:", period.title);
+    
+    // Toggle the description panel visibility if it's the same period
+    if (showDescriptionPanel && selectedPeriod && selectedPeriod.id === period.id) {
+      setShowDescriptionPanel(false);
+    } else {
+      // Show the panel with the selected period
+      setSelectedPeriod(period);
+      setShowDescriptionPanel(true);
+    }
+  };
+
+  // Function to close the description panel
+  const handleCloseDescription = () => {
+    console.log("Closing description panel"); // Add logging
+    setShowDescriptionPanel(false);
   };
 
   if (showLandingPage) {
@@ -651,11 +682,21 @@ function App() {
             </>
           )}
         </div>
-        <div id="cesiumContainer" ref={viewerRef} />
+        <div 
+          ref={viewerRef} 
+          className="cesium-container"
+          style={{ 
+            width: "100%", 
+            height: "100vh", 
+            position: "relative",
+          }} 
+        />
         {showVisualEffect && (
           <div className="time-travel-effect"></div>
         )}
-        {showTimeSlider && currentLocation === "egypt" && (
+        
+        {/* Remove the old time slider controls that conflict with new UI */}
+        {/* {showTimeSlider && currentLocation === "egypt" && (
           <div className="time-travel-controls" data-period={PYRAMID_TIME_PERIODS[currentTimePeriodIndex].id}>
             <div className="time-travel-info">
               <h2>{PYRAMID_TIME_PERIODS[currentTimePeriodIndex].title}</h2>
@@ -687,6 +728,44 @@ function App() {
               </button>
             </div>
           </div>
+        )} */}
+        
+        {/* Only show the new UI components when we are in Egypt */}
+        {currentLocation === "egypt" && !showLandingPage && (
+          <>
+            {/* Mini Timeline */}
+            <MiniTimeline 
+              periods={PYRAMID_TIME_PERIODS}
+              currentPeriodIndex={currentTimePeriodIndex}
+              onPeriodChange={handleTimePeriodChange}
+              onInfoClick={handleInfoClick}
+            />
+            
+            {/* Time Dial */}
+            <TimeDial 
+              periods={PYRAMID_TIME_PERIODS}
+              currentPeriodIndex={currentTimePeriodIndex}
+              onPeriodChange={handleTimePeriodChange}
+            />
+            
+            {/* Era Transition Effect */}
+            <EraTransition
+              isVisible={showEraTransition}
+              location={transitionData.location}
+              year={transitionData.year}
+              onTransitionComplete={() => {
+                console.log("Transition complete");
+                setShowEraTransition(false);
+              }}
+            />
+            
+            {/* Description Panel */}
+            <DescriptionPanel 
+              isVisible={showDescriptionPanel}
+              period={selectedPeriod}
+              onClose={handleCloseDescription}
+            />
+          </>
         )}
       </div>
     </>
