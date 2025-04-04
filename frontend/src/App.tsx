@@ -22,14 +22,12 @@ const LOCATIONS = {
     longitude: -74.0060,
     latitude: 40.7128,
     height: 11000, // Reduced height for better visibility
-    emoji: "🗽"
   },
   egypt: {
     name: "Pyramids of Giza",
     longitude: 31.1342,
     latitude: 29.9792,
     height: 2000, // Lower height to get closer to the pyramids
-    emoji: "🏛️"
   }
 };
 
@@ -620,7 +618,6 @@ function App() {
       {renderPreloader()}
       {renderTransitionOverlay()}
       <div className="App">
-        <h1>🌍 Temporal Voyage Explorer</h1>
         <div className="button-container">
           {error ? (
             <div className="error-message">
@@ -631,14 +628,16 @@ function App() {
               <button 
                 onClick={flyToNewYork} 
                 disabled={!cesiumLoaded}
+                data-icon="🗽"
               >
-                <span>New York City 🗽</span>
+                <span>New York City</span>
               </button>
               <button 
                 onClick={flyToEgypt} 
                 disabled={!cesiumLoaded}
+                data-icon="🏛️"
               >
-                <span>Pyramids of Giza 🏛️</span>
+                <span>Pyramids of Giza</span>
               </button>
             </>
           )}
