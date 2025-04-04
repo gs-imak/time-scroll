@@ -116,6 +116,10 @@ function App() {
       }
       
       console.log("Creating viewer...");
+      // Create a hidden element for credits to effectively remove them from view
+      const hiddenCreditsContainer = document.createElement('div');
+      hiddenCreditsContainer.style.display = 'none';
+      
       // Create viewer with optimized settings to reduce loading lag
       cesiumViewer.current = new window.Cesium.Viewer(viewerRef.current, {
         animation: false,
@@ -136,7 +140,10 @@ function App() {
         // Make things load faster
         terrainExaggeration: 1.0,
         shadows: false,
-        targetFrameRate: 60
+        targetFrameRate: 60,
+        // Hide credits
+        creditContainer: hiddenCreditsContainer,
+        creditViewport: hiddenCreditsContainer
       });
       
       // Basic terrain setup

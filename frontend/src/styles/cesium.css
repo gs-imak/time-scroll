@@ -799,4 +799,10 @@ button:disabled {
     transform: scale(1.5);
   }
 }
-  
+
+/* Hide Cesium credits container */
+.cesium-viewer-bottom,
+.cesium-widget-credits,
+.cesium-credit-container {
+  display: none !important;
+}
