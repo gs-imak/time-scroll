@@ -58,63 +58,58 @@ function App() {
       }
       
       console.log("Creating viewer...");
-      // Create viewer with better default options for smooth experience
+      // Create viewer with basic settings that are known to work
       cesiumViewer.current = new Cesium.Viewer(viewerRef.current, {
         animation: false,
-        baseLayerPicker: true, // Enable layer picker for better imagery options
-        fullscreenButton: true,
+        baseLayerPicker: false,
+        fullscreenButton: false,
         geocoder: false,
-        homeButton: true,
+        homeButton: false,
         infoBox: false,
-        sceneModePicker: true,
+        sceneModePicker: false,
         selectionIndicator: false,
         timeline: false,
-        navigationHelpButton: true,
+        navigationHelpButton: false,
         navigationInstructionsInitiallyVisible: false,
-        sceneMode: Cesium.SceneMode.SCENE3D,
         imageryProvider: Cesium.createWorldImagery({
           style: Cesium.IonWorldImageryStyle.AERIAL_WITH_LABELS
-        }),
+        })
       });
       
-      // Enable terrain for better 3D experience
+      // Basic terrain setup
       if (Cesium.createWorldTerrain) {
         const terrainProvider = Cesium.createWorldTerrain({
-          requestWaterMask: true,
-          requestVertexNormals: true
+          requestWaterMask: false,
+          requestVertexNormals: false
         });
         cesiumViewer.current.terrainProvider = terrainProvider;
       }
       
-      // Improve mouse movement smoothness
-      cesiumViewer.current.scene.screenSpaceCameraController.minimumZoomDistance = 10000; // Don't zoom in too close
-      cesiumViewer.current.scene.screenSpaceCameraController.maximumZoomDistance = 25000000; // Allow zooming out further
+      // Basic camera settings
+      cesiumViewer.current.scene.screenSpaceCameraController.minimumZoomDistance = 10000;
+      cesiumViewer.current.scene.screenSpaceCameraController.maximumZoomDistance = 25000000;
       
-      // Set better default lighting
-      cesiumViewer.current.scene.globe.enableLighting = true;
+      // Disable lighting for better performance
+      cesiumViewer.current.scene.globe.enableLighting = false;
       cesiumViewer.current.scene.globe.depthTestAgainstTerrain = true;
       
-      // Adjust camera settings for smoother movement
-      cesiumViewer.current.clock.shouldAnimate = true;
-      
-      // Fly to a starting position that shows the Earth
+      // Start at a reliable position
       cesiumViewer.current.camera.flyTo({
-        destination: Cesium.Cartesian3.fromDegrees(0, 20, 20000000),
-        duration: 0 // Instant positioning
+        destination: Cesium.Cartesian3.fromDegrees(0, 0, 20000000),
+        duration: 0
       });
       
       // Add pins for our locations
       const locationEntities: any[] = [];
       Object.values(LOCATIONS).forEach(location => {
-        // Create a pin entity
+        // Create a pin entity with minimal options
         const entity = cesiumViewer.current.entities.add({
           name: location.name,
           position: Cesium.Cartesian3.fromDegrees(location.longitude, location.latitude),
           billboard: {
             image: buildPin(location.emoji),
             verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-            scale: 1.0,
-            heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
+            scale: 1.0
           },
           label: {
             text: location.name,
@@ -123,7 +118,6 @@ function App() {
             outlineWidth: 2,
             verticalOrigin: Cesium.VerticalOrigin.TOP,
             pixelOffset: new Cesium.Cartesian2(0, -30),
-            heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
             showBackground: true,
             backgroundColor: new Cesium.Color(0.165, 0.165, 0.165, 0.7),
             backgroundPadding: new Cesium.Cartesian2(7, 5),
@@ -136,7 +130,7 @@ function App() {
       setEntities(locationEntities);
       console.log("Viewer created successfully");
       
-      // Show the container right after initialization
+      // Set globe as loaded immediately
       if (viewerRef.current) {
         viewerRef.current.style.opacity = '1';
       }
@@ -162,7 +156,7 @@ function App() {
         }
       }
     };
-  }, [cesiumToken, mapboxToken, showLandingPage]); // Add showLandingPage dependency
+  }, [cesiumToken, mapboxToken, showLandingPage]);
 
   // Function to create a pin with emoji
   const buildPin = (emoji: string) => {
@@ -205,8 +199,10 @@ function App() {
         duration: 2,
       });
       
-      // Also track the entity to make sure it's visible
+      // Find the entity to track
       const entity = cesiumViewer.current.entities.values.find((e: any) => e.name === name);
+      
+      // Track the entity to ensure it's visible
       if (entity) {
         setTimeout(() => {
           cesiumViewer.current.trackedEntity = undefined; // Untrack first to avoid conflicts
@@ -250,24 +246,21 @@ function App() {
     // Show transition overlay immediately
     setShowTransitionOverlay(true);
     
-    // Sequence all effects with proper timing
+    // Simple sequential timing
     setTimeout(() => {
       // Show preloader
       setShowPreloader(true);
       
-      // Add portal effect after overlay and preloader are established
       setTimeout(() => {
         setShowPortalEffect(true);
         
-        // Switch to the globe view
         setTimeout(() => {
           setShowLandingPage(false);
           
-          // Keep overlay visible a bit longer then remove it
           setTimeout(() => {
             setShowTransitionOverlay(false);
-          }, 800); // Shorter duration since we don't need to wait for globe reveal animation
-        }, 1200);
+          }, 800);
+        }, 1000);
       }, 300);
     }, 200);
   };
