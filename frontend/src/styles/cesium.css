@@ -975,6 +975,7 @@ button:disabled {
   border-radius: 50%;
   background-color: #60efff;
   box-shadow: 0 0 10px rgba(96, 239, 255, 0.8);
+  transition: background-color 0.5s ease, box-shadow 0.5s ease;
 }
 
 .status-message {
@@ -983,6 +984,17 @@ button:disabled {
   font-weight: 500;
   letter-spacing: 0.5px;
   text-shadow: 0 0 8px rgba(96, 239, 255, 0.6);
+  transition: color 0.5s ease, text-shadow 0.5s ease;
+}
+
+.status-container:not(.stabilized) .status-message {
+  color: #ff9966;
+  text-shadow: 0 0 8px rgba(255, 153, 102, 0.6);
+}
+
+.status-container:not(.stabilized) .status-ring::after {
+  background-color: #ff9966;
+  box-shadow: 0 0 10px rgba(255, 153, 102, 0.8);
 }
 
 /* Style for the button icon */
