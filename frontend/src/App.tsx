@@ -3,6 +3,10 @@ import './App.css';
 import './styles/cesium.css';
 import { MiniTimeline, TimeDial, EraTransition, DescriptionPanel } from './components/time-ui';
 import { LocationsPanel } from './components/LocationsPanel';
+import { GlobalTimeSlider } from './components/GlobalTimeSlider';
+import { HistoricalEventMarker } from './components/HistoricalEventMarker';
+import { EventDetailModal } from './components/EventDetailModal';
+import { GLOBAL_TIME_PERIODS, HISTORICAL_EVENTS } from './constants/historyData';
 
 // Access Cesium as a global variable with proper typing
 declare global {
@@ -107,6 +111,10 @@ function App() {
   const [transitionData, setTransitionData] = useState({ location: '', year: '' });
   const [showDescriptionPanel, setShowDescriptionPanel] = useState(false);
   const [selectedPeriod, setSelectedPeriod] = useState<typeof PYRAMID_TIME_PERIODS[0] | null>(null);
+  const [visibleEvents, setVisibleEvents] = useState(HISTORICAL_EVENTS);
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  const [showEventDetail, setShowEventDetail] = useState(false);
+  const [currentGlobalPeriod, setCurrentGlobalPeriod] = useState(GLOBAL_TIME_PERIODS[GLOBAL_TIME_PERIODS.length - 1].id);
 
   const mapboxToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
   const cesiumToken = import.meta.env.VITE_CESIUM_ACCESS_TOKEN;
@@ -578,13 +586,13 @@ function App() {
     
     return (
       <div className={`preloader ${showPreloader ? 'active' : ''}`}>
-        <div className="wave-loader">
+        {/* <div className="wave-loader">
           <div className="dot"></div>
           <div className="dot"></div>
           <div className="dot"></div>
           <div className="dot"></div>
           <div className="dot"></div>
-        </div>
+        </div> */}
       </div>
     );
   };
@@ -634,6 +642,66 @@ function App() {
       flyToEgypt();
     }
     // Add other location handlers as needed
+  };
+
+  // Helper to get selected event
+  const getSelectedEvent = () => {
+    return HISTORICAL_EVENTS.find(event => event.id === selectedEventId) || null;
+  };
+  
+  // Function to handle filtering events by time period
+  const handleEventsFiltered = (filteredEvents: typeof HISTORICAL_EVENTS) => {
+    setVisibleEvents(filteredEvents);
+    
+    // Update the map with visible events
+    if (cesiumViewer.current) {
+      // Remove existing event markers
+      cesiumViewer.current.entities.removeAll();
+      
+      // Add location pins
+      addLocationPins();
+      
+      // Add filtered event markers
+      filteredEvents.forEach(event => {
+        addEventMarker(event);
+      });
+    }
+  };
+  
+  // Function to add event marker to the map
+  const addEventMarker = (event: typeof HISTORICAL_EVENTS[0]) => {
+    if (!cesiumViewer.current) return;
+    
+    // Create a pin entity for the event
+    const entity = cesiumViewer.current.entities.add({
+      name: event.name,
+      position: window.Cesium.Cartesian3.fromDegrees(event.longitude, event.latitude),
+      billboard: {
+        image: buildPin(event.emoji),
+        verticalOrigin: window.Cesium.VerticalOrigin.BOTTOM,
+        scale: 1,
+        heightReference: window.Cesium.HeightReference.CLAMP_TO_GROUND
+      }
+    });
+    
+    // Store the event ID on the entity for selection
+    (entity as any).eventId = event.id;
+  };
+  
+  // Function to handle click on an event marker
+  const handleEventClick = (eventId: string) => {
+    setSelectedEventId(eventId);
+    setShowEventDetail(true);
+  };
+  
+  // Function to close event detail modal
+  const handleCloseEventDetail = () => {
+    setShowEventDetail(false);
+  };
+  
+  // Function to handle global time period change
+  const handleGlobalTimePeriodChange = (periodId: string) => {
+    setCurrentGlobalPeriod(periodId);
   };
 
   if (showLandingPage) {
@@ -707,7 +775,17 @@ function App() {
           <div className="time-travel-effect"></div>
         )}
         
-        {/* Only show the new UI components when we are in Egypt */}
+        {/* Global time slider for filtering events by time period */}
+        {cesiumLoaded && !showLandingPage && (
+          <GlobalTimeSlider 
+            timePeriods={GLOBAL_TIME_PERIODS}
+            events={HISTORICAL_EVENTS}
+            onEventsFiltered={handleEventsFiltered}
+            onTimePeriodChange={handleGlobalTimePeriodChange}
+          />
+        )}
+        
+        {/* Only show the Egypt-specific UI components when in Egypt */}
         {currentLocation === "egypt" && !showLandingPage && (
           <>
             {/* Mini Timeline */}
@@ -743,6 +821,18 @@ function App() {
               onClose={handleCloseDescription}
             />
           </>
+        )}
+        
+        {/* Event Detail Modal */}
+        {getSelectedEvent() && (
+          <EventDetailModal
+            isOpen={showEventDetail}
+            onClose={handleCloseEventDetail}
+            name={getSelectedEvent()!.name}
+            year={getSelectedEvent()!.year}
+            emoji={getSelectedEvent()!.emoji}
+            description={getSelectedEvent()!.description}
+          />
         )}
       </div>
     </>
