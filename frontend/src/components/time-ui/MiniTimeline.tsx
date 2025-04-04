@@ -23,10 +23,11 @@ export function MiniTimeline({
 }: MiniTimelineProps) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
-  // Calculate positions for markers
+  // Calculate positions for markers with padding to keep them inside the container
   const getMarkerPosition = (index: number) => {
     const totalMarkers = periods.length;
-    return `${(index / (totalMarkers - 1)) * 100}%`;
+    // Add padding on both ends (5% on each side)
+    return `${5 + (index / (totalMarkers - 1)) * 90}%`;
   };
 
   const handleInfoClick = (e: React.MouseEvent) => {
@@ -46,7 +47,7 @@ export function MiniTimeline({
         zIndex: 50,
         width: '80%',
         maxWidth: '48rem',
-        padding: '16px 24px',
+        padding: '16px 32px 16px 32px',
         borderRadius: '16px',
         background: 'rgba(15, 23, 42, 0.6)',
         backdropFilter: 'blur(8px)',
@@ -75,11 +76,18 @@ export function MiniTimeline({
       </button>
       
       {/* Timeline Track */}
-      <div className="timeline-track">
-        {/* Active segment */}
+      <div className="timeline-track" style={{ 
+        marginTop: '26px', 
+        marginBottom: '26px',
+        position: 'relative',
+        width: '100%'
+      }}>
+        {/* Active segment - adjusted to match new positioning */}
         <div 
           className="timeline-active-segment"
-          style={{ width: getMarkerPosition(currentPeriodIndex) }}
+          style={{ 
+            width: `${5 + (currentPeriodIndex / (periods.length - 1)) * 90}%` 
+          }}
         />
 
         {/* Time markers */}
@@ -90,7 +98,10 @@ export function MiniTimeline({
             onMouseEnter={() => setHoveredIndex(index)}
             onMouseLeave={() => setHoveredIndex(null)}
             className="timeline-marker"
-            style={{ left: getMarkerPosition(index) }}
+            style={{ 
+              left: getMarkerPosition(index),
+              top: '0px'
+            }}
           >
             <div className="flex flex-col items-center justify-center">
               {/* Timeline dot removed */}
