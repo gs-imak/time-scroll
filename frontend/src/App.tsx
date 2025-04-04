@@ -22,12 +22,14 @@ const LOCATIONS = {
     longitude: -74.0060,
     latitude: 40.7128,
     height: 11000, // Reduced height for better visibility
+    emoji: "🗽"
   },
   egypt: {
     name: "Pyramids of Giza",
     longitude: 31.1342,
     latitude: 29.9792,
     height: 2000, // Lower height to get closer to the pyramids
+    emoji: "🏛️"
   }
 };
 
