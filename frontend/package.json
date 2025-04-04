@@ -15,6 +15,7 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "cesium": "^1.128.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },
@@ -24,6 +25,8 @@
     "@types/react-dom": "^19.1.1",
     "@vitejs/plugin-react": "^4.3.4",
     "typescript": "^5.8.2",
-    "vite": "^6.2.5"
+    "vite": "^6.2.5",
+    "vite-plugin-cesium": "^1.2.23",
+    "vite-plugin-static-copy": "^2.3.0"
   }
 }

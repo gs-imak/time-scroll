@@ -7,4 +7,10 @@ interface ImportMetaEnv {
 
 interface ImportMeta {
   readonly env: ImportMetaEnv;
+}
+
+// Add global declaration for CESIUM_BASE_URL
+interface Window {
+  CESIUM_BASE_URL: string;
+  Cesium: any;
 } 
