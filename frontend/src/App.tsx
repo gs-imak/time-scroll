@@ -25,10 +25,10 @@ const LOCATIONS = {
     emoji: "🗽"
   },
   egypt: {
-    name: "Cairo, Egypt",
-    longitude: 31.2357,
-    latitude: 30.0444,
-    height: 16000, // Reduced height for better visibility
+    name: "Pyramids of Giza",
+    longitude: 31.1342,
+    latitude: 29.9792,
+    height: 3000, // Lower height to get closer to the pyramids
     emoji: "🏛️"
   }
 };
@@ -411,7 +411,7 @@ function App() {
                 onClick={flyToEgypt} 
                 disabled={!cesiumLoaded}
               >
-                <span>Cairo, Egypt 🏛️</span>
+                <span>Pyramids of Giza 🏛️</span>
               </button>
             </>
           )}
