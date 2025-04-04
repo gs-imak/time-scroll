@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import './App.css';
 import './styles/cesium.css';
 import { MiniTimeline, TimeDial, EraTransition, DescriptionPanel } from './components/time-ui';
+import { LocationsPanel } from './components/LocationsPanel';
 
 // Access Cesium as a global variable with proper typing
 declare global {
@@ -20,20 +21,32 @@ declare global {
 // Define location data with precise coordinates and lower heights
 const LOCATIONS = {
   newYork: {
+    id: 'newYork',
     name: "New York City",
     longitude: -74.0060,
     latitude: 40.7128,
     height: 11000, // Reduced height for better visibility
-    emoji: "🗽"
+    emoji: "🗽",
+    category: 'modern'
   },
   egypt: {
+    id: 'egypt',
     name: "Pyramids of Giza",
     longitude: 31.1342,
     latitude: 29.9792,
     height: 2000, // Lower height to get closer to the pyramids
-    emoji: "🏛️"
+    emoji: "🏛️",
+    category: 'ancient'
   }
 };
+
+// Create a simpler format for the LocationsPanel
+const LOCATION_LIST = Object.values(LOCATIONS).map(loc => ({
+  id: loc.id,
+  name: loc.name,
+  emoji: loc.emoji,
+  category: loc.category
+}));
 
 // Historical time periods for the Pyramids of Giza
 const PYRAMID_TIME_PERIODS = [
@@ -614,6 +627,15 @@ function App() {
     setShowDescriptionPanel(false);
   };
 
+  const handleLocationSelect = (locationId: string) => {
+    if (locationId === 'newYork') {
+      flyToNewYork();
+    } else if (locationId === 'egypt') {
+      flyToEgypt();
+    }
+    // Add other location handlers as needed
+  };
+
   if (showLandingPage) {
     return (
       <>
@@ -658,30 +680,19 @@ function App() {
       {renderPreloader()}
       {renderTransitionOverlay()}
       <div className="App">
-        <div className="button-container">
-          {error ? (
-            <div className="error-message">
-              Error: {error}
-            </div>
-          ) : (
-            <>
-              <button 
-                onClick={flyToNewYork} 
-                disabled={!cesiumLoaded}
-                data-icon="🗽"
-              >
-                <span>New York City</span>
-              </button>
-              <button 
-                onClick={flyToEgypt} 
-                disabled={!cesiumLoaded}
-                data-icon="🏛️"
-              >
-                <span>Pyramids of Giza</span>
-              </button>
-            </>
-          )}
-        </div>
+        {/* Remove the button container and replace with LocationsPanel */}
+        {error ? (
+          <div className="error-message">
+            Error: {error}
+          </div>
+        ) : (
+          <LocationsPanel 
+            locations={LOCATION_LIST}
+            onSelectLocation={handleLocationSelect}
+            currentLocationId={currentLocation || undefined}
+          />
+        )}
+        
         <div 
           ref={viewerRef} 
           className="cesium-container"
@@ -691,44 +702,10 @@ function App() {
             position: "relative",
           }} 
         />
+        
         {showVisualEffect && (
           <div className="time-travel-effect"></div>
         )}
-        
-        {/* Remove the old time slider controls that conflict with new UI */}
-        {/* {showTimeSlider && currentLocation === "egypt" && (
-          <div className="time-travel-controls" data-period={PYRAMID_TIME_PERIODS[currentTimePeriodIndex].id}>
-            <div className="time-travel-info">
-              <h2>{PYRAMID_TIME_PERIODS[currentTimePeriodIndex].title}</h2>
-              <h3>{PYRAMID_TIME_PERIODS[currentTimePeriodIndex].year}</h3>
-              <p>{PYRAMID_TIME_PERIODS[currentTimePeriodIndex].description}</p>
-            </div>
-            <div className="time-slider-container">
-              <button 
-                className="time-nav-button"
-                disabled={currentTimePeriodIndex === 0}
-                onClick={() => handleTimePeriodChange(Math.max(0, currentTimePeriodIndex - 1))}
-              >
-                ◀ Earlier
-              </button>
-              <input
-                type="range"
-                min="0"
-                max={PYRAMID_TIME_PERIODS.length - 1}
-                value={currentTimePeriodIndex}
-                onChange={(e) => handleTimePeriodChange(parseInt(e.target.value))}
-                className="time-slider"
-              />
-              <button 
-                className="time-nav-button"
-                disabled={currentTimePeriodIndex === PYRAMID_TIME_PERIODS.length - 1}
-                onClick={() => handleTimePeriodChange(Math.min(PYRAMID_TIME_PERIODS.length - 1, currentTimePeriodIndex + 1))}
-              >
-                Later ▶
-              </button>
-            </div>
-          </div>
-        )} */}
         
         {/* Only show the new UI components when we are in Egypt */}
         {currentLocation === "egypt" && !showLandingPage && (

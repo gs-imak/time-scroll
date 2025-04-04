@@ -434,4 +434,211 @@
 .info-button:hover::after {
   opacity: 1;
   transform: translateY(-50%) translateX(-5px);
+}
+
+/* Locations Panel */
+.locations-panel {
+  position: fixed;
+  top: 80px;
+  left: 20px;
+  z-index: 100;
+  transition: all 0.3s ease;
+  max-width: 290px;
+  border-radius: 10px;
+}
+
+.locations-panel.collapsed {
+  width: auto;
+}
+
+.locations-panel.expanded {
+  width: 250px;
+  background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(56, 189, 248, 0.2);
+}
+
+.toggle-panel-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(15, 23, 42, 0.8);
+  color: white;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-panel-button:hover {
+  background: rgba(22, 33, 62, 0.9);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+}
+
+.toggle-panel-button svg {
+  color: rgb(56, 189, 248);
+}
+
+.panel-content {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: calc(100vh - 250px);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.panel-header {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.panel-header h3 {
+  margin: 0;
+  color: white;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.search-bar {
+  position: relative;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+}
+
+.search-bar input {
+  width: 100%;
+  box-sizing: border-box;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  padding: 8px 28px 8px 10px;
+  color: white;
+  font-size: 0.9rem;
+}
+
+.search-bar input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.search-bar svg {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.category-filters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.category-button {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 6px;
+  padding: 4px 10px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.category-button.active {
+  background: rgba(56, 189, 248, 0.3);
+  color: white;
+}
+
+.category-button:hover {
+  background: rgba(56, 189, 248, 0.2);
+  color: white;
+}
+
+.locations-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.location-button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: white;
+  text-align: left;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.location-button:hover {
+  background: rgba(56, 189, 248, 0.1);
+  border-color: rgba(56, 189, 248, 0.3);
+  transform: translateY(-1px);
+}
+
+.location-button.active {
+  background: rgba(56, 189, 248, 0.2);
+  border-color: rgba(56, 189, 248, 0.4);
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.2);
+}
+
+.location-emoji {
+  font-size: 1.2rem;
+  min-width: 24px;
+  text-align: center;
+}
+
+.location-name {
+  font-weight: 500;
+  flex-grow: 1;
+}
+
+.location-period {
+  font-size: 0.8rem;
+  opacity: 0.7;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.no-results {
+  color: rgba(255, 255, 255, 0.6);
+  text-align: center;
+  padding: 16px;
+  font-size: 0.9rem;
+}
+
+/* Custom scrollbar for panel content */
+.panel-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.panel-content::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 6px;
+}
+
+.panel-content::-webkit-scrollbar-thumb {
+  background: rgba(56, 189, 248, 0.3);
+  border-radius: 6px;
+}
+
+.panel-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(56, 189, 248, 0.5);
 } 
