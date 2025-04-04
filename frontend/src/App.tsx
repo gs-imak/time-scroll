@@ -1,8 +1,19 @@
 import React, { useEffect, useRef, useState } from 'react';
 import './styles/cesium.css';
 
-// Access Cesium as a global variable
-declare const Cesium: any;
+// Access Cesium as a global variable with proper typing
+declare global {
+  interface Window {
+    Cesium: any;
+  }
+  
+  interface ImportMeta {
+    env: {
+      VITE_MAPBOX_ACCESS_TOKEN: string;
+      VITE_CESIUM_ACCESS_TOKEN: string;
+    }
+  }
+}
 
 // Define location data with precise coordinates and lower heights
 const LOCATIONS = {
@@ -10,14 +21,14 @@ const LOCATIONS = {
     name: "New York City",
     longitude: -74.0060,
     latitude: 40.7128,
-    height: 100000, // Reduced height for better visibility
+    height: 11000, // Reduced height for better visibility
     emoji: "🗽"
   },
   egypt: {
     name: "Cairo, Egypt",
     longitude: 31.2357,
     latitude: 30.0444,
-    height: 150000, // Reduced height for better visibility
+    height: 16000, // Reduced height for better visibility
     emoji: "🏛️"
   }
 };
@@ -36,6 +47,9 @@ function App() {
 
   const mapboxToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
   const cesiumToken = import.meta.env.VITE_CESIUM_ACCESS_TOKEN;
+  
+  // Create a reference to Cesium so we can use it throughout the component
+  const Cesium = window.Cesium;
 
   useEffect(() => {
     if (showLandingPage) return; // Don't initialize Cesium on the landing page
@@ -48,8 +62,8 @@ function App() {
       }
       
       console.log("Setting Cesium Ion token...");
-      if (Cesium.Ion) {
-        Cesium.Ion.defaultAccessToken = cesiumToken || '';
+      if (window.Cesium.Ion) {
+        window.Cesium.Ion.defaultAccessToken = cesiumToken || '';
       }
       
       if (!viewerRef.current) {
@@ -58,32 +72,42 @@ function App() {
       }
       
       console.log("Creating viewer...");
-      // Create viewer with basic settings that are known to work
-      cesiumViewer.current = new Cesium.Viewer(viewerRef.current, {
+      // Create viewer with optimized settings to reduce loading lag
+      cesiumViewer.current = new window.Cesium.Viewer(viewerRef.current, {
         animation: false,
         baseLayerPicker: false,
         fullscreenButton: false,
         geocoder: false,
-        homeButton: false,
+        homeButton: true,
         infoBox: false,
         sceneModePicker: false,
         selectionIndicator: false,
         timeline: false,
         navigationHelpButton: false,
         navigationInstructionsInitiallyVisible: false,
-        imageryProvider: Cesium.createWorldImagery({
-          style: Cesium.IonWorldImageryStyle.AERIAL_WITH_LABELS
-        })
+        imageryProvider: window.Cesium.createWorldImagery({
+          style: window.Cesium.IonWorldImageryStyle.AERIAL_WITH_LABELS
+        }),
+        sceneMode: window.Cesium.SceneMode.SCENE3D,
+        // Make things load faster
+        terrainExaggeration: 1.0,
+        shadows: false,
+        targetFrameRate: 60
       });
       
       // Basic terrain setup
-      if (Cesium.createWorldTerrain) {
-        const terrainProvider = Cesium.createWorldTerrain({
+      if (window.Cesium.createWorldTerrain) {
+        const terrainProvider = window.Cesium.createWorldTerrain({
           requestWaterMask: false,
           requestVertexNormals: false
         });
         cesiumViewer.current.terrainProvider = terrainProvider;
       }
+      
+      // Improve performance
+      cesiumViewer.current.scene.fog.enabled = false;
+      cesiumViewer.current.scene.globe.showGroundAtmosphere = false;
+      cesiumViewer.current.scene.globe.maximumScreenSpaceError = 2; // Lower for better quality
       
       // Basic camera settings
       cesiumViewer.current.scene.screenSpaceCameraController.minimumZoomDistance = 10000;
@@ -95,7 +119,31 @@ function App() {
       
       // Start at a reliable position
       cesiumViewer.current.camera.flyTo({
-        destination: Cesium.Cartesian3.fromDegrees(0, 0, 20000000),
+        destination: window.Cesium.Cartesian3.fromDegrees(0, 0, 20000000),
+        duration: 0
+      });
+      
+      // Preload imagery at our destination locations to reduce lag when flying there
+      Object.values(LOCATIONS).forEach(location => {
+        const rectangle = new window.Cesium.Rectangle.fromDegrees(
+          location.longitude - 0.5, // west
+          location.latitude - 0.5, // south
+          location.longitude + 0.5, // east
+          location.latitude + 0.5  // north
+        );
+        cesiumViewer.current.camera.setView({
+          destination: rectangle,
+          orientation: {
+            heading: 0.0,
+            pitch: -Math.PI / 4,
+            roll: 0.0
+          }
+        });
+      });
+      
+      // Then return to initial view
+      cesiumViewer.current.camera.flyTo({
+        destination: window.Cesium.Cartesian3.fromDegrees(0, 0, 20000000),
         duration: 0
       });
       
@@ -105,23 +153,24 @@ function App() {
         // Create a pin entity with minimal options
         const entity = cesiumViewer.current.entities.add({
           name: location.name,
-          position: Cesium.Cartesian3.fromDegrees(location.longitude, location.latitude),
+          position: window.Cesium.Cartesian3.fromDegrees(location.longitude, location.latitude),
           billboard: {
             image: buildPin(location.emoji),
-            verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-            scale: 1.0
+            verticalOrigin: window.Cesium.VerticalOrigin.BOTTOM,
+            scale: 1.2, // Slightly larger scale
+            heightReference: window.Cesium.HeightReference.CLAMP_TO_GROUND
           },
           label: {
             text: location.name,
-            font: '14pt sans-serif',
-            style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-            outlineWidth: 2,
-            verticalOrigin: Cesium.VerticalOrigin.TOP,
-            pixelOffset: new Cesium.Cartesian2(0, -30),
+            font: '16pt sans-serif', // Larger font
+            style: window.Cesium.LabelStyle.FILL_AND_OUTLINE,
+            outlineWidth: 3, // Thicker outline
+            verticalOrigin: window.Cesium.VerticalOrigin.TOP,
+            pixelOffset: new window.Cesium.Cartesian2(0, -35), // Adjusted offset
             showBackground: true,
-            backgroundColor: new Cesium.Color(0.165, 0.165, 0.165, 0.7),
-            backgroundPadding: new Cesium.Cartesian2(7, 5),
-            horizontalOrigin: Cesium.HorizontalOrigin.CENTER
+            backgroundColor: new window.Cesium.Color(0.1, 0.1, 0.1, 0.8), // Darker background
+            backgroundPadding: new window.Cesium.Cartesian2(10, 7), // More padding
+            horizontalOrigin: window.Cesium.HorizontalOrigin.CENTER
           }
         });
         locationEntities.push(entity);
@@ -188,55 +237,55 @@ function App() {
     
     try {
       console.log(`Flying to ${name}...`);
-      // Simple direct flight to the location
+      
+      // Force immediate rendering to reduce lag
+      cesiumViewer.current.scene.requestRender();
+      
+      // Disable camera constraints temporarily
+      const sscc = cesiumViewer.current.scene.screenSpaceCameraController;
+      const oldMinimumZoomDistance = sscc.minimumZoomDistance;
+      const oldMaximumZoomDistance = sscc.maximumZoomDistance;
+      
+      // Allow closer zooming for more precision
+      sscc.minimumZoomDistance = 1; 
+      sscc.maximumZoomDistance = 30000000;
+      
+      // Get the target position in Cartesian3
+      const destination = window.Cesium.Cartesian3.fromDegrees(longitude, latitude, height);
+      
+      // Direct flight to the location with optimized parameters
       cesiumViewer.current.camera.flyTo({
-        destination: Cesium.Cartesian3.fromDegrees(longitude, latitude, height),
+        destination: destination,
         orientation: {
-          heading: Cesium.Math.toRadians(0.0),
-          pitch: Cesium.Math.toRadians(-45.0),
+          heading: window.Cesium.Math.toRadians(0.0),
+          pitch: window.Cesium.Math.toRadians(-85.0), // ! Standard 45-degree angle (this is the angle of the camera)
           roll: 0.0,
         },
         duration: 2,
+        maximumHeight: 5000000, // Limit the maximum height during flight
+        pitchAdjustHeight: 0, // Disable automatic pitch adjustment during flight
+        complete: function() {
+          // Restore camera constraints
+          sscc.minimumZoomDistance = oldMinimumZoomDistance;
+          sscc.maximumZoomDistance = oldMaximumZoomDistance;
+          
+          // Force render to ensure everything is displayed
+          cesiumViewer.current.scene.requestRender();
+        }
       });
-      
-      // Find the entity to track
-      const entity = cesiumViewer.current.entities.values.find((e: any) => e.name === name);
-      
-      // Track the entity to ensure it's visible
-      if (entity) {
-        setTimeout(() => {
-          cesiumViewer.current.trackedEntity = undefined; // Untrack first to avoid conflicts
-          cesiumViewer.current.zoomTo(entity);
-        }, 2500); // Wait for the initial animation to complete
-      }
     } catch (error) {
       console.error(`Error flying to ${name}:`, error);
     }
   };
 
-  // Add debug function to log camera position
-  const logCameraPosition = () => {
-    if (!cesiumViewer.current) return;
-    
-    const camera = cesiumViewer.current.camera;
-    const position = camera.positionCartographic;
-    const longitude = Cesium.Math.toDegrees(position.longitude);
-    const latitude = Cesium.Math.toDegrees(position.latitude);
-    const height = position.height;
-    
-    console.log(`Camera position: longitude=${longitude.toFixed(4)}, latitude=${latitude.toFixed(4)}, height=${height.toFixed(0)}m`);
-  };
-
   const flyToNewYork = () => {
     const location = LOCATIONS.newYork;
     flyToLocation(location.longitude, location.latitude, location.height, location.name);
-    setTimeout(logCameraPosition, 3000);
   };
   
   const flyToEgypt = () => {
     const location = LOCATIONS.egypt;
     flyToLocation(location.longitude, location.latitude, location.height, location.name);
-    setTimeout(logCameraPosition, 3000);
   };
 
   const handleStartJourney = () => {
