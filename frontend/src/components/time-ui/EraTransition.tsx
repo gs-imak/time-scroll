@@ -24,6 +24,8 @@ export function EraTransition({
     
     // Reset state when visibility changes
     if (isVisible) {
+      console.log(`EraTransition: Starting for ${location}, ${year}`);
+      
       // Start fade in
       setIsAnimating(true);
       setOpacity(0);
@@ -33,31 +35,48 @@ export function EraTransition({
       
       // Animate to full opacity
       fadeInTimeout = window.setTimeout(() => {
+        console.log("EraTransition: Fading in");
         setOpacity(1);
       }, 100);
       
       // Start fade out after delay
       fadeOutTimeout = window.setTimeout(() => {
+        console.log("EraTransition: Fading out");
         setOpacity(0);
       }, 2500);
       
       // Signal completion after animation ends
       completionTimeout = window.setTimeout(() => {
+        console.log("EraTransition: Animation complete, calling onTransitionComplete");
         setIsAnimating(false);
         if (onTransitionComplete) {
           onTransitionComplete();
         }
       }, 3000);
-    } else {
-      // Ensure opacity is reset when not visible
+    } else if (isAnimating) {
+      // If we were animating but isVisible is now false, complete the animation
+      console.log("EraTransition: Visibility turned off during animation, forcing completion");
       setOpacity(0);
+      setIsAnimating(false);
+      if (onTransitionComplete) {
+        onTransitionComplete();
+      }
     }
     
     // Clear all timeouts on cleanup
     return () => {
-      if (fadeInTimeout) window.clearTimeout(fadeInTimeout);
-      if (fadeOutTimeout) window.clearTimeout(fadeOutTimeout);
-      if (completionTimeout) window.clearTimeout(completionTimeout);
+      if (fadeInTimeout) {
+        console.log("EraTransition: Clearing fadeIn timeout");
+        window.clearTimeout(fadeInTimeout);
+      }
+      if (fadeOutTimeout) {
+        console.log("EraTransition: Clearing fadeOut timeout");
+        window.clearTimeout(fadeOutTimeout);
+      }
+      if (completionTimeout) {
+        console.log("EraTransition: Clearing completion timeout");
+        window.clearTimeout(completionTimeout);
+      }
     };
   }, [isVisible, location, year, onTransitionComplete]);
   

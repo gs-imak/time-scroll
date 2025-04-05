@@ -2,39 +2,39 @@
 export const GLOBAL_TIME_PERIODS = [
   {
     id: 'ancient',
-    label: 'Ancient World',
-    yearStart: -3000,
-    yearEnd: -500
+    start: -3000,
+    end: -500,
+    label: 'Ancient World'
   },
   {
     id: 'classical',
-    label: 'Classical Antiquity',
-    yearStart: -500,
-    yearEnd: 500
+    start: -500,
+    end: 500,
+    label: 'Classical Antiquity'
   },
   {
     id: 'medieval',
-    label: 'Medieval Period',
-    yearStart: 500,
-    yearEnd: 1500
+    start: 500,
+    end: 1500,
+    label: 'Medieval Period'
   },
   {
     id: 'renaissance',
-    label: 'Renaissance & Exploration',
-    yearStart: 1500,
-    yearEnd: 1800
+    start: 1500,
+    end: 1800,
+    label: 'Renaissance & Exploration'
   },
   {
     id: 'industrial',
-    label: 'Industrial Age',
-    yearStart: 1800,
-    yearEnd: 1900
+    start: 1800,
+    end: 1900,
+    label: 'Industrial Age'
   },
   {
     id: 'modern',
-    label: 'Modern Era',
-    yearStart: 1900,
-    yearEnd: 2023
+    start: 1900,
+    end: 2023,
+    label: 'Modern Era'
   }
 ];
 
@@ -43,8 +43,10 @@ export const HISTORICAL_EVENTS = [
   // Egypt events
   {
     id: 'great-pyramid-construction',
+    title: 'Great Pyramid Construction',
     name: 'Great Pyramid Construction',
     year: -2560,
+    period: 'ancient',
     locationId: 'egypt',
     latitude: 29.9792,
     longitude: 31.1342,
@@ -53,8 +55,10 @@ export const HISTORICAL_EVENTS = [
   },
   {
     id: 'tutankhamun-reign',
+    title: 'Tutankhamun\'s Reign',
     name: 'Tutankhamun\'s Reign',
     year: -1332,
+    period: 'ancient',
     locationId: 'egypt',
     latitude: 29.9775,
     longitude: 31.1330,
@@ -63,8 +67,10 @@ export const HISTORICAL_EVENTS = [
   },
   {
     id: 'cleopatra-reign',
+    title: 'Cleopatra\'s Reign',
     name: 'Cleopatra\'s Reign',
     year: -51,
+    period: 'classical',
     locationId: 'egypt',
     latitude: 29.9760,
     longitude: 31.1356,
@@ -75,8 +81,10 @@ export const HISTORICAL_EVENTS = [
   // New York events
   {
     id: 'manhattan-purchase',
+    title: 'Purchase of Manhattan',
     name: 'Purchase of Manhattan',
     year: 1626,
+    period: 'renaissance',
     locationId: 'newYork',
     latitude: 40.7128,
     longitude: -74.0060,
@@ -85,8 +93,10 @@ export const HISTORICAL_EVENTS = [
   },
   {
     id: 'nyc-founded',
+    title: 'New York City Founded',
     name: 'New York City Founded',
     year: 1624,
+    period: 'renaissance',
     locationId: 'newYork',
     latitude: 40.7135,
     longitude: -74.0040,
@@ -95,8 +105,10 @@ export const HISTORICAL_EVENTS = [
   },
   {
     id: 'empire-state',
+    title: 'Empire State Building Completed',
     name: 'Empire State Building Completed',
     year: 1931,
+    period: 'modern',
     locationId: 'newYork',
     latitude: 40.7484,
     longitude: -73.9857,

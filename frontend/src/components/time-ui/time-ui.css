@@ -643,47 +643,52 @@
   background: rgba(56, 189, 248, 0.5);
 }
 
-/* Global Time Slider - Centered Design */
+/* Timeline Portal Effect */
+.timeline-portal-effect {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0, 11, 30, 0.5);
+  opacity: 0;
+  pointer-events: none;
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+}
+
+/* Global Time Slider - Simplified */
 .global-time-slider {
   position: fixed;
   bottom: 1.5rem;
   left: 50%;
   transform: translateX(-50%);
   z-index: 90;
-  width: 80%;
-  max-width: 48rem;
-  background: rgba(0, 11, 30, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(0, 174, 255, 0.25);
-  border-radius: 18px;
-  padding: 16px;
-  box-shadow: 
-    0 10px 40px rgba(0, 0, 0, 0.5), 
-    0 0 0 1px rgba(56, 189, 248, 0.15),
-    0 0 20px rgba(56, 189, 248, 0.2);
+  width: 90%;
+  max-width: 55rem;
+  background: rgba(0, 11, 30, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
   overflow: hidden;
-  transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
-}
-
-.time-slider-content {
-  width: 100%;
+  transition: all 0.3s ease;
 }
 
 .time-period-display {
-  margin-bottom: 20px;
+  margin-bottom: 22px;
   position: relative;
   text-align: center;
 }
 
-.time-period-display::after {
+.time-period-display::before {
   content: '';
   position: absolute;
   bottom: -10px;
-  left: 10%;
-  width: 80%;
+  left: 15%;
+  width: 70%;
   height: 1px;
-  background: linear-gradient(to right, transparent, rgba(0, 174, 255, 0.5), transparent);
+  background: rgba(56, 189, 248, 0.3);
 }
 
 .time-period-display h3 {
@@ -692,22 +697,25 @@
   margin: 0 0 8px 0;
   font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 2px;
+  letter-spacing: 1px;
+  position: relative;
+  display: inline-block;
 }
 
 .time-period-info {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
   align-items: center;
 }
 
 .time-period-years {
-  font-size: 1.15rem;
+  font-size: 1.1rem;
   font-weight: 600;
-  color: rgb(0, 174, 255);
-  text-shadow: 0 0 10px rgba(0, 174, 255, 0.6);
+  color: rgb(56, 189, 248);
   letter-spacing: 0.5px;
+  position: relative;
+  z-index: 1;
 }
 
 .time-period-label {
@@ -715,14 +723,15 @@
   font-weight: 700;
   color: white;
   letter-spacing: -0.02em;
-  text-shadow: 0 0 15px rgba(0, 174, 255, 0.3);
+  position: relative;
+  transition: all 0.3s ease;
 }
 
 .time-slider-controls {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 22px;
+  gap: 16px;
+  margin-bottom: 20px;
   position: relative;
 }
 
@@ -730,103 +739,73 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  background: rgba(0, 31, 63, 0.6);
+  background: rgba(15, 23, 42, 0.5);
   color: white;
-  border: 1px solid rgba(0, 174, 255, 0.3);
-  border-radius: 12px;
-  padding: 10px 16px;
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  border-radius: 10px;
+  padding: 10px 20px;
   cursor: pointer;
   transition: all 0.2s ease;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   font-weight: 500;
-  min-width: 90px;
+  min-width: 100px;
   justify-content: center;
+  position: relative;
 }
 
 .time-slider-button:hover:not(:disabled) {
-  background: rgba(0, 174, 255, 0.2);
-  border-color: rgba(0, 174, 255, 0.6);
-  transform: translateY(-2px);
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4), 0 0 10px rgba(0, 174, 255, 0.3);
+  background: rgba(56, 189, 248, 0.15);
+  border-color: rgba(56, 189, 248, 0.3);
 }
 
 .time-slider-button:disabled {
-  opacity: 0.4;
+  opacity: 0.35;
   cursor: not-allowed;
-}
-
-.time-slider-button svg {
-  stroke-width: 2.5px;
-  height: 16px;
-  width: 16px;
 }
 
 .time-slider-track {
   position: relative;
   height: 6px;
   flex-grow: 1;
-  background: rgba(0, 31, 63, 0.4);
+  background: rgba(15, 23, 42, 0.4);
   border-radius: 8px;
-  overflow: hidden;
-  margin: 0 6px;
-}
-
-.time-slider-track::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: 
-    linear-gradient(90deg, 
-      rgba(0, 174, 255, 0.1) 0%, 
-      rgba(0, 174, 255, 0.05) 50%, 
-      rgba(0, 174, 255, 0.1) 100%
-    );
-  z-index: 1;
-  background-size: 200% 100%;
-  animation: shimmer 3s infinite linear;
-}
-
-@keyframes shimmer {
-  0% { background-position: 100% 0; }
-  100% { background-position: -100% 0; }
+  overflow: visible;
+  margin: 0 20px;
 }
 
 .time-slider-progress {
   position: absolute;
   height: 100%;
-  background: linear-gradient(to right, #0077CC, #00AAFF);
+  background: rgba(56, 189, 248, 0.7);
   border-radius: 8px;
-  transition: width 0.5s cubic-bezier(0.25, 1, 0.5, 1);
   z-index: 2;
-  box-shadow: 0 0 10px rgba(0, 174, 255, 0.7);
 }
 
 .time-marker-container {
   position: absolute;
   top: 0;
   transform: translateX(-50%);
-  height: 36px;
+  height: 30px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   z-index: 5;
+  padding: 5px;
+  cursor: pointer;
 }
 
 .time-slider-marker {
   position: absolute;
   top: 50%;
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(15, 23, 42, 0.6);
   transform: translate(-50%, -50%);
   border: 2px solid rgba(255, 255, 255, 0.4);
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+  transition: all 0.2s ease;
   z-index: 5;
 }
 
@@ -836,102 +815,77 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 6px;
-  height: 6px;
+  width: 4px;
+  height: 4px;
   border-radius: 50%;
   background: white;
-  opacity: 0.7;
-  transition: all 0.3s ease;
-}
-
-.time-slider-marker.active {
-  background: rgba(0, 174, 255, 0.5);
-  transform: translate(-50%, -50%) scale(1.3);
-  box-shadow: 0 0 15px rgba(0, 174, 255, 0.9);
-  border-color: rgba(255, 255, 255, 0.95);
-}
-
-.time-slider-marker.active::before {
-  background: white;
-  width: 8px;
-  height: 8px;
-  opacity: 1;
-  box-shadow: 0 0 5px rgba(255, 255, 255, 1);
+  opacity: 0.8;
 }
 
 .time-slider-marker:hover:not(.active) {
-  background: rgba(0, 174, 255, 0.3);
-  transform: translate(-50%, -50%) scale(1.15);
-  border-color: rgba(255, 255, 255, 0.8);
+  background: rgba(56, 189, 248, 0.3);
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+.time-slider-marker.active {
+  background: rgba(56, 189, 248, 0.8);
+  transform: translate(-50%, -50%) scale(1.2);
+  border-color: rgba(255, 255, 255, 0.9);
 }
 
 .time-marker-label {
   position: absolute;
-  bottom: 100%;
-  margin-bottom: 8px;
-  background: rgba(4, 18, 40, 0.9);
-  color: rgb(0, 174, 255);
-  font-size: 0.8rem;
-  font-weight: 600;
+  top: -28px;
+  width: auto;
+  background: rgba(15, 23, 42, 0.7);
+  color: white;
+  font-size: 0.85rem;
+  font-weight: 500;
   padding: 4px 10px;
-  border-radius: 6px;
+  border-radius: 4px;
   white-space: nowrap;
-  transform: translateY(0);
-  transition: transform 0.2s ease, opacity 0.2s ease;
+  transition: opacity 0.2s ease;
   z-index: 10;
-  border: 1px solid rgba(0, 174, 255, 0.3);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5), 0 0 8px rgba(0, 174, 255, 0.3);
   pointer-events: none;
-  letter-spacing: 0.5px;
+  opacity: 0;
+  visibility: hidden;
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-.time-marker-label::after {
-  content: '';
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  border-width: 5px;
-  border-style: solid;
-  border-color: rgba(4, 18, 40, 0.9) transparent transparent transparent;
+.time-marker-label.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.time-marker-container:hover .time-marker-label {
+  opacity: 1;
+  visibility: visible;
 }
 
 .visible-events-info {
   text-align: center;
   color: rgba(255, 255, 255, 0.7);
   font-size: 0.95rem;
-  background: rgba(0, 31, 63, 0.4);
-  border-radius: 12px;
-  padding: 10px 16px;
+  padding: 10px 12px;
   letter-spacing: 0.5px;
-  position: relative;
-  overflow: hidden;
 }
 
-.visible-events-info::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(to right, transparent, rgba(0, 174, 255, 0.5), transparent);
+.event-count {
+  position: relative;
+  display: inline-block;
+  margin: 0 3px;
 }
 
 .event-count span {
-  color: rgb(0, 174, 255);
+  color: rgb(56, 189, 248);
   font-weight: 600;
   position: relative;
 }
 
-.event-count span::after {
-  content: '';
-  position: absolute;
-  bottom: -2px;
-  left: 0;
-  width: 100%;
-  height: 1px;
-  background: rgba(0, 174, 255, 0.6);
+/* Simplified animation for time period transition */
+.global-time-slider.animating {
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
 }
 
 /* Historical Event Markers */
@@ -1083,4 +1037,116 @@
   backdrop-filter: blur(2px);
   -webkit-backdrop-filter: blur(2px);
   z-index: 999;
+}
+
+/* Additional animations for global time slider */
+.global-time-slider.animating {
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+}
+
+.animating .time-period-years,
+.animating .time-period-label {
+  animation: text-flash 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes text-flash {
+  0% {
+    opacity: 0.5;
+    transform: scale(0.9);
+    filter: blur(3px);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+    filter: blur(0);
+    text-shadow: 0 0 20px rgba(56, 189, 248, 0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+    filter: blur(0);
+  }
+}
+
+.animating .time-slider-progress {
+  transition: width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), 
+    background-color 0.5s ease,
+    box-shadow 0.5s ease;
+  box-shadow: 0 0 25px rgba(56, 189, 248, 0.8);
+}
+
+.animating .time-slider-track::after {
+  animation: shimmer 3s infinite linear;
+  opacity: 1;
+}
+
+.animating .time-marker-container {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.animating .time-slider-marker.active {
+  animation: marker-pulse 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes marker-pulse {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    box-shadow: 0 0 20px rgba(56, 189, 248, 0.5);
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.5);
+    box-shadow: 0 0 30px rgba(56, 189, 248, 1);
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.3);
+    box-shadow: 
+      0 0 0 5px rgba(56, 189, 248, 0.2),
+      0 0 20px rgba(56, 189, 248, 0.8);
+  }
+}
+
+.animating .event-count span {
+  animation: count-pulse 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes count-pulse {
+  0% {
+    color: rgba(56, 189, 248, 0.5);
+  }
+  50% {
+    color: rgba(255, 255, 255, 1);
+  }
+  100% {
+    color: rgb(56, 189, 248);
+  }
+}
+
+.time-slider-track::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(56, 189, 248, 0.05) 0%,
+    rgba(56, 189, 248, 0.15) 20%,
+    rgba(56, 189, 248, 0.15) 80%,
+    rgba(56, 189, 248, 0.05) 100%
+  );
+  border-radius: 8px;
+  opacity: 0.5;
+  z-index: 1;
+}
+
+.time-slider-progress::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: 15px;
+  background: linear-gradient(to right, rgba(56, 189, 248, 0), rgba(255, 255, 255, 0.7));
+  border-radius: 0 10px 10px 0;
 } 
