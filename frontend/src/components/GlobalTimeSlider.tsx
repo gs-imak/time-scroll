@@ -192,10 +192,10 @@ export const GlobalTimeSlider: React.FC<GlobalTimeSliderProps> = ({
                   style={{ left: `${position}%` }}
                   onMouseEnter={() => handleMarkerHover(index)}
                   onMouseLeave={handleMarkerLeave}
+                  onClick={() => handlePeriodChange(index)}
                 >
                   <div 
                     className={`time-slider-marker ${isActive ? 'active' : ''}`}
-                    onClick={() => handlePeriodChange(index)}
                   ></div>
                   <div className={`time-marker-label ${isActive || isHovered ? 'visible' : ''}`}>
                     {period.label}

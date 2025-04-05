@@ -669,7 +669,7 @@
   -webkit-backdrop-filter: blur(8px);
   border: 1px solid rgba(56, 189, 248, 0.25);
   border-radius: 16px;
-  padding: 1.5rem;
+  padding: 1.5rem 1.5rem 1rem;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
   overflow: hidden;
   transition: all 0.3s ease;
@@ -733,6 +733,7 @@
   gap: 16px;
   margin-bottom: 20px;
   position: relative;
+  justify-content: center;
 }
 
 .time-slider-button {
@@ -771,6 +772,9 @@
   border-radius: 8px;
   overflow: visible;
   margin: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .time-slider-progress {
@@ -779,11 +783,12 @@
   background: rgba(56, 189, 248, 0.7);
   border-radius: 8px;
   z-index: 2;
+  top: 0;
+  left: 0;
 }
 
 .time-marker-container {
   position: absolute;
-  top: 0;
   transform: translateX(-50%);
   height: 30px;
   display: flex;
@@ -793,11 +798,12 @@
   z-index: 5;
   padding: 5px;
   cursor: pointer;
+  top: 50%;
+  margin-top: -15px; /* Half of the container height to center it */
 }
 
 .time-slider-marker {
   position: absolute;
-  top: 50%;
   width: 18px;
   height: 18px;
   border-radius: 50%;
@@ -807,6 +813,8 @@
   cursor: pointer;
   transition: all 0.2s ease;
   z-index: 5;
+  top: 50%;
+  left: 50%;
 }
 
 .time-slider-marker::before {
@@ -835,7 +843,7 @@
 
 .time-marker-label {
   position: absolute;
-  top: -28px;
+  top: -38px;
   width: auto;
   background: rgba(15, 23, 42, 0.7);
   color: white;
@@ -851,6 +859,8 @@
   visibility: hidden;
   border: 1px solid rgba(56, 189, 248, 0.2);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 .time-marker-label.visible {

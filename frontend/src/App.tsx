@@ -439,16 +439,15 @@ function App() {
     // Update state immediately to avoid lag
     setCurrentTimePeriodIndex(periodIndex);
     
-    // Clear previous visualizations and add location pins back
+    // Remove all entities including location pins when in Egypt historical view
     cesiumViewer.current.entities.removeAll();
     
+    // Only show specific time period visualization for Egypt
+    // Don't add location pins for historical periods to avoid confusion
     console.log(`Adding visualization for period: ${PYRAMID_TIME_PERIODS[periodIndex].id}`);
-    // Add visualization for the new period
-    const newPeriodId = PYRAMID_TIME_PERIODS[periodIndex].id;
-    addTimePeriodVisualization(newPeriodId);
+    addTimePeriodVisualization(PYRAMID_TIME_PERIODS[periodIndex].id);
     
     // The transition will automatically fade out and call onTransitionComplete
-    // We don't need to manually set showEraTransition to false here
   };
   
   // Function to add visualization for a specific time period
@@ -462,6 +461,12 @@ function App() {
     );
     
     try {
+      // Check if this is the modern era - only in this case we show location pins
+      const isModernEra = periodId === "modern-era";
+      
+      // For historical time periods, we only show the historical visualization
+      // No location pins to avoid confusion with modern map features
+      
       switch(periodId) {
         case "construction-begin":
           // Add early construction visualization
@@ -531,8 +536,10 @@ function App() {
           break;
           
         case "modern-era":
-          // Modern pyramids - Cesium's default imagery is already showing them
-          // We don't need to add anything special
+          // Modern era - add location pins since we're showing the modern map
+          if (isModernEra) {
+            addLocationPins();
+          }
           break;
       }
     } catch (error) {
@@ -637,16 +644,16 @@ function App() {
       setCurrentTimePeriodIndex(4); // Start with modern day view
       setSelectedPeriod(PYRAMID_TIME_PERIODS[4]); // Set the selected period for the description panel
       
-      // Clear any existing entities except location pins
+      // For modern era (index 4), keep the location pins
+      // For other historical eras, hide them to avoid confusion
       if (cesiumViewer.current) {
-        // Preserve location pins while removing other entities
-        const entities = cesiumViewer.current.entities.values;
-        for (let i = entities.length - 1; i >= 0; i--) {
-          const entity = entities[i];
-          // Remove entities that are not location pins
-          if (!entity.id || !entity.id.startsWith('location_pin_')) {
-            cesiumViewer.current.entities.remove(entity);
-          }
+        // For modern era, show the location pins
+        cesiumViewer.current.entities.removeAll();
+        
+        // Only add location pins for modern era view
+        if (PYRAMID_TIME_PERIODS[4].id === "modern-era") {
+          addLocationPins();
+          console.log("Added location pins for modern view");
         }
         
         // Add the visualization for modern era
@@ -1061,16 +1068,21 @@ function App() {
       setShowDescriptionPanel(false);
       setSelectedPeriod(null);
       
-      // Remove all entities and add back location pins
+      console.log("Home button clicked, resetting to global view");
+      
+      // Remove all entities first
       if (cesiumViewer.current) {
         cesiumViewer.current.entities.removeAll();
+        
+        // Add back location pins for global view
         addLocationPins();
+        console.log("Added location pins for global view");
+        
+        // Reset to filtered events for global view immediately
+        handleEventsFiltered(HISTORICAL_EVENTS.filter(
+          event => event.period === currentGlobalPeriod || currentGlobalPeriod === 'all'
+        ));
       }
-      
-      // Reset to filtered events for global view immediately
-      handleEventsFiltered(HISTORICAL_EVENTS.filter(
-        event => event.period === currentGlobalPeriod || currentGlobalPeriod === 'all'
-      ));
     };
     
     if (homeButton) {
@@ -1318,6 +1330,17 @@ function App() {
               year={transitionData.year}
               onTransitionComplete={() => {
                 console.log("App received transition complete callback");
+                // Check if we need to refresh the view after transition
+                if (cesiumViewer.current && currentLocation === "egypt") {
+                  // After transition, make sure we have proper pins visibility:
+                  // - Show pins only for modern era (index 4)
+                  // - Hide pins for historical eras (indexes 0-3)
+                  const isModernEra = currentTimePeriodIndex === 4;
+                  
+                  // Force a render to refresh the scene
+                  cesiumViewer.current.scene.requestRender();
+                }
+                
                 // Introduce a small delay to ensure state updates properly
                 setTimeout(() => {
                   setShowEraTransition(false);
