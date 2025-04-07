@@ -15,9 +15,12 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@types/three": "^0.175.0",
     "cesium": "^1.128.0",
+    "gsap": "^3.12.7",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react-dom": "^19.1.0",
+    "three": "^0.175.0"
   },
   "devDependencies": {
     "@types/cesium": "^1.67.14",
