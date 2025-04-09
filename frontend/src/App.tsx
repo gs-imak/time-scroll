@@ -209,8 +209,8 @@ function App() {
       cesiumViewer.current.scene.globe.showGroundAtmosphere = false;
       cesiumViewer.current.scene.globe.maximumScreenSpaceError = 2; // Lower for better quality
       
-      // Basic camera settings
-      cesiumViewer.current.scene.screenSpaceCameraController.minimumZoomDistance = 10000;
+      // Set strict global zoom limits
+      cesiumViewer.current.scene.screenSpaceCameraController.minimumZoomDistance = 800000; // Restrict how close users can zoom
       cesiumViewer.current.scene.screenSpaceCameraController.maximumZoomDistance = 25000000;
       
       // Disable lighting for better performance
@@ -377,15 +377,6 @@ function App() {
       // Force immediate rendering to reduce lag
       cesiumViewer.current.scene.requestRender();
       
-      // Disable camera constraints temporarily
-      const sscc = cesiumViewer.current.scene.screenSpaceCameraController;
-      const oldMinimumZoomDistance = sscc.minimumZoomDistance;
-      const oldMaximumZoomDistance = sscc.maximumZoomDistance;
-      
-      // Allow closer zooming for more precision
-      sscc.minimumZoomDistance = 50; // Minimum zoom level (closer to surface)
-      sscc.maximumZoomDistance = 30000000;
-      
       // Get the target position in Cartesian3
       const destination = window.Cesium.Cartesian3.fromDegrees(longitude, latitude, height);
       
@@ -401,8 +392,6 @@ function App() {
         maximumHeight: 5000000, // Limit the maximum height during flight
         pitchAdjustHeight: 0, // Disable automatic pitch adjustment during flight
         complete: function() {
-          // Don't restore old constraints as it might prevent zooming in
-          // Just keep the new values that allow more zoom flexibility
           console.log("Flight complete");
           
           // Force render to ensure everything is displayed
@@ -652,8 +641,13 @@ function App() {
       setShowPyramidAnimation(true);
     }
     
+    // Set minimum allowed zoom height for Egypt
+    const MIN_EGYPT_HEIGHT = 2000;
+    
     // Update camera change handler to keep animation positioned correctly
+    // and enforce zoom limits
     const cameraChangeHandler = () => {
+      // First update animation position
       const updatedScreenPosition = window.Cesium.SceneTransforms.wgs84ToWindowCoordinates(
         cesiumViewer.current.scene,
         window.Cesium.Cartesian3.fromDegrees(location.longitude, location.latitude)
@@ -664,6 +658,43 @@ function App() {
           x: updatedScreenPosition.x - 150,
           y: updatedScreenPosition.y - 150
         });
+      }
+
+      // Then enforce minimum height restriction
+      const cameraPosition = cesiumViewer.current.camera.position;
+      const cameraCartographic = window.Cesium.Cartographic.fromCartesian(cameraPosition);
+      const currentHeight = cameraCartographic.height;
+      
+      // If camera is too close, force it back to minimum height
+      if (currentHeight < MIN_EGYPT_HEIGHT) {
+        console.log(`Enforcing minimum height: ${currentHeight} -> ${MIN_EGYPT_HEIGHT}`);
+        const surfacePoint = window.Cesium.Cartesian3.fromRadians(
+          cameraCartographic.longitude,
+          cameraCartographic.latitude,
+          0
+        );
+        const direction = window.Cesium.Cartesian3.normalize(
+          window.Cesium.Cartesian3.subtract(
+            cameraPosition, 
+            surfacePoint, 
+            new window.Cesium.Cartesian3()
+          ),
+          new window.Cesium.Cartesian3()
+        );
+        
+        // Calculate new position at minimum height
+        const newPosition = window.Cesium.Cartesian3.add(
+          surfacePoint,
+          window.Cesium.Cartesian3.multiplyByScalar(
+            direction,
+            MIN_EGYPT_HEIGHT,
+            new window.Cesium.Cartesian3()
+          ),
+          new window.Cesium.Cartesian3()
+        );
+        
+        // Set camera to new position while preserving direction
+        cesiumViewer.current.camera.position = newPosition;
       }
     };
 
