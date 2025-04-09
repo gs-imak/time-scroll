@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import './App.css';
 import './styles/cesium.css';
 import { MiniTimeline, TimeDial, EraTransition, DescriptionPanel } from './components/time-ui';
@@ -6,6 +6,7 @@ import { LocationsPanel } from './components/LocationsPanel';
 import { GlobalTimeSlider } from './components/GlobalTimeSlider';
 import { HistoricalEventMarker } from './components/HistoricalEventMarker';
 import { EventDetailModal } from './components/EventDetailModal';
+import { PyramidAnimation } from './components/PyramidAnimation';
 import { GLOBAL_TIME_PERIODS, HISTORICAL_EVENTS } from './constants/historyData';
 
 // Get the interfaces from the GlobalTimeSlider component
@@ -134,17 +135,14 @@ function App() {
   // Add a loading state for location transitions
   const [isLocationTransitioning, setIsLocationTransitioning] = useState(false);
 
-  // Add a new state to track whether we should show the global timeline
-  const [shouldShowGlobalTimeline, setShouldShowGlobalTimeline] = useState(true);
+  const [showPyramidAnimation, setShowPyramidAnimation] = useState(false);
+  const [pyramidAnimationPosition, setPyramidAnimationPosition] = useState({ x: 0, y: 0 });
 
   const mapboxToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
   const cesiumToken = import.meta.env.VITE_CESIUM_ACCESS_TOKEN;
   
   // Create a reference to Cesium so we can use it throughout the component
   const Cesium = window.Cesium;
-
-  // Add a cleanup effect when changing locations
-  const previousLocation = useRef<string | null>(null);
 
   useEffect(() => {
     if (showLandingPage) return; // Don't initialize Cesium on the landing page
@@ -249,9 +247,38 @@ function App() {
         duration: 0
       });
       
-      // Add pins for our locations via the dedicated function (instead of duplicating code)
-      addLocationPins();
+      // Add pins for our locations
+      const locationEntities: any[] = [];
+      Object.values(LOCATIONS).forEach(location => {
+        // Create a pin entity with improved visibility options
+        const entity = cesiumViewer.current.entities.add({
+          id: `location_pin_${location.name.replace(/\s+/g, '_').toLowerCase()}`,
+          name: location.name,
+          position: window.Cesium.Cartesian3.fromDegrees(location.longitude, location.latitude),
+          billboard: {
+            image: buildPin(location.emoji),
+            verticalOrigin: window.Cesium.VerticalOrigin.BOTTOM,
+            scale: 0.8, // Smaller scale for Google Maps style
+            heightReference: window.Cesium.HeightReference.CLAMP_TO_GROUND,
+            disableDepthTestDistance: Number.POSITIVE_INFINITY // Always show on top
+          },
+          label: {
+            text: location.name,
+            font: '12pt sans-serif', // Smaller font
+            style: window.Cesium.LabelStyle.FILL_AND_OUTLINE,
+            outlineWidth: 2,
+            verticalOrigin: window.Cesium.VerticalOrigin.TOP,
+            pixelOffset: new window.Cesium.Cartesian2(0, -8), // Adjusted for smaller icon
+            showBackground: true,
+            backgroundColor: new window.Cesium.Color(0.1, 0.1, 0.1, 0.7),
+            backgroundPadding: new window.Cesium.Cartesian2(7, 5),
+            horizontalOrigin: window.Cesium.HorizontalOrigin.CENTER
+          }
+        });
+        locationEntities.push(entity);
+      });
       
+      setEntities(locationEntities);
       console.log("Viewer created successfully");
       
       // Set globe as loaded immediately
@@ -288,12 +315,9 @@ function App() {
     // When the map is loaded, initialize the filtered events
     // This ensures we have event markers instead of location pins
     if (cesiumViewer.current) {
-      const filteredEvents = HISTORICAL_EVENTS.filter(
-        event => event.period === currentGlobalPeriod || currentGlobalPeriod === 'all'
-      );
-      handleEventsFiltered(filteredEvents);
+      handleEventsFiltered(HISTORICAL_EVENTS);
     }
-  }, [cesiumLoaded, showLandingPage, currentGlobalPeriod]);
+  }, [cesiumLoaded, showLandingPage]);
 
   // Function to create a pin with emoji
   const buildPin = (emoji: string) => {
@@ -434,35 +458,24 @@ function App() {
   const addTimePeriodVisualization = (periodId: string) => {
     if (!cesiumViewer.current) return;
     
+    const pyramidPosition = window.Cesium.Cartesian3.fromDegrees(
+      31.1342, // longitude
+      29.9792, // latitude
+      0 // height
+    );
+    
     try {
-      // Clear any existing overlays first
-      if (activeOverlay) {
-        cesiumViewer.current.entities.remove(activeOverlay);
-        setActiveOverlay(null);
-      }
-      
-      const pyramidPosition = window.Cesium.Cartesian3.fromDegrees(
-        31.1342,
-        29.9792,
-        0
-      );
-      
-      // Check if this is the modern era
+      // Check if this is the modern era - only in this case we show location pins
       const isModernEra = periodId === "modern-era";
+      
+      // For historical time periods, we only show the historical visualization
+      // No location pins to avoid confusion with modern map features
       
       switch(periodId) {
         case "construction-begin":
-          // Remove any existing entities with the same IDs first
-          cesiumViewer.current.entities.values.forEach((entity: any) => {
-            if (entity.id && entity.id.startsWith('construction_')) {
-              cesiumViewer.current.entities.remove(entity);
-            }
-          });
-          
           // Add early construction visualization
           for (let i = 0; i < 10; i++) {
             cesiumViewer.current.entities.add({
-              id: `construction_block_${i}`,
               position: window.Cesium.Cartesian3.fromDegrees(
                 31.1342 + (Math.random() - 0.5) * 0.005,
                 29.9792 + (Math.random() - 0.5) * 0.005,
@@ -477,7 +490,6 @@ function App() {
           
           // Add a simple foundation
           const foundation = cesiumViewer.current.entities.add({
-            id: 'pyramid_foundation',
             position: window.Cesium.Cartesian3.fromDegrees(31.1342, 29.9792, 5),
             box: {
               dimensions: new window.Cesium.Cartesian3(100, 100, 10),
@@ -536,32 +548,20 @@ function App() {
       }
     } catch (error) {
       console.error("Error adding time period visualization:", error);
-      throw error; // Re-throw to handle in the calling function
     }
   };
   
-  // Modify the addLocationPins function to properly handle existing pins
+  // Function to add location pins
   const addLocationPins = () => {
     if (!cesiumViewer.current) return;
-    
-    // First, remove any existing location pins to prevent duplicates
-    const entities = cesiumViewer.current.entities.values.slice();
-    for (let i = 0; i < entities.length; i++) {
-      const entity = entities[i];
-      if (entity.id && entity.id.startsWith('location_pin_')) {
-        cesiumViewer.current.entities.remove(entity);
-      }
-    }
     
     // Keep track of pins created for better management
     const locationPinsArray: any[] = [];
     
     Object.values(LOCATIONS).forEach(location => {
       // Create a pin entity with improved visibility options
-      const entityId = `location_pin_${location.name.replace(/\s+/g, '_').toLowerCase()}`;
-      
       const pinEntity = cesiumViewer.current.entities.add({
-        id: entityId,
+        id: `location_pin_${location.name.replace(/\s+/g, '_').toLowerCase()}`,
         name: location.name,
         position: window.Cesium.Cartesian3.fromDegrees(location.longitude, location.latitude),
         billboard: {
@@ -599,24 +599,35 @@ function App() {
     
     console.log("Starting transition to New York");
     
-    // Update states
+    // First update the state
     setCurrentLocation("newYork");
-    setShouldShowGlobalTimeline(true);
+    setShowTimeSlider(false);
     
     // Then fly to location
     flyToLocation(location.longitude, location.latitude, location.height, location.name);
     
-    // Update view
-    if (cesiumViewer.current) {
-      cesiumViewer.current.entities.removeAll();
-      addLocationPins();
-      
-      // Add filtered events for the current global period
-      handleEventsFiltered(HISTORICAL_EVENTS.filter(
-        event => event.locationId === 'newYork' && 
-        (event.period === currentGlobalPeriod || currentGlobalPeriod === 'all')
-      ));
-    }
+    // Clear any existing entities and prepare global events after a short delay
+    setTimeout(() => {
+      if (cesiumViewer.current) {
+        console.log("Preparing New York view");
+        
+        // Preserve location pins while removing other entities
+        const entities = cesiumViewer.current.entities.values;
+        for (let i = entities.length - 1; i >= 0; i--) {
+          const entity = entities[i];
+          // Remove entities that are not location pins
+          if (!entity.id || !entity.id.startsWith('location_pin_')) {
+            cesiumViewer.current.entities.remove(entity);
+          }
+        }
+        
+        // Add filtered events for the current global period
+        handleEventsFiltered(HISTORICAL_EVENTS.filter(
+          event => event.locationId === 'newYork' && 
+          (event.period === currentGlobalPeriod || currentGlobalPeriod === 'all')
+        ));
+      }
+    }, 800);
   };
   
   const flyToEgypt = () => {
@@ -624,86 +635,130 @@ function App() {
     
     console.log("Starting transition to Egypt");
     
-    try {
-      // First, clear all entities to start fresh
-      if (cesiumViewer.current) {
-        cesiumViewer.current.entities.removeAll();
-      }
+    // First update the current location state to trigger UI updates
+    setCurrentLocation("egypt");
+    
+    // Show the animation immediately
+    const screenPosition = window.Cesium.SceneTransforms.wgs84ToWindowCoordinates(
+      cesiumViewer.current.scene,
+      window.Cesium.Cartesian3.fromDegrees(location.longitude, location.latitude)
+    );
+    
+    if (screenPosition) {
+      setPyramidAnimationPosition({
+        x: screenPosition.x - 150,
+        y: screenPosition.y - 150
+      });
+      setShowPyramidAnimation(true);
+    }
+    
+    // Update camera change handler to keep animation positioned correctly
+    const cameraChangeHandler = () => {
+      const updatedScreenPosition = window.Cesium.SceneTransforms.wgs84ToWindowCoordinates(
+        cesiumViewer.current.scene,
+        window.Cesium.Cartesian3.fromDegrees(location.longitude, location.latitude)
+      );
       
-      // First, update all states synchronously
-      setCurrentLocation("egypt");
-      setShouldShowGlobalTimeline(false);
+      if (updatedScreenPosition) {
+        setPyramidAnimationPosition({
+          x: updatedScreenPosition.x - 150,
+          y: updatedScreenPosition.y - 150
+        });
+      }
+    };
+
+    // Add the camera change listener
+    cesiumViewer.current.scene.camera.changed.addEventListener(cameraChangeHandler);
+    
+    // Then fly to the location
+    flyToLocation(location.longitude, location.latitude, location.height, location.name);
+
+    // Set the default time period to modern era (index 4) with proper timing
+    setTimeout(() => {
+      console.log("Setting up Egypt time periods");
       setCurrentTimePeriodIndex(4);
       setSelectedPeriod(PYRAMID_TIME_PERIODS[4]);
       
-      // Set up transition data and trigger era transition only once
-      setTransitionData({
-        location: location.name,
-        year: PYRAMID_TIME_PERIODS[4].year
-      });
-      setShowEraTransition(true);
-      
-      // Then fly to location
-      flyToLocation(location.longitude, location.latitude, location.height, location.name);
-      
-      // Add visualization after flight completes
-      setTimeout(() => {
-        if (cesiumViewer.current) {
-          try {
-            // Add the visualization without triggering additional transitions
-            addTimePeriodVisualization("modern-era");
-          } catch (error) {
-            console.error('Error adding visualization:', error);
-          }
+      if (cesiumViewer.current) {
+        cesiumViewer.current.entities.removeAll();
+        
+        if (PYRAMID_TIME_PERIODS[4].id === "modern-era") {
+          addLocationPins();
         }
-      }, 200);
+        
+        addTimePeriodVisualization("modern-era");
+      }
       
-    } catch (error) {
-      console.error('Error in flyToEgypt:', error);
+      setTimeout(() => {
+        setTransitionData({
+          location: location.name,
+          year: PYRAMID_TIME_PERIODS[4].year
+        });
+        setShowEraTransition(true);
+      }, 300);
+    }, 800);
+  };
+
+  // Function to handle global time period change
+  const handleGlobalTimePeriodChange = (period: TimePeriod) => {
+    // Update the current global period using the period id
+    if (period.id) {
+      setCurrentGlobalPeriod(period.id);
+    } else {
+      // Fallback to finding by start/end dates
+      const periodId = GLOBAL_TIME_PERIODS.findIndex(p => 
+        p.start === period.start && p.end === period.end);
+      
+      if (periodId >= 0) {
+        setCurrentGlobalPeriod(String(periodId));
+      }
     }
+    
+    console.log(`Switched to period: ${period.label}, ${period.start} - ${period.end}`);
   };
 
   // Function to handle filtering events by time period
-  const handleEventsFiltered = useCallback((filteredEvents: HistoricalEvent[]) => {
-    if (!cesiumViewer.current) return;
+  const handleEventsFiltered = (filteredEvents: HistoricalEvent[]) => {
+    // Only update if the events have actually changed
+    if (JSON.stringify(filteredEvents) === JSON.stringify(visibleEvents)) {
+      return;
+    }
+
+    setVisibleEvents(filteredEvents);
     
-    try {
-      // Clear all existing entities first
-      cesiumViewer.current.entities.removeAll();
+    // Update the map with visible events
+    if (cesiumViewer.current) {
+      // Store references to all current entities
+      const entities = cesiumViewer.current.entities.values;
       
-      // Add location pins first
-      addLocationPins();
-      
-      // Then add filtered event markers
-      filteredEvents.forEach(event => {
-        if (event.latitude && event.longitude) {
-          addEventMarker(event);
+      // First, remove only event markers (not location pins)
+      for (let i = entities.length - 1; i >= 0; i--) {
+        const entity = entities[i];
+        // If entity ID doesn't start with "location_pin_", it's an event marker or other entity
+        if (!entity.id || !entity.id.startsWith('location_pin_')) {
+          cesiumViewer.current.entities.remove(entity);
         }
-      });
+      }
       
-      // Update state only once at the end
-      setVisibleEvents(filteredEvents);
+      // Check if we need to add location pins (none exist)
+      const hasPins = entities.some(e => e.id && e.id.startsWith('location_pin_'));
+      if (!hasPins && !currentLocation) {
+        addLocationPins();
+      }
+      
+      // Then add any filtered event markers
+      if (filteredEvents.length > 0) {
+        filteredEvents.forEach(event => {
+          if (event.latitude && event.longitude) {
+            addEventMarker(event);
+          }
+        });
+      }
       
       // Force a render to refresh the scene
       cesiumViewer.current.scene.requestRender();
-    } catch (error) {
-      console.error('Error in handleEventsFiltered:', error);
     }
-  }, []);
-
-  // Function to handle global time period change
-  const handleGlobalTimePeriodChange = useCallback((period: TimePeriod) => {
-    const periodId = period.id || 'all';
-    setCurrentGlobalPeriod(periodId);
-    
-    // Only filter events if we're showing the global timeline
-    if (shouldShowGlobalTimeline && cesiumViewer.current) {
-      const filteredEvents = HISTORICAL_EVENTS.filter(
-        event => event.period === periodId || periodId === 'all'
-      );
-      handleEventsFiltered(filteredEvents);
-    }
-  }, [shouldShowGlobalTimeline, handleEventsFiltered]);
+  };
 
   // New function to handle era selection on landing page
   const handleEraSelection = (eraId: string) => {
@@ -819,95 +874,9 @@ function App() {
     setShowDescriptionPanel(false);
   };
 
-  // Reset to global view and clear all location-specific UI elements
-  const resetToGlobalView = useCallback(() => {
-    // Reset location and timeline state
-    setCurrentLocation(null);
-    
-    // Reset UI elements
-    setShowDescriptionPanel(false);
-    setSelectedPeriod(null);
-    setShowEraTransition(false);
-    
-    // Clear the session storage flag when returning to global view
-    // This ensures the transition will show again next time
-    sessionStorage.removeItem('egypt_transition_shown');
-    
-    // Ensure we're showing the global timeline
-    setShouldShowGlobalTimeline(true);
-    
-    // Reset any transition states
-    setIsLocationTransitioning(false);
-    
-    console.log("Reset to global view");
-    
-    // Remove all entities first
-    if (cesiumViewer.current) {
-      cesiumViewer.current.entities.removeAll();
-      
-      // Add back location pins for global view
-      addLocationPins();
-      console.log("Added location pins for global view");
-      
-      // Reset to filtered events for global view immediately
-      handleEventsFiltered(HISTORICAL_EVENTS.filter(
-        event => event.period === currentGlobalPeriod || currentGlobalPeriod === 'all'
-      ));
-      
-      // Force resetting state and UI to ensure proper transitions when locations are reselected
-      setTimeout(() => {
-        // Clear any stale state
-        setCurrentTimePeriodIndex(0);
-        setActiveOverlay(null);
-        
-        // Force a scene render to update UI
-        if (cesiumViewer.current) {
-          cesiumViewer.current.scene.requestRender();
-        }
-      }, 100);
-    }
-  }, [currentGlobalPeriod, handleEventsFiltered]);
-
-  // When the Cesium viewer is initialized, add event listener for home button
-  useEffect(() => {
-    if (!cesiumViewer.current || !cesiumLoaded) return;
-    
-    // Add a camera changed event listener to detect when home button is clicked
-    const cameraChangedEventRemove = cesiumViewer.current.camera.changed.addEventListener(() => {
-      // Check if camera is at or close to the default home position
-      const cameraPosition = cesiumViewer.current.camera.position;
-      const cameraHeight = window.Cesium.Cartographic.fromCartesian(cameraPosition).height;
-      
-      // If we're zoomed out significantly, assume we're back at home view
-      if (cameraHeight > 10000000 && currentLocation) {
-        resetToGlobalView();
-      }
-    });
-    
-    // Add an event listener specifically for the home button
-    const homeButton = document.querySelector('.cesium-button-home');
-    
-    // Define a named function handler for better cleanup
-    const handleHomeButtonClick = () => {
-      resetToGlobalView();
-    };
-    
-    if (homeButton) {
-      homeButton.addEventListener('click', handleHomeButtonClick);
-    }
-    
-    // Clean up event listeners on unmount
-    return () => {
-      cameraChangedEventRemove();
-      if (homeButton) {
-        homeButton.removeEventListener('click', handleHomeButtonClick);
-      }
-    };
-  }, [cesiumViewer.current, cesiumLoaded, currentLocation, resetToGlobalView]);
-
-  // Modify the handleLocationSelect function to better handle state resets
+  // Modify the handleLocationSelect function to prevent rapid multiple clicks
   const handleLocationSelect = (locationId: string) => {
-    // Prevent action if already transitioning
+    // Prevent action if already transitioning to a location
     if (isLocationTransitioning) {
       console.log("Location transition already in progress, ignoring click");
       return;
@@ -916,19 +885,54 @@ function App() {
     // Set transitioning state to prevent multiple clicks
     setIsLocationTransitioning(true);
     
-    try {
-      // Clear any previous state that might interfere with transitions
-      setShowEraTransition(false);
+    // If clicking the same location that's already selected, ensure the timeline is shown
+    if (locationId === currentLocation) {
+      console.log(`Already at location ${locationId}, ensuring timeline is shown`);
       
-      // Handle new location selection
-      if (locationId === 'newYork') {
-        flyToNewYork();
-      } else if (locationId === 'egypt') {
-        flyToEgypt();
+      if (locationId === 'egypt' && !showEraTransition) {
+        // Force refresh the Egypt timeline
+        setCurrentTimePeriodIndex(4); // Reset to modern era
+        setSelectedPeriod(PYRAMID_TIME_PERIODS[4]);
+        
+        if (cesiumViewer.current) {
+          // Preserve location pins while removing other entities
+          const entities = cesiumViewer.current.entities.values;
+          for (let i = entities.length - 1; i >= 0; i--) {
+            const entity = entities[i];
+            // Remove entities that are not location pins
+            if (!entity.id || !entity.id.startsWith('location_pin_')) {
+              cesiumViewer.current.entities.remove(entity);
+            }
+          }
+          
+          // Then ensure pins are visible
+          const hasPins = cesiumViewer.current.entities.values.some(e => e.id && e.id.startsWith('location_pin_'));
+          if (!hasPins) {
+            addLocationPins();
+          }
+          
+          // Add modern era visualization
+          addTimePeriodVisualization("modern-era");
+        }
+        
+        // Show the transition effect to make it clear something happened
+        setTransitionData({
+          location: LOCATIONS.egypt.name,
+          year: PYRAMID_TIME_PERIODS[4].year
+        });
+        setShowEraTransition(true);
       }
-    } catch (error) {
-      console.error('Error in handleLocationSelect:', error);
-      setIsLocationTransitioning(false); // Reset transitioning state on error
+      
+      // Clear transition state after a short delay
+      setTimeout(() => setIsLocationTransitioning(false), 300);
+      return;
+    }
+    
+    // Handle new location selection
+    if (locationId === 'newYork') {
+      flyToNewYork();
+    } else if (locationId === 'egypt') {
+      flyToEgypt();
     }
     
     // Clear transition state after location change animation completes
@@ -1054,6 +1058,79 @@ function App() {
     setShowEventDetail(false);
   };
 
+  // Update the camera change listener to properly handle zoom levels
+  useEffect(() => {
+    if (!cesiumViewer.current || !cesiumLoaded) return;
+    
+    const handleCameraChange = () => {
+      // Check if camera is at or close to the default home position
+      const cameraPosition = cesiumViewer.current.camera.position;
+      const cameraHeight = window.Cesium.Cartographic.fromCartesian(cameraPosition).height;
+      
+      // If we're zoomed out significantly or too close, hide the animation
+      if (cameraHeight > 10000000 || cameraHeight < 1000) {
+        setShowPyramidAnimation(false);
+      }
+    };
+
+    // Add the camera changed event listener
+    const cameraChangedEventRemove = cesiumViewer.current.camera.changed.addEventListener(handleCameraChange);
+    
+    // Add an event listener specifically for the home button
+    const homeButton = document.querySelector('.cesium-button-home');
+    
+    const handleHomeButtonClick = () => {
+      // When home button is clicked, reset all location-specific state
+      setCurrentLocation(null);
+      setShowPyramidAnimation(false);
+      setShowDescriptionPanel(false);
+      setSelectedPeriod(null);
+      
+      if (cesiumViewer.current) {
+        cesiumViewer.current.entities.removeAll();
+        addLocationPins();
+        
+        // Reset to filtered events for global view
+        const filteredEvents = HISTORICAL_EVENTS.filter(
+          event => event.period === currentGlobalPeriod || currentGlobalPeriod === 'all'
+        );
+        handleEventsFiltered(filteredEvents);
+      }
+    };
+    
+    if (homeButton) {
+      homeButton.addEventListener('click', handleHomeButtonClick);
+    }
+    
+    return () => {
+      cameraChangedEventRemove();
+      if (homeButton) {
+        homeButton.removeEventListener('click', handleHomeButtonClick);
+      }
+    };
+  }, [cesiumViewer.current, cesiumLoaded, currentLocation, currentGlobalPeriod]);
+
+  // Add cleanup when leaving Egypt view or unmounting
+  useEffect(() => {
+    if (currentLocation !== 'egypt') {
+      setShowPyramidAnimation(false);
+    }
+    
+    return () => {
+      setShowPyramidAnimation(false);
+    };
+  }, [currentLocation]);
+
+  // Fix the events filtering effect
+  useEffect(() => {
+    if (!cesiumLoaded || showLandingPage || currentLocation) return;
+    
+    const filteredEvents = HISTORICAL_EVENTS.filter(
+      event => event.period === currentGlobalPeriod || currentGlobalPeriod === 'all'
+    );
+    handleEventsFiltered(filteredEvents);
+  }, [cesiumLoaded, showLandingPage, currentLocation, currentGlobalPeriod]);
+
   // Add a useEffect to monitor the era transition
   useEffect(() => {
     if (showEraTransition) {
@@ -1088,18 +1165,19 @@ function App() {
   // Add useEffect to ensure location pins are displayed when no events are visible
   useEffect(() => {
     // Only apply this when not in a specific location view and when viewer is ready
-    if (!currentLocation && cesiumViewer.current && cesiumLoaded && !showLandingPage) {
-      const entities = cesiumViewer.current.entities.values;
-      const hasLocationPins = entities.some(
-        (entity: any) => entity.id && entity.id.startsWith('location_pin_')
+    if (!currentLocation && cesiumViewer.current && cesiumLoaded) {
+      // Check if there are already pins visible
+      const locationEntities = cesiumViewer.current.entities.values.filter(
+        entity => entity.name && Object.values(LOCATIONS).some(loc => loc.name === entity.name)
       );
       
       // If no location pins are visible, add them
-      if (!hasLocationPins) {
+      if (locationEntities.length === 0) {
+        console.log("Location pins not found, adding pins");
         addLocationPins();
       }
     }
-  }, [currentLocation, cesiumLoaded, showLandingPage]);
+  }, [visibleEvents, currentLocation, cesiumLoaded]);
 
   // Add useEffect to set up entity click handling
   useEffect(() => {
@@ -1136,64 +1214,6 @@ function App() {
       handler.destroy();
     };
   }, [cesiumViewer.current, cesiumLoaded]);
-
-  // Add the useEffect for event filtering
-  useEffect(() => {
-    if (!cesiumLoaded || showLandingPage || !shouldShowGlobalTimeline) return;
-    
-    // When the map is loaded, initialize the filtered events
-    if (cesiumViewer.current) {
-      const filteredEvents = HISTORICAL_EVENTS.filter(
-        event => event.period === currentGlobalPeriod || currentGlobalPeriod === 'all'
-      );
-      handleEventsFiltered(filteredEvents);
-    }
-  }, [cesiumLoaded, showLandingPage, currentGlobalPeriod, shouldShowGlobalTimeline, handleEventsFiltered]);
-
-  // Modify useEffect to avoid repeating era transitions 
-  useEffect(() => {
-    // When switching to Egypt, ensure the era transition and mini timeline are shown
-    // But ONLY if the transition hasn't already been shown for this session
-    if (currentLocation === "egypt" && !shouldShowGlobalTimeline && !showEraTransition) {
-      // Only force the transition to show if it's not already active and we haven't just set it
-      console.log("Initial timeline setup for Egypt");
-      setTransitionData({
-        location: LOCATIONS.egypt.name,
-        year: PYRAMID_TIME_PERIODS[currentTimePeriodIndex].year
-      });
-      // Set a flag in session storage to prevent repeated animations
-      const hasShownTransition = sessionStorage.getItem('egypt_transition_shown');
-      if (!hasShownTransition) {
-        setShowEraTransition(true);
-        sessionStorage.setItem('egypt_transition_shown', 'true');
-      }
-    }
-  }, [currentLocation, shouldShowGlobalTimeline]);
-
-  // Add a cleanup effect when changing locations
-  useEffect(() => {
-    // This will run every time the current location changes
-    if (previousLocation.current && previousLocation.current !== currentLocation) {
-      console.log(`Location changed from ${previousLocation.current} to ${currentLocation}`);
-      
-      // When leaving Egypt, ensure we clean up all related state
-      if (previousLocation.current === "egypt") {
-        setShowEraTransition(false);
-        setCurrentTimePeriodIndex(0);
-        if (activeOverlay && cesiumViewer.current) {
-          try {
-            cesiumViewer.current.entities.remove(activeOverlay);
-            setActiveOverlay(null);
-          } catch (e) {
-            console.error("Error removing overlay during location change:", e);
-          }
-        }
-      }
-    }
-    
-    // Update the previous location ref for next comparison
-    previousLocation.current = currentLocation;
-  }, [currentLocation, activeOverlay]);
 
   if (showLandingPage) {
     return (
@@ -1281,11 +1301,18 @@ function App() {
       {renderPreloader()}
       {renderTransitionOverlay()}
       <div className="App">
-        <LocationsPanel 
-          locations={LOCATION_LIST}
-          onSelectLocation={handleLocationSelect}
-          currentLocationId={currentLocation || undefined}
-        />
+        {/* Remove the button container and replace with LocationsPanel */}
+        {error ? (
+          <div className="error-message">
+            Error: {error}
+          </div>
+        ) : (
+          <LocationsPanel 
+            locations={LOCATION_LIST}
+            onSelectLocation={handleLocationSelect}
+            currentLocationId={currentLocation || undefined}
+          />
+        )}
         
         <div 
           ref={viewerRef} 
@@ -1301,8 +1328,8 @@ function App() {
           <div className="time-travel-effect"></div>
         )}
         
-        {/* Global time slider - only show when shouldShowGlobalTimeline is true */}
-        {cesiumLoaded && !showLandingPage && shouldShowGlobalTimeline && (
+        {/* Global time slider for filtering events by time period - only show when not viewing a specific location timeline */}
+        {cesiumLoaded && !showLandingPage && !currentLocation && (
           <GlobalTimeSlider 
             timePeriods={GLOBAL_TIME_PERIODS}
             historicalEvents={HISTORICAL_EVENTS}
@@ -1311,9 +1338,10 @@ function App() {
           />
         )}
         
-        {/* Mini Timeline - only show when in Egypt location */}
-        {cesiumLoaded && !showLandingPage && currentLocation === "egypt" && (
+        {/* Only show the Egypt-specific UI components when in Egypt */}
+        {currentLocation === "egypt" && !showLandingPage && (
           <>
+            {/* Mini Timeline */}
             <MiniTimeline 
               periods={PYRAMID_TIME_PERIODS}
               currentPeriodIndex={currentTimePeriodIndex}
@@ -1321,36 +1349,65 @@ function App() {
               onInfoClick={handleInfoClick}
             />
             
+            {/* Time Dial */}
             <TimeDial 
               periods={PYRAMID_TIME_PERIODS}
               currentPeriodIndex={currentTimePeriodIndex}
               onPeriodChange={handleTimePeriodChange}
             />
             
-            {/* Only render the transition component when explicitly showing */}
-            {showEraTransition && (
-              <EraTransition
-                isVisible={showEraTransition}
-                location={transitionData.location}
-                year={transitionData.year}
-                onTransitionComplete={() => {
+            {/* Era Transition Effect */}
+            <EraTransition
+              isVisible={showEraTransition}
+              location={transitionData.location}
+              year={transitionData.year}
+              onTransitionComplete={() => {
+                console.log("App received transition complete callback");
+                // Check if we need to refresh the view after transition
+                if (cesiumViewer.current && currentLocation === "egypt") {
+                  // After transition, make sure we have proper pins visibility:
+                  // - Show pins only for modern era (index 4)
+                  // - Hide pins for historical eras (indexes 0-3)
+                  const isModernEra = currentTimePeriodIndex === 4;
+                  
+                  // Force a render to refresh the scene
+                  cesiumViewer.current.scene.requestRender();
+                }
+                
+                // Introduce a small delay to ensure state updates properly
+                setTimeout(() => {
                   setShowEraTransition(false);
-                  // Mark as completed in component itself
-                  sessionStorage.setItem('egypt_transition_shown', 'true');
-                }}
-              />
-            )}
+                  console.log("Era transition state reset");
+                }, 50);
+              }}
+            />
+            
+            {/* Description Panel */}
+            <DescriptionPanel 
+              isVisible={showDescriptionPanel}
+              period={selectedPeriod}
+              onClose={handleCloseDescription}
+            />
           </>
         )}
         
-        {/* Description Panel */}
-        {showDescriptionPanel && selectedPeriod && (
-          <DescriptionPanel
-            isVisible={showDescriptionPanel}
-            period={selectedPeriod}
-            onClose={() => setShowDescriptionPanel(false)}
+        {/* Event Detail Modal */}
+        {getSelectedEvent() && (
+          <EventDetailModal
+            isOpen={showEventDetail}
+            onClose={handleCloseEventDetail}
+            name={getSelectedEvent()!.name}
+            year={getSelectedEvent()!.year}
+            emoji={getSelectedEvent()!.emoji}
+            description={getSelectedEvent()!.description}
           />
         )}
+        
+        {/* Add the PyramidAnimation component */}
+        <PyramidAnimation
+          isVisible={showPyramidAnimation}
+          position={pyramidAnimationPosition}
+        />
       </div>
     </>
   );
