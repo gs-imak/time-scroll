@@ -130,11 +130,11 @@ export function MiniTimeline({
       </div>
 
       {/* Current time period display */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px' }}>
-        <div style={{ color: 'white', fontSize: '1.125rem', fontWeight: 600 }}>
+      <div className="timeline-period-info">
+        <div className="timeline-period-year">
           {periods[currentPeriodIndex].year}
         </div>
-        <div style={{ color: 'white', fontSize: '0.875rem', opacity: 0.7 }}>
+        <div className="timeline-period-title">
           {periods[currentPeriodIndex].title}
         </div>
       </div>
