@@ -7,6 +7,7 @@ import { GlobalTimeSlider } from './components/GlobalTimeSlider';
 import { HistoricalEventMarker } from './components/HistoricalEventMarker';
 import { EventDetailModal } from './components/EventDetailModal';
 import { PyramidAnimation } from './components/PyramidAnimation';
+import { MapStyleToggle } from './components/MapStyleToggle';
 import { GLOBAL_TIME_PERIODS, HISTORICAL_EVENTS } from './constants/historyData';
 
 // Get the interfaces from the GlobalTimeSlider component
@@ -120,6 +121,9 @@ function App() {
   const [showEventDetail, setShowEventDetail] = useState(false);
   const [currentGlobalPeriod, setCurrentGlobalPeriod] = useState(GLOBAL_TIME_PERIODS[GLOBAL_TIME_PERIODS.length - 1].id);
   
+  // Map style toggle state
+  const [isDayMode, setIsDayMode] = useState(true);
+  
   // New state variables for the landing page experience
   const [selectedEra, setSelectedEra] = useState<string | null>(null);
   const [isSystemReady, setIsSystemReady] = useState(false);
@@ -182,47 +186,14 @@ function App() {
         timeline: false,
         navigationHelpButton: false,
         navigationInstructionsInitiallyVisible: false,
-        imageryProvider: new window.Cesium.IonImageryProvider({
-          assetId: 3954, // Cesium's world vector tiles
-          accessToken: cesiumToken,
-          minimumLevel: 0,
-          maximumLevel: 15,
-          style: {
-            layers: [
-              // Show only country borders and names
-              {
-                id: "country",
-                source: "country",
-                type: "line",
-                paint: {
-                  "stroke-color": "#ffffff",
-                  "stroke-width": 2,
-                  "stroke-opacity": 0.8
-                }
-              },
-              {
-                id: "country-names",
-                source: "country",
-                type: "text",
-                paint: {
-                  "text-color": "#ffffff",
-                  "text-outline-color": "#000000",
-                  "text-outline-width": 2,
-                  "text-size": 14
-                },
-                text: {
-                  field: "name"
-                }
-              }
-            ],
-            sources: {
-              country: {
-                type: "vector",
-                url: "https://tiles.cesium.com/v1/tiles/country"
-              }
-            }
-          }
-        }),
+        imageryProvider: isDayMode 
+          ? new window.Cesium.ArcGisMapServerImageryProvider({
+              url: 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer'
+            })
+          : new window.Cesium.IonImageryProvider({
+              assetId: 3812, // Earth at Night imagery
+              accessToken: cesiumToken
+            }),
         sceneMode: window.Cesium.SceneMode.SCENE3D,
         // Make things load faster
         terrainExaggeration: 1.0,
@@ -247,8 +218,10 @@ function App() {
       cesiumViewer.current.scene.globe.showGroundAtmosphere = false;
       cesiumViewer.current.scene.globe.maximumScreenSpaceError = 2; // Lower for better quality
       
-      // Set a dark background for better contrast with country borders
-      cesiumViewer.current.scene.globe.baseColor = window.Cesium.Color.fromCssColorString('#111122');
+      // Set a dark background for better contrast
+      cesiumViewer.current.scene.globe.baseColor = isDayMode 
+        ? window.Cesium.Color.fromCssColorString('#000428') // Dark blue for day mode
+        : window.Cesium.Color.fromCssColorString('#000005'); // Very dark for night mode
       
       // Turn off atmosphere effects for cleaner look
       if (cesiumViewer.current.scene.skyAtmosphere) {
@@ -292,6 +265,8 @@ function App() {
         destination: window.Cesium.Cartesian3.fromDegrees(0, 0, 20000000),
         duration: 0
       });
+      
+      // Country borders have been removed to prevent rendering errors
       
       // Add pins for our locations
       const locationEntities: any[] = [];
@@ -1135,6 +1110,105 @@ function App() {
     setShowEventDetail(false);
   };
 
+  // Function to toggle between day and night map styles
+  const toggleMapStyle = () => {
+    if (!cesiumViewer.current) return;
+    
+    // Toggle the mode state and capture the new value
+    const newIsDayMode = !isDayMode;
+    setIsDayMode(newIsDayMode);
+    
+    try {
+      // To avoid conflicts and rendering errors, only keep essential data
+      // Store references to entities we want to preserve (like location pins)
+      const pinEntities: any[] = [];
+      const entities = cesiumViewer.current.entities.values;
+      
+      // First identify entities to preserve
+      for (let i = 0; i < entities.length; i++) {
+        const entity = entities[i];
+        if (entity.id && (
+          entity.id.toString().startsWith('location_pin_') || 
+          entity.id.toString().startsWith('event_')
+        )) {
+          pinEntities.push({
+            id: entity.id,
+            position: entity.position,
+            billboard: entity.billboard,
+            label: entity.label
+          });
+        }
+      }
+      
+      // Clear all entities and data sources
+      cesiumViewer.current.entities.removeAll();
+      cesiumViewer.current.dataSources.removeAll();
+      
+      // Remove existing imagery layers
+      cesiumViewer.current.imageryLayers.removeAll();
+      
+      // Add the appropriate imagery layer based on the new mode
+      if (newIsDayMode) {
+        // Day mode: ArcGIS World Imagery
+        cesiumViewer.current.imageryLayers.addImageryProvider(
+          new window.Cesium.ArcGisMapServerImageryProvider({
+            url: 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer'
+          })
+        );
+      } else {
+        // Night mode: Earth at Night
+        cesiumViewer.current.imageryLayers.addImageryProvider(
+          new window.Cesium.IonImageryProvider({
+            assetId: 3812, // Earth at Night imagery
+            accessToken: cesiumToken
+          })
+        );
+      }
+      
+      // Country borders have been removed to prevent rendering errors
+      
+      // Restore location pins and update scene
+      setTimeout(() => {
+        if (!cesiumViewer.current) return;
+        
+        // Re-add all preserved entities
+        if (currentLocation) {
+          // If in location view, add location pins
+          addLocationPins();
+          
+          // If in Egypt and showing a historical period, re-add the period visualization
+          if (currentLocation === 'egypt' && currentTimePeriodIndex < 4) {
+            addTimePeriodVisualization(PYRAMID_TIME_PERIODS[currentTimePeriodIndex].id);
+          }
+        } else {
+          // In global view, add location pins
+          addLocationPins();
+          
+          // Re-add historical events if we had filtered events
+          if (visibleEvents.length > 0) {
+            visibleEvents.forEach(event => {
+              if (event.latitude && event.longitude) {
+                addEventMarker(event);
+              }
+            });
+          }
+        }
+          
+        // Update globe color for day/night mode
+        if (cesiumViewer.current.scene && cesiumViewer.current.scene.globe) {
+          cesiumViewer.current.scene.globe.baseColor = newIsDayMode
+            ? window.Cesium.Color.fromCssColorString('#000428') // Dark blue for day view
+            : window.Cesium.Color.fromCssColorString('#000005'); // Very dark for night view
+        }
+          
+        // Force render to refresh scene
+        cesiumViewer.current.scene.requestRender();
+      }, 200);
+    } catch (error) {
+      console.error("Error toggling map style:", error);
+    }
+  };
+
   // Update the camera change listener to properly handle zoom levels
   useEffect(() => {
     if (!cesiumViewer.current || !cesiumLoaded) return;
@@ -1485,6 +1559,14 @@ function App() {
           isVisible={showPyramidAnimation}
           position={pyramidAnimationPosition}
         />
+        
+        {/* Map Style Toggle */}
+        {cesiumLoaded && !showLandingPage && (
+          <MapStyleToggle
+            isDayMode={isDayMode}
+            onToggle={toggleMapStyle}
+          />
+        )}
       </div>
     </>
   );
