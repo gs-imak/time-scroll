@@ -172,7 +172,7 @@ function App() {
       // Create viewer with optimized settings to reduce loading lag
       cesiumViewer.current = new window.Cesium.Viewer(viewerRef.current, {
         animation: false,
-        baseLayerPicker: false,
+        baseLayerPicker: true,
         fullscreenButton: false,
         geocoder: false,
         homeButton: true,
@@ -182,8 +182,46 @@ function App() {
         timeline: false,
         navigationHelpButton: false,
         navigationInstructionsInitiallyVisible: false,
-        imageryProvider: window.Cesium.createWorldImagery({
-          style: window.Cesium.IonWorldImageryStyle.AERIAL_WITH_LABELS
+        imageryProvider: new window.Cesium.IonImageryProvider({
+          assetId: 3954, // Cesium's world vector tiles
+          accessToken: cesiumToken,
+          minimumLevel: 0,
+          maximumLevel: 15,
+          style: {
+            layers: [
+              // Show only country borders and names
+              {
+                id: "country",
+                source: "country",
+                type: "line",
+                paint: {
+                  "stroke-color": "#ffffff",
+                  "stroke-width": 2,
+                  "stroke-opacity": 0.8
+                }
+              },
+              {
+                id: "country-names",
+                source: "country",
+                type: "text",
+                paint: {
+                  "text-color": "#ffffff",
+                  "text-outline-color": "#000000",
+                  "text-outline-width": 2,
+                  "text-size": 14
+                },
+                text: {
+                  field: "name"
+                }
+              }
+            ],
+            sources: {
+              country: {
+                type: "vector",
+                url: "https://tiles.cesium.com/v1/tiles/country"
+              }
+            }
+          }
         }),
         sceneMode: window.Cesium.SceneMode.SCENE3D,
         // Make things load faster
@@ -204,13 +242,21 @@ function App() {
         cesiumViewer.current.terrainProvider = terrainProvider;
       }
       
-      // Improve performance
+      // Improve performance and appearance
       cesiumViewer.current.scene.fog.enabled = false;
       cesiumViewer.current.scene.globe.showGroundAtmosphere = false;
       cesiumViewer.current.scene.globe.maximumScreenSpaceError = 2; // Lower for better quality
       
+      // Set a dark background for better contrast with country borders
+      cesiumViewer.current.scene.globe.baseColor = window.Cesium.Color.fromCssColorString('#111122');
+      
+      // Turn off atmosphere effects for cleaner look
+      if (cesiumViewer.current.scene.skyAtmosphere) {
+        cesiumViewer.current.scene.skyAtmosphere.show = false;
+      }
+      
       // Set strict global zoom limits
-      cesiumViewer.current.scene.screenSpaceCameraController.minimumZoomDistance = 800000; // Restrict how close users can zoom
+      cesiumViewer.current.scene.screenSpaceCameraController.minimumZoomDistance = 1000000; // Restrict how close users can zoom
       cesiumViewer.current.scene.screenSpaceCameraController.maximumZoomDistance = 25000000;
       
       // Disable lighting for better performance
