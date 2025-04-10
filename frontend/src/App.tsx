@@ -177,8 +177,8 @@ function App() {
   // Add a loading state for location transitions
   const [isLocationTransitioning, setIsLocationTransitioning] = useState(false);
 
+  // State for the pyramid animation (only visibility, position is handled in the component)
   const [showPyramidAnimation, setShowPyramidAnimation] = useState(false);
-  const [pyramidAnimationPosition, setPyramidAnimationPosition] = useState({ x: 0, y: 0 });
 
   const mapboxToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
   const cesiumToken = import.meta.env.VITE_CESIUM_ACCESS_TOKEN;
@@ -217,6 +217,9 @@ function App() {
           )
         });
 
+        // Save the viewer reference in the window object for the animation overlay
+        (window as any)._pyramidCesiumViewer = cesiumViewer.current;
+        
         // Remove default base layer
         cesiumViewer.current.scene.globe.enableLighting = true;
         
@@ -309,6 +312,10 @@ function App() {
       if (cesiumViewer.current) {
         cesiumViewer.current.destroy();
         cesiumViewer.current = null;
+        // Remove the reference from the window object
+        if ((window as any)._pyramidCesiumViewer) {
+          (window as any)._pyramidCesiumViewer = null;
+        }
       }
     };
   }, [showLandingPage, cesiumToken]);
@@ -663,40 +670,15 @@ function App() {
     // First update the current location state to trigger UI updates
     setCurrentLocation("egypt");
     
-    // Show the animation immediately
-    const screenPosition = window.Cesium.SceneTransforms.wgs84ToWindowCoordinates(
-      cesiumViewer.current.scene,
-      window.Cesium.Cartesian3.fromDegrees(location.longitude, location.latitude)
-    );
-    
-    if (screenPosition) {
-      setPyramidAnimationPosition({
-        x: screenPosition.x - 150,
-        y: screenPosition.y - 150
-      });
-      setShowPyramidAnimation(true);
-    }
+    // Show the pyramid animation
+    setShowPyramidAnimation(true);
     
     // Set minimum allowed zoom height for Egypt
     const MIN_EGYPT_HEIGHT = 2000;
     
-    // Update camera change handler to keep animation positioned correctly
-    // and enforce zoom limits
+    // Update camera change handler only for minimum height enforcement
     const cameraChangeHandler = () => {
-      // First update animation position
-      const updatedScreenPosition = window.Cesium.SceneTransforms.wgs84ToWindowCoordinates(
-        cesiumViewer.current.scene,
-        window.Cesium.Cartesian3.fromDegrees(location.longitude, location.latitude)
-      );
-      
-      if (updatedScreenPosition) {
-        setPyramidAnimationPosition({
-          x: updatedScreenPosition.x - 150,
-          y: updatedScreenPosition.y - 150
-        });
-      }
-
-      // Then enforce minimum height restriction
+      // Only enforce minimum height restriction
       const cameraPosition = cesiumViewer.current.camera.position;
       const cameraCartographic = window.Cesium.Cartographic.fromCartesian(cameraPosition);
       const currentHeight = cameraCartographic.height;
@@ -1209,6 +1191,7 @@ function App() {
     
     // Set global camera constraints - make sure they're applied after any state changes
     cesiumViewer.current.scene.screenSpaceCameraController.maximumZoomDistance = 50000000;
+    cesiumViewer.current.scene.screenSpaceCameraController.minimumZoomDistance = 1000000;
     
     const handleCameraChange = () => {
       // Check if camera is at or close to the default home position
@@ -1246,15 +1229,6 @@ function App() {
         // Set camera to new position while preserving direction
         cesiumViewer.current.camera.position = newPosition;
       }
-      
-      // If we're zoomed out significantly or too close, hide the animation
-      if (currentHeight > 10000000 || currentHeight < 1000) {
-        setShowPyramidAnimation(false);
-      } else if (currentLocation === "egypt" && !showPyramidAnimation) {
-        setShowPyramidAnimation(true);
-      }
-      
-      // Update the animation position is handled by the render event listener for smoother updates
     };
 
     // Clean up any existing listeners before adding new ones
@@ -1263,28 +1237,9 @@ function App() {
     // Add the camera changed event listener
     const cameraChangedEventRemove = cesiumViewer.current.camera.changed.addEventListener(handleCameraChange);
     
-    // Add a render event listener for continuous position updates during animations
-    const renderEventRemove = cesiumViewer.current.scene.postRender.addEventListener(() => {
-      if (currentLocation === "egypt" && showPyramidAnimation) {
-        const location = LOCATIONS.egypt;
-        const updatedScreenPosition = window.Cesium.SceneTransforms.wgs84ToWindowCoordinates(
-          cesiumViewer.current.scene,
-          window.Cesium.Cartesian3.fromDegrees(location.longitude, location.latitude)
-        );
-        
-        if (updatedScreenPosition) {
-          setPyramidAnimationPosition({
-            x: updatedScreenPosition.x - 150,
-            y: updatedScreenPosition.y - 150
-          });
-        }
-      }
-    });
-    
-    // Add these to active listeners for cleanup
+    // Add this to active listeners for cleanup
     activeListenersRef.current.push(cameraChangedEventRemove);
-    activeListenersRef.current.push(renderEventRemove);
-
+    
     // Add an event listener specifically for the home button
     const homeButton = document.querySelector('.cesium-button-home');
     
@@ -1330,7 +1285,6 @@ function App() {
       
       // Also remove the specific event listeners created in this useEffect
       cameraChangedEventRemove();
-      renderEventRemove();
       
       if (homeButton) {
         homeButton.removeEventListener('click', handleHomeButtonClick);
@@ -1689,7 +1643,6 @@ function App() {
         {/* Add the PyramidAnimation component */}
         <PyramidAnimation
           isVisible={showPyramidAnimation}
-          position={pyramidAnimationPosition}
         />
       </div>
     </>
