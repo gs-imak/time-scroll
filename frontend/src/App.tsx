@@ -186,6 +186,9 @@ function App() {
   // Create a reference to Cesium so we can use it throughout the component
   const Cesium = window.Cesium;
 
+  // Track active event listeners for cleanup
+  const activeListenersRef = useRef<(() => void)[]>([]);
+
   useEffect(() => {
     if (showLandingPage) return; // Don't initialize Cesium on the landing page
 
@@ -282,6 +285,10 @@ function App() {
         cesiumViewer.current.scene.fog.enabled = false;
         cesiumViewer.current.scene.globe.showGroundAtmosphere = false;
         cesiumViewer.current.scene.globe.maximumScreenSpaceError = 2;
+        
+        // Add camera constraints - set maximum zoom distance to prevent zooming out too far
+        cesiumViewer.current.scene.screenSpaceCameraController.maximumZoomDistance = 50000000; // Limit max zoom out
+        cesiumViewer.current.scene.screenSpaceCameraController.minimumZoomDistance = 1000000; // Limit max zoom in
         
         // Set initial camera view
         cesiumViewer.current.camera.setView({
@@ -434,8 +441,16 @@ function App() {
       (entity: any) => entity.id && entity.id.toString().startsWith('location_pin_')
     );
     
-    // Remove all entities
-    cesiumViewer.current.entities.removeAll();
+    // Instead of removing all entities, we need to preserve the country borders
+    // and only remove the entities added directly to the viewer's collection
+    const entities = cesiumViewer.current.entities.values;
+    for (let i = entities.length - 1; i >= 0; i--) {
+      const entity = entities[i];
+      // Only remove entities that are directly in the viewer's entity collection
+      if (entity && cesiumViewer.current.entities.contains(entity)) {
+        cesiumViewer.current.entities.remove(entity);
+      }
+    }
     
     // Restore location pins immediately
     locationPins.forEach((pin: any) => {
@@ -589,13 +604,28 @@ function App() {
     return locationPinsArray;
   };
 
+  // Function to clean up any active listeners
+  const cleanupActiveListeners = () => {
+    if (activeListenersRef.current.length > 0) {
+      console.log(`Cleaning up ${activeListenersRef.current.length} active listeners`);
+      activeListenersRef.current.forEach(removeListener => removeListener());
+      activeListenersRef.current = [];
+    }
+  };
+
   const flyToNewYork = () => {
     const location = LOCATIONS.newYork;
     
-    console.log("Starting transition to New York");
+    // Clean up any Egypt-specific listeners
+    cleanupActiveListeners();
+    
+    // Update current location state
+    setCurrentLocation("newYork");
+    
+    // Hide pyramid animation
+    setShowPyramidAnimation(false);
     
     // First update the state
-    setCurrentLocation("newYork");
     setShowTimeSlider(false);
     
     // Then fly to location
@@ -705,7 +735,10 @@ function App() {
     };
 
     // Add the camera change listener
-    cesiumViewer.current.scene.camera.changed.addEventListener(cameraChangeHandler);
+    const removeListener = cesiumViewer.current.scene.camera.changed.addEventListener(cameraChangeHandler);
+    
+    // Keep track of the listener for cleanup
+    activeListenersRef.current.push(removeListener);
     
     // Then fly to the location
     flyToLocation(location.longitude, location.latitude, location.height, location.name);
@@ -717,7 +750,26 @@ function App() {
       setSelectedPeriod(PYRAMID_TIME_PERIODS[4]);
       
       if (cesiumViewer.current) {
-        cesiumViewer.current.entities.removeAll();
+        // Instead of removing all entities, we need to preserve the country borders
+        // Get all dataSources first
+        const dataSources = cesiumViewer.current.dataSources;
+        const countryDataSources: any[] = [];
+        
+        // Store references to country data sources
+        for (let i = 0; i < dataSources.length; i++) {
+          const dataSource = dataSources.get(i);
+          countryDataSources.push(dataSource);
+        }
+        
+        // Remove all entities (but not data sources)
+        const entities = cesiumViewer.current.entities.values;
+        for (let i = entities.length - 1; i >= 0; i--) {
+          const entity = entities[i];
+          // Only remove entities that are directly in the viewer's entity collection
+          if (entity && cesiumViewer.current.entities.contains(entity)) {
+            cesiumViewer.current.entities.remove(entity);
+          }
+        }
         
         if (PYRAMID_TIME_PERIODS[4].id === "modern-era") {
           addLocationPins();
@@ -1155,20 +1207,84 @@ function App() {
   useEffect(() => {
     if (!cesiumViewer.current || !cesiumLoaded) return;
     
+    // Set global camera constraints - make sure they're applied after any state changes
+    cesiumViewer.current.scene.screenSpaceCameraController.maximumZoomDistance = 50000000;
+    
     const handleCameraChange = () => {
       // Check if camera is at or close to the default home position
       const cameraPosition = cesiumViewer.current.camera.position;
-      const cameraHeight = window.Cesium.Cartographic.fromCartesian(cameraPosition).height;
+      const cameraCartographic = window.Cesium.Cartographic.fromCartesian(cameraPosition);
+      const currentHeight = cameraCartographic.height;
+      
+      // Enforce global maximum zoom distance
+      if (currentHeight > 50000000) {
+        const surfacePoint = window.Cesium.Cartesian3.fromRadians(
+          cameraCartographic.longitude,
+          cameraCartographic.latitude,
+          0
+        );
+        const direction = window.Cesium.Cartesian3.normalize(
+          window.Cesium.Cartesian3.subtract(
+            cameraPosition, 
+            surfacePoint, 
+            new window.Cesium.Cartesian3()
+          ),
+          new window.Cesium.Cartesian3()
+        );
+        
+        // Calculate new position at maximum height
+        const newPosition = window.Cesium.Cartesian3.add(
+          surfacePoint,
+          window.Cesium.Cartesian3.multiplyByScalar(
+            direction,
+            50000000,
+            new window.Cesium.Cartesian3()
+          ),
+          new window.Cesium.Cartesian3()
+        );
+        
+        // Set camera to new position while preserving direction
+        cesiumViewer.current.camera.position = newPosition;
+      }
       
       // If we're zoomed out significantly or too close, hide the animation
-      if (cameraHeight > 10000000 || cameraHeight < 1000) {
+      if (currentHeight > 10000000 || currentHeight < 1000) {
         setShowPyramidAnimation(false);
+      } else if (currentLocation === "egypt" && !showPyramidAnimation) {
+        setShowPyramidAnimation(true);
       }
+      
+      // Update the animation position is handled by the render event listener for smoother updates
     };
+
+    // Clean up any existing listeners before adding new ones
+    cleanupActiveListeners();
 
     // Add the camera changed event listener
     const cameraChangedEventRemove = cesiumViewer.current.camera.changed.addEventListener(handleCameraChange);
     
+    // Add a render event listener for continuous position updates during animations
+    const renderEventRemove = cesiumViewer.current.scene.postRender.addEventListener(() => {
+      if (currentLocation === "egypt" && showPyramidAnimation) {
+        const location = LOCATIONS.egypt;
+        const updatedScreenPosition = window.Cesium.SceneTransforms.wgs84ToWindowCoordinates(
+          cesiumViewer.current.scene,
+          window.Cesium.Cartesian3.fromDegrees(location.longitude, location.latitude)
+        );
+        
+        if (updatedScreenPosition) {
+          setPyramidAnimationPosition({
+            x: updatedScreenPosition.x - 150,
+            y: updatedScreenPosition.y - 150
+          });
+        }
+      }
+    });
+    
+    // Add these to active listeners for cleanup
+    activeListenersRef.current.push(cameraChangedEventRemove);
+    activeListenersRef.current.push(renderEventRemove);
+
     // Add an event listener specifically for the home button
     const homeButton = document.querySelector('.cesium-button-home');
     
@@ -1179,8 +1295,21 @@ function App() {
       setShowDescriptionPanel(false);
       setSelectedPeriod(null);
       
+      // Clean up any location-specific listeners
+      cleanupActiveListeners();
+      
       if (cesiumViewer.current) {
-        cesiumViewer.current.entities.removeAll();
+        // Instead of removing all entities, we should selectively remove them
+        // preserving the country borders from the data sources
+        const entities = cesiumViewer.current.entities.values;
+        for (let i = entities.length - 1; i >= 0; i--) {
+          const entity = entities[i];
+          // Only remove entities that are directly in the viewer's entity collection
+          if (entity && cesiumViewer.current.entities.contains(entity)) {
+            cesiumViewer.current.entities.remove(entity);
+          }
+        }
+        
         addLocationPins();
         
         // Reset to filtered events for global view
@@ -1196,12 +1325,18 @@ function App() {
     }
     
     return () => {
+      // Clean up all listeners
+      cleanupActiveListeners();
+      
+      // Also remove the specific event listeners created in this useEffect
       cameraChangedEventRemove();
+      renderEventRemove();
+      
       if (homeButton) {
         homeButton.removeEventListener('click', handleHomeButtonClick);
       }
     };
-  }, [cesiumViewer.current, cesiumLoaded, currentLocation, currentGlobalPeriod]);
+  }, [cesiumViewer.current, cesiumLoaded, currentLocation, currentGlobalPeriod, showPyramidAnimation]);
 
   // Add cleanup when leaving Egypt view or unmounting
   useEffect(() => {
