@@ -285,15 +285,19 @@ function App() {
           },
           label: {
             text: location.name,
-            font: '12pt sans-serif', // Smaller font
+            font: '14pt sans-serif', // Increased font size
             style: window.Cesium.LabelStyle.FILL_AND_OUTLINE,
-            outlineWidth: 2,
+            outlineWidth: 3, // Increased outline width
+            outlineColor: window.Cesium.Color.BLACK,
+            fillColor: window.Cesium.Color.WHITE,
             verticalOrigin: window.Cesium.VerticalOrigin.TOP,
-            pixelOffset: new window.Cesium.Cartesian2(0, -8), // Adjusted for smaller icon
+            pixelOffset: new window.Cesium.Cartesian2(0, -12), // Adjusted offset for larger icon
             showBackground: true,
-            backgroundColor: new window.Cesium.Color(0.1, 0.1, 0.1, 0.7),
-            backgroundPadding: new window.Cesium.Cartesian2(7, 5),
-            horizontalOrigin: window.Cesium.HorizontalOrigin.CENTER
+            backgroundColor: new window.Cesium.Color(0.1, 0.1, 0.1, 0.8), // More opaque background
+            backgroundPadding: new window.Cesium.Cartesian2(8, 6),
+            horizontalOrigin: window.Cesium.HorizontalOrigin.CENTER,
+            disableDepthTestDistance: Number.POSITIVE_INFINITY, // Always show on top
+            translucencyByDistance: new window.Cesium.NearFarScalar(1.5e6, 1.0, 8.0e6, 0.6) // Adjusted fade distance and opacity
           }
         });
         locationEntities.push(entity);
@@ -453,15 +457,22 @@ function App() {
     // Update state immediately to avoid lag
     setCurrentTimePeriodIndex(periodIndex);
     
-    // Remove all entities including location pins when in Egypt historical view
+    // Store existing location pins before clearing
+    const locationPins = cesiumViewer.current.entities.values.filter(
+      (entity: any) => entity.id && entity.id.toString().startsWith('location_pin_')
+    );
+    
+    // Remove all entities
     cesiumViewer.current.entities.removeAll();
     
+    // Restore location pins immediately
+    locationPins.forEach((pin: any) => {
+      cesiumViewer.current.entities.add(pin);
+    });
+    
     // Only show specific time period visualization for Egypt
-    // Don't add location pins for historical periods to avoid confusion
     console.log(`Adding visualization for period: ${PYRAMID_TIME_PERIODS[periodIndex].id}`);
     addTimePeriodVisualization(PYRAMID_TIME_PERIODS[periodIndex].id);
-    
-    // The transition will automatically fade out and call onTransitionComplete
   };
   
   // Function to add visualization for a specific time period
@@ -584,17 +595,19 @@ function App() {
         },
         label: {
           text: location.name,
-          font: '12pt sans-serif', // Smaller font
+          font: '14pt sans-serif', // Increased font size
           style: window.Cesium.LabelStyle.FILL_AND_OUTLINE,
-          outlineWidth: 2,
+          outlineWidth: 3, // Increased outline width
+          outlineColor: window.Cesium.Color.BLACK,
+          fillColor: window.Cesium.Color.WHITE,
           verticalOrigin: window.Cesium.VerticalOrigin.TOP,
-          pixelOffset: new window.Cesium.Cartesian2(0, -8), // Adjusted for smaller icon
+          pixelOffset: new window.Cesium.Cartesian2(0, -12), // Adjusted offset for larger icon
           showBackground: true,
-          backgroundColor: new window.Cesium.Color(0.1, 0.1, 0.1, 0.7),
-          backgroundPadding: new window.Cesium.Cartesian2(7, 5),
+          backgroundColor: new window.Cesium.Color(0.1, 0.1, 0.1, 0.8), // More opaque background
+          backgroundPadding: new window.Cesium.Cartesian2(8, 6),
           horizontalOrigin: window.Cesium.HorizontalOrigin.CENTER,
-          distanceDisplayCondition: new window.Cesium.DistanceDisplayCondition(0, 6000000), // Show from far away
-          translucencyByDistance: new window.Cesium.NearFarScalar(1.5e6, 1.0, 6.0e6, 0.5) // Fade with distance
+          disableDepthTestDistance: Number.POSITIVE_INFINITY, // Always show on top
+          translucencyByDistance: new window.Cesium.NearFarScalar(1.5e6, 1.0, 8.0e6, 0.6) // Adjusted fade distance and opacity
         }
       });
       
@@ -1155,12 +1168,26 @@ function App() {
             url: 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer'
           })
         );
+        
+        // Add labels layer
+        cesiumViewer.current.imageryLayers.addImageryProvider(
+          new window.Cesium.ArcGisMapServerImageryProvider({
+            url: 'https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer'
+          })
+        );
       } else {
         // Night mode: Earth at Night
         cesiumViewer.current.imageryLayers.addImageryProvider(
           new window.Cesium.IonImageryProvider({
             assetId: 3812, // Earth at Night imagery
             accessToken: cesiumToken
+          })
+        );
+        
+        // Add labels layer
+        cesiumViewer.current.imageryLayers.addImageryProvider(
+          new window.Cesium.ArcGisMapServerImageryProvider({
+            url: 'https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer'
           })
         );
       }
