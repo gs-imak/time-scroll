@@ -150,6 +150,29 @@ function App() {
     { id: 'industrial', name: 'Industrial Age' },
     { id: 'modern', name: '21st Century' }
   ]);
+  
+  // New state variables for year and month selection
+  const currentYear = new Date().getFullYear();
+  const [selectedYear, setSelectedYear] = useState<number>(currentYear);
+  const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth() + 1); // 1-12
+  
+  // Available years based on selected era
+  const getAvailableYears = () => {
+    switch (selectedEra) {
+      case 'ancient':
+        return { min: -3000, max: -500 }; // 3000 BCE to 500 BCE
+      case 'medieval':
+        return { min: 500, max: 1400 }; // 500 CE to 1400 CE
+      case 'renaissance':
+        return { min: 1400, max: 1700 }; // 1400 CE to 1700 CE
+      case 'industrial':
+        return { min: 1700, max: 1950 }; // 1700 CE to 1950 CE
+      case 'modern':
+        return { min: 1950, max: currentYear }; // 1950 CE to current year
+      default:
+        return { min: -3000, max: currentYear }; // Default full range
+    }
+  };
 
   // Add a loading state for location transitions
   const [isLocationTransitioning, setIsLocationTransitioning] = useState(false);
@@ -774,39 +797,95 @@ function App() {
     }
   };
 
-  // New function to handle era selection on landing page
-  const handleEraSelection = (eraId: string) => {
-    setSelectedEra(eraId);
+  // New function to handle year selection
+  const handleYearChange = (year: number) => {
+    setSelectedYear(year);
     
-    // After a brief delay, update system status to ready
-    setTimeout(() => {
+    // Update system status after selection
+    if (selectedEra && selectedMonth) {
       setIsSystemReady(true);
       
-      // Fade out the hourglass sand timer after 2 seconds - using opacity for smooth transition
+      // Similar animation timing as era selection
       setTimeout(() => {
         const sandTimer = document.querySelector('.loading-sand-timer');
         if (sandTimer) {
           sandTimer.classList.add('fade-out');
-          
-          // Wait for the fade out animation to complete before removing the active class
           setTimeout(() => {
             sandTimer.classList.remove('active');
             sandTimer.classList.remove('fade-out');
           }, 800);
         }
         
-        // After another delay, update portal status to stabilized
         setTimeout(() => {
           setIsPortalStabilized(true);
         }, 600);
-      }, 2000);
-    }, 1000);
+      }, 1500);
+    }
+  };
+  
+  // New function to handle month selection
+  const handleMonthChange = (month: number) => {
+    setSelectedMonth(month);
+    
+    // Update system status after selection
+    if (selectedEra && selectedYear) {
+      setIsSystemReady(true);
+      
+      // Similar animation timing as era selection
+      setTimeout(() => {
+        const sandTimer = document.querySelector('.loading-sand-timer');
+        if (sandTimer) {
+          sandTimer.classList.add('fade-out');
+          setTimeout(() => {
+            sandTimer.classList.remove('active');
+            sandTimer.classList.remove('fade-out');
+          }, 800);
+        }
+        
+        setTimeout(() => {
+          setIsPortalStabilized(true);
+        }, 600);
+      }, 1500);
+    }
+  };
+
+  // New function to handle era selection on landing page
+  const handleEraSelection = (eraId: string) => {
+    setSelectedEra(eraId);
+    
+    // Set default year based on era
+    const yearRange = getAvailableYears();
+    const defaultYear = Math.floor((yearRange.min + yearRange.max) / 2);
+    setSelectedYear(defaultYear);
+    
+    // Fade in the hourglass sand timer on era selection
+    setTimeout(() => {
+      const sandTimer = document.querySelector('.loading-sand-timer');
+      if (sandTimer) {
+        sandTimer.classList.add('active');
+      }
+    }, 300);
+    
+    // Don't automatically set system ready - wait for year and month selection
   };
 
   // Modified handle start journey function to check if system is ready
   const handleStartJourney = () => {
     // Only allow journey to start if system is ready
     if (!isSystemReady) return;
+    
+    // Get era name for transition data
+    const eraName = availableEras.find(era => era.id === selectedEra)?.name || "";
+    // Get month name
+    const monthName = new Date(2000, selectedMonth - 1, 1).toLocaleString('default', { month: 'long' });
+    // Format year with BCE/CE
+    const yearFormatted = selectedYear < 0 ? `${Math.abs(selectedYear)} BCE` : `${selectedYear} CE`;
+    
+    // Set transition data with date information
+    setTransitionData({ 
+      location: eraName, 
+      year: `${monthName} ${yearFormatted}`
+    });
     
     // Apply transition effects
     setTransitioning(true);
@@ -1261,6 +1340,57 @@ function App() {
               ))}
             </div>
             
+            {/* Year and Month Selection - only show when era is selected */}
+            {selectedEra && (
+              <div className="time-picker-container">
+                {/* Year Selection */}
+                <div className="time-picker year-picker">
+                  <label className="time-picker-label">Select Year</label>
+                  <div className="time-picker-controls">
+                    <button 
+                      className="time-picker-btn"
+                      onClick={() => handleYearChange(selectedYear - 1)}
+                      disabled={selectedYear <= getAvailableYears().min}
+                    >
+                      ◀
+                    </button>
+                    <div className="time-picker-value">
+                      {selectedYear < 0 ? `${Math.abs(selectedYear)} BCE` : `${selectedYear} CE`}
+                    </div>
+                    <button 
+                      className="time-picker-btn"
+                      onClick={() => handleYearChange(selectedYear + 1)}
+                      disabled={selectedYear >= getAvailableYears().max}
+                    >
+                      ▶
+                    </button>
+                  </div>
+                </div>
+                
+                {/* Month Selection */}
+                <div className="time-picker month-picker">
+                  <label className="time-picker-label">Select Month</label>
+                  <div className="time-picker-controls">
+                    <button 
+                      className="time-picker-btn"
+                      onClick={() => handleMonthChange(selectedMonth === 1 ? 12 : selectedMonth - 1)}
+                    >
+                      ◀
+                    </button>
+                    <div className="time-picker-value">
+                      {new Date(2000, selectedMonth - 1, 1).toLocaleString('default', { month: 'long' })}
+                    </div>
+                    <button 
+                      className="time-picker-btn"
+                      onClick={() => handleMonthChange(selectedMonth === 12 ? 1 : selectedMonth + 1)}
+                    >
+                      ▶
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+            
             {/* Show loading sand timer when era is selected */}
             <div className={`loading-sand-timer ${selectedEra ? 'active' : ''}`}>
               <div className="hourglass">⏳</div>
@@ -1274,8 +1404,12 @@ function App() {
                 </span>
               </div>
               <div className="time-indicator">
-                <span className="time-label">Destinations</span>
-                <span className="time-value">2 Available</span>
+                <span className="time-label">Date</span>
+                <span className="time-value">
+                  {selectedEra 
+                    ? `${new Date(2000, selectedMonth - 1, 1).toLocaleString('default', { month: 'long' })} ${selectedYear < 0 ? Math.abs(selectedYear) + ' BCE' : selectedYear + ' CE'}`
+                    : "Not Selected"}
+                </span>
               </div>
               <div className="time-indicator">
                 <span className="time-label">System</span>

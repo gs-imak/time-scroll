@@ -257,8 +257,11 @@
 .era-year {
   color: rgb(125, 211, 252);
   font-weight: 600;
-  font-size: clamp(1.5rem, 4vw, 3.75rem);
+  font-size: clamp(1.5rem, 3.5vw, 3.5rem);
   text-shadow: 0 0 15px rgba(56, 189, 248, 0.5), 0 0 30px rgba(14, 165, 233, 0.3);
+  line-height: 1.2;
+  max-width: 90vw;
+  margin: 0 auto;
 }
 
 .era-bg {
