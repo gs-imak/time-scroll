@@ -204,6 +204,22 @@ function App() {
         creditViewport: hiddenCreditsContainer
       });
       
+      // Add reference layer for country boundaries and labels immediately after viewer creation
+      const referenceLayer = cesiumViewer.current.imageryLayers.addImageryProvider(
+        new window.Cesium.ArcGisMapServerImageryProvider({
+          url: 'https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Reference_Overlay/MapServer',
+          enablePickFeatures: false
+        })
+      );
+
+      // Adjust the appearance of the reference layer to make text whiter
+      if (referenceLayer) {
+        referenceLayer.alpha = 1.0;        // Full opacity
+        referenceLayer.brightness = 0.5;    // Increased brightness to make text whiter
+        referenceLayer.contrast = 1.0;      // Increased contrast to make text stand out
+        referenceLayer.gamma = 0.8;         // Adjust gamma to enhance whites
+      }
+      
       // Basic terrain setup
       if (window.Cesium.createWorldTerrain) {
         const terrainProvider = window.Cesium.createWorldTerrain({
@@ -1169,12 +1185,21 @@ function App() {
           })
         );
         
-        // Add labels layer
-        cesiumViewer.current.imageryLayers.addImageryProvider(
+        // Add reference layer for country boundaries and labels
+        const dayReferenceLayer = cesiumViewer.current.imageryLayers.addImageryProvider(
           new window.Cesium.ArcGisMapServerImageryProvider({
-            url: 'https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer'
+            url: 'https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Reference_Overlay/MapServer',
+            enablePickFeatures: false
           })
         );
+
+        // Adjust the appearance for day mode to make text whiter
+        if (dayReferenceLayer) {
+          dayReferenceLayer.alpha = 1.0;
+          dayReferenceLayer.brightness = 2.0;
+          dayReferenceLayer.contrast = 1.5;
+          dayReferenceLayer.gamma = 0.8;
+        }
       } else {
         // Night mode: Earth at Night
         cesiumViewer.current.imageryLayers.addImageryProvider(
@@ -1184,12 +1209,21 @@ function App() {
           })
         );
         
-        // Add labels layer
-        cesiumViewer.current.imageryLayers.addImageryProvider(
+        // Add reference layer for country boundaries and labels
+        const nightReferenceLayer = cesiumViewer.current.imageryLayers.addImageryProvider(
           new window.Cesium.ArcGisMapServerImageryProvider({
-            url: 'https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer'
+            url: 'https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Reference_Overlay/MapServer',
+            enablePickFeatures: false
           })
         );
+
+        // Adjust the appearance for night mode to make text whiter
+        if (nightReferenceLayer) {
+          nightReferenceLayer.alpha = 1.0;
+          nightReferenceLayer.brightness = 2.0;
+          nightReferenceLayer.contrast = 1.5;
+          nightReferenceLayer.gamma = 0.8;
+        }
       }
       
       // Country borders have been removed to prevent rendering errors
@@ -1408,7 +1442,7 @@ function App() {
             <div className="floating-element f5"></div>
           </div>
           <div className="landing-content">
-            <h1>Temporal Voyage Explorer</h1>
+            <h1>Time Machine</h1>
             <p className="landing-subtitle">Select an era to begin your journey through space and time</p>
             
             {/* Era selection buttons */}
