@@ -1247,13 +1247,23 @@
 .win11-slider-container {
   position: relative;
   width: 100%;
-  margin: 15px 0;
+  margin: 15px auto;
+  padding: 0;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .win11-slider-wrapper {
   position: relative;
   padding: 15px 0;
-  margin: 0 10px;
+  margin: 0 30px;
+  width: 100%;
+  max-width: 800px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .win11-slider-track {
@@ -1262,6 +1272,7 @@
   background: rgba(15, 23, 42, 0.4);
   border-radius: 4px;
   overflow: visible;
+  width: 100%;
 }
 
 .win11-slider-track-active {
@@ -1288,7 +1299,7 @@
   transform: translate(-50%, -50%);
   box-shadow: 0 0 8px rgba(0, 0, 0, 0.3), 0 0 0 2px rgba(56, 189, 248, 0.5);
   pointer-events: none;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, left 0.2s ease;
   animation: thumb-pulse 2s infinite alternate;
 }
 
@@ -1403,6 +1414,80 @@
 /* Mini Timeline Specific */
 .mini-timeline.win11-style .timeline-period-info {
   margin-bottom: 10px;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .win11-slider-tooltip {
+    top: -30px;
+    font-size: 0.75rem;
+    padding: 3px 8px;
+  }
+  
+  .win11-slider-input::-webkit-slider-thumb {
+    width: 14px;
+    height: 14px;
+  }
+  
+  .win11-slider-input::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+/* Mini Timeline Styling */
+.mini-timeline {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  width: 80%;
+  max-width: 48rem;
+  padding: 16px 32px;
+  border-radius: 16px;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+  transition: opacity 0.5s ease;
+}
+
+.timeline-info-button {
+  right: -45px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 999;
+}
+
+.mini-timeline-slider {
+  margin-top: 16px;
+}
+
+/* Windows 11 tooltip visibility */
+.win11-slider-tooltip.visible {
+  opacity: 1;
+}
+
+.win11-slider-tooltip:not(.visible) {
+  opacity: 0;
+}
+
+/* Dynamic positioning based on data attributes */
+.global-time-slider .win11-slider-track-active[data-value],
+.mini-timeline .win11-slider-track-active[data-value] {
+  width: var(--value, 0%);
+}
+
+.global-time-slider .win11-slider-thumb[data-position],
+.mini-timeline .win11-slider-thumb[data-position] {
+  left: var(--position, 0%);
+}
+
+/* Add wider wrapper margins */
+.win11-slider-wrapper {
+  margin: 0 30px;
 }
 
 /* Responsive Adjustments */

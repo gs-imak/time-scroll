@@ -77,15 +77,34 @@ export const GlobalTimeSlider: React.FC<GlobalTimeSliderProps> = ({
   const updateTooltipPosition = () => {
     if (sliderRef.current && tooltipRef.current) {
       const slider = sliderRef.current;
+      const thumb = slider.closest('.win11-slider-track')?.querySelector('.win11-slider-thumb');
       const tooltip = tooltipRef.current;
       
-      // Calculate the thumb position based on slider value
-      const percentage = sliderValue;
-      const sliderWidth = slider.offsetWidth;
-      const thumbPosition = (percentage / 100) * sliderWidth;
-      
-      // Center the tooltip over the thumb
-      tooltip.style.left = `${thumbPosition}px`;
+      if (thumb) {
+        // Use the thumb's position directly
+        const thumbRect = thumb.getBoundingClientRect();
+        const tooltipRect = tooltip.getBoundingClientRect();
+        const sliderRect = slider.getBoundingClientRect();
+        
+        // Position tooltip above thumb
+        const thumbCenterX = thumbRect.left + thumbRect.width / 2 - sliderRect.left;
+        
+        // Get tooltip width for positioning constraints
+        const tooltipWidth = tooltipRect.width;
+        const minPosition = tooltipWidth / 2; // Don't let left edge go below this
+        const maxPosition = sliderRect.width - (tooltipWidth / 2); // Don't let right edge exceed this
+        
+        // Constrain tooltip position to prevent it from going off-screen
+        let constrainedPosition = thumbCenterX;
+        if (thumbCenterX < minPosition) {
+          constrainedPosition = minPosition;
+        } else if (thumbCenterX > maxPosition) {
+          constrainedPosition = maxPosition;
+        }
+        
+        // Center the tooltip over the thumb, with constraints
+        tooltip.style.left = `${constrainedPosition}px`;
+      }
     }
   };
 
@@ -226,6 +245,28 @@ export const GlobalTimeSlider: React.FC<GlobalTimeSliderProps> = ({
     updateTooltipPosition();
   }, [selectedPeriodIndex, sliderValue]);
 
+  // Update slider value and CSS variables
+  useEffect(() => {
+    if (sliderRef.current) {
+      // Find the track and thumb elements
+      const track = sliderRef.current.closest('.win11-slider-track');
+      if (track) {
+        const trackActive = track.querySelector('.win11-slider-track-active') as HTMLElement;
+        const thumb = track.querySelector('.win11-slider-thumb') as HTMLElement;
+        
+        if (trackActive) {
+          trackActive.style.width = `${sliderValue}%`;
+        }
+        
+        if (thumb) {
+          thumb.style.left = `${sliderValue}%`;
+        }
+      }
+    }
+    
+    updateTooltipPosition();
+  }, [sliderValue]);
+
   // Handle direct period change with animation
   const handlePeriodChange = (newIndex: number) => {
     if (isAnimating || newIndex === selectedPeriodIndex) return;
@@ -264,9 +305,8 @@ export const GlobalTimeSlider: React.FC<GlobalTimeSliderProps> = ({
         <div className="win11-slider-container">
           <div className="win11-slider-wrapper">
             <div 
-              className="win11-slider-tooltip" 
+              className={`win11-slider-tooltip ${showTooltip || isDragging ? 'visible' : ''}`}
               ref={tooltipRef}
-              style={{ opacity: showTooltip || isDragging ? 1 : 0 }}
             >
               {timePeriods[selectedPeriodIndex].label}
             </div>
@@ -274,11 +314,11 @@ export const GlobalTimeSlider: React.FC<GlobalTimeSliderProps> = ({
             <div className="win11-slider-track">
               <div 
                 className="win11-slider-track-active" 
-                style={{ width: `${sliderValue}%` }}
+                data-value={sliderValue}
               />
               <div 
                 className="win11-slider-thumb" 
-                style={{ left: `${sliderValue}%` }}
+                data-position={sliderValue}
               />
               <input
                 type="range"
