@@ -1478,10 +1478,7 @@ function App() {
               </div>
             )}
             
-            {/* Show loading sand timer when era is selected */}
-            <div className={`loading-sand-timer ${selectedEra ? 'active' : ''}`}>
-              <div className="hourglass">⏳</div>
-            </div>
+            {/* Show loading sand timer when era is selected - REMOVED */}
             
             <div className="time-indicators">
               <div className="time-indicator">
