@@ -36,15 +36,16 @@ export const GlobalTimeSlider: React.FC<GlobalTimeSliderProps> = ({
 }) => {
   const [selectedPeriodIndex, setSelectedPeriodIndex] = useState<number>(0);
   const [isAnimating, setIsAnimating] = useState<boolean>(false);
-  const [activeMarkerIndex, setActiveMarkerIndex] = useState<number | null>(null);
-
+  const [isSliderVisible, setIsSliderVisible] = useState<boolean>(true);
+  const [isDragging, setIsDragging] = useState<boolean>(false);
+  const [sliderValue, setSliderValue] = useState<number>(0);
+  const [showTooltip, setShowTooltip] = useState<boolean>(false);
+  
   // Component refs
-  const progressRef = useRef<HTMLDivElement>(null);
+  const sliderRef = useRef<HTMLInputElement>(null);
+  const tooltipRef = useRef<HTMLDivElement>(null);
   const periodYearsRef = useRef<HTMLDivElement>(null);
   const periodLabelRef = useRef<HTMLDivElement>(null);
-  
-  // Track current progress percentage for animation purposes
-  const progressPercentage = selectedPeriodIndex / (timePeriods.length - 1) * 100;
   
   // Format year with BCE/CE notation
   const formatYear = (year: number): string => {
@@ -61,43 +62,99 @@ export const GlobalTimeSlider: React.FC<GlobalTimeSliderProps> = ({
     );
   };
 
-  // Handle marker hover
-  const handleMarkerHover = (index: number) => {
-    setActiveMarkerIndex(index);
+  // Calculate slider position from period index
+  const getSliderValueFromPeriodIndex = (index: number): number => {
+    return index / (timePeriods.length - 1) * 100;
+  };
+  
+  // Calculate period index from slider value
+  const getPeriodIndexFromSliderValue = (value: number): number => {
+    const rawIndex = (value / 100) * (timePeriods.length - 1);
+    return Math.round(rawIndex);
   };
 
-  const handleMarkerLeave = () => {
-    setActiveMarkerIndex(null);
-  };
-
-  // Filter events whenever selected period changes
-  useEffect(() => {
-    const filteredEvents = getVisibleEvents();
-    if (onEventsFiltered) {
-      onEventsFiltered(filteredEvents);
+  // Update tooltip position and thumb position
+  const updateTooltipPosition = () => {
+    if (sliderRef.current && tooltipRef.current) {
+      const slider = sliderRef.current;
+      const tooltip = tooltipRef.current;
+      
+      // Calculate the thumb position based on slider value
+      const percentage = sliderValue;
+      const sliderWidth = slider.offsetWidth;
+      const thumbPosition = (percentage / 100) * sliderWidth;
+      
+      // Center the tooltip over the thumb
+      tooltip.style.left = `${thumbPosition}px`;
     }
-    if (onTimePeriodChange) {
-      onTimePeriodChange(timePeriods[selectedPeriodIndex]);
+  };
+
+  // Handle direct slider input
+  const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = parseFloat(e.target.value);
+    setSliderValue(newValue);
+    
+    // Only update the period index if we're dragging
+    // This prevents jumps when just hovering over the slider
+    if (isDragging) {
+      const newIndex = getPeriodIndexFromSliderValue(newValue);
+      if (newIndex !== selectedPeriodIndex) {
+        setSelectedPeriodIndex(newIndex);
+      }
     }
     
-    // Update the progress bar width
-    if (progressRef.current) {
-      gsap.to(progressRef.current, {
-        width: `${progressPercentage}%`,
-        duration: 0.4,
-        ease: "power1.out"
-      });
-    }
-  }, [selectedPeriodIndex, onEventsFiltered, onTimePeriodChange]);
+    updateTooltipPosition();
+  };
+
+  // Mouse/touch event handlers for smoother dragging
+  const handleMouseDown = () => {
+    setIsDragging(true);
+    document.addEventListener('mouseup', handleMouseUp);
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+    document.removeEventListener('mouseup', handleMouseUp);
+  };
+
+  const handleTouchStart = () => {
+    setIsDragging(true);
+    document.addEventListener('touchend', handleTouchEnd);
+  };
+
+  const handleTouchEnd = () => {
+    setIsDragging(false);
+    document.removeEventListener('touchend', handleTouchEnd);
+  };
+
+  // Clean up event listeners on unmount
+  useEffect(() => {
+    return () => {
+      document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, []);
 
   // Simplified time travel animation
-  const animateTimeTravel = (fromIndex: number, toIndex: number) => {
+  const animateTimeTravel = (toIndex: number) => {
     setIsAnimating(true);
     
     // Create a simple timeline
     const timeline = gsap.timeline({
       onComplete: () => {
         setIsAnimating(false);
+        
+        // Set a timer to hide the slider after a period of inactivity
+        setTimeout(() => {
+          if (!isDragging && !showTooltip) {
+            const fadeTimeline = gsap.timeline();
+            fadeTimeline.to('.global-time-slider', {
+              opacity: 0.4,
+              duration: 0.8,
+              ease: "power2.out"
+            });
+          }
+        }, 5000); // Hide after 5 seconds of inactivity
       }
     });
     
@@ -112,6 +169,7 @@ export const GlobalTimeSlider: React.FC<GlobalTimeSliderProps> = ({
     // Update the selected period
     timeline.call(() => {
       setSelectedPeriodIndex(toIndex);
+      setSliderValue(getSliderValueFromPeriodIndex(toIndex));
     });
     
     // Fade in new content
@@ -122,96 +180,119 @@ export const GlobalTimeSlider: React.FC<GlobalTimeSliderProps> = ({
       ease: "power1.out"
     });
     
+    // Add a shimmer effect to the slider track
+    timeline.fromTo('.win11-slider-track-active', {
+      backgroundImage: 'linear-gradient(90deg, rgba(56, 189, 248, 0.7), rgba(96, 239, 255, 0.9), rgba(56, 189, 248, 0.7))',
+      backgroundSize: '200% 100%',
+      backgroundPosition: '0% 50%'
+    }, {
+      backgroundPosition: '100% 50%',
+      duration: 1.2,
+      ease: "power1.inOut"
+    }, "-=0.3");
+    
     return timeline;
   };
 
-  // Handle period change with animation
+  // Update events and progress when selected period changes
+  useEffect(() => {
+    const filteredEvents = getVisibleEvents();
+    if (onEventsFiltered) {
+      onEventsFiltered(filteredEvents);
+    }
+    if (onTimePeriodChange) {
+      onTimePeriodChange(timePeriods[selectedPeriodIndex]);
+    }
+  }, [selectedPeriodIndex, onEventsFiltered, onTimePeriodChange]);
+
+  // Initialize slider value
+  useEffect(() => {
+    setSliderValue(getSliderValueFromPeriodIndex(selectedPeriodIndex));
+  }, []);
+  
+  // Show full opacity when interacting with slider
+  useEffect(() => {
+    if (isDragging || showTooltip) {
+      gsap.to('.global-time-slider', {
+        opacity: 1,
+        duration: 0.3,
+        ease: "power2.out"
+      });
+    }
+  }, [isDragging, showTooltip]);
+  
+  // Update tooltip position when period index changes
+  useEffect(() => {
+    updateTooltipPosition();
+  }, [selectedPeriodIndex, sliderValue]);
+
+  // Handle direct period change with animation
   const handlePeriodChange = (newIndex: number) => {
     if (isAnimating || newIndex === selectedPeriodIndex) return;
-    
-    // Create and play the time travel animation
-    animateTimeTravel(selectedPeriodIndex, newIndex);
-  };
-
-  const handleNextPeriod = () => {
-    if (selectedPeriodIndex < timePeriods.length - 1 && !isAnimating) {
-      handlePeriodChange(selectedPeriodIndex + 1);
-    }
-  };
-
-  const handlePreviousPeriod = () => {
-    if (selectedPeriodIndex > 0 && !isAnimating) {
-      handlePeriodChange(selectedPeriodIndex - 1);
-    }
+    animateTimeTravel(newIndex);
   };
 
   const filteredEvents = getVisibleEvents();
 
   return (
     <div 
-      className={`global-time-slider ${isAnimating ? 'animating' : ''}`}
+      className={`global-time-slider win11-style ${isAnimating ? 'animating' : ''}`}
+      onMouseEnter={() => {
+        setShowTooltip(true);
+        gsap.to('.global-time-slider', {
+          opacity: 1,
+          duration: 0.3,
+          ease: "power2.out"
+        });
+      }}
+      onMouseLeave={() => {
+        if (!isDragging) {
+          setShowTooltip(false);
+        }
+      }}
     >
       <div className="time-slider-content">
         <div className="time-period-display">
-          <h3>Time Period</h3>
-          <div className="time-period-info">
-            <div ref={periodYearsRef} className="time-period-years">
-              {formatYear(timePeriods[selectedPeriodIndex].start)} - {formatYear(timePeriods[selectedPeriodIndex].end)}
-            </div>
-            <div ref={periodLabelRef} className="time-period-label">
-              {timePeriods[selectedPeriodIndex].label}
-            </div>
+          <div ref={periodYearsRef} className="time-period-years">
+            {formatYear(timePeriods[selectedPeriodIndex].start)} - {formatYear(timePeriods[selectedPeriodIndex].end)}
+          </div>
+          <div ref={periodLabelRef} className="time-period-label">
+            {timePeriods[selectedPeriodIndex].label}
           </div>
         </div>
 
-        <div className="time-slider-controls">
-          <button 
-            className="time-slider-button prev" 
-            onClick={handlePreviousPeriod}
-            disabled={selectedPeriodIndex === 0 || isAnimating}
-          >
-            Previous
-          </button>
-          
-          <div className="time-slider-track">
+        <div className="win11-slider-container">
+          <div className="win11-slider-wrapper">
             <div 
-              ref={progressRef}
-              className="time-slider-progress" 
-              style={{ width: `${progressPercentage}%` }}
-            ></div>
+              className="win11-slider-tooltip" 
+              ref={tooltipRef}
+              style={{ opacity: showTooltip || isDragging ? 1 : 0 }}
+            >
+              {timePeriods[selectedPeriodIndex].label}
+            </div>
             
-            {timePeriods.map((period, index) => {
-              const position = index / (timePeriods.length - 1) * 100;
-              const isActive = index === selectedPeriodIndex;
-              const isHovered = activeMarkerIndex === index;
-              
-              return (
-                <div 
-                  key={index}
-                  className="time-marker-container"
-                  style={{ left: `${position}%` }}
-                  onMouseEnter={() => handleMarkerHover(index)}
-                  onMouseLeave={handleMarkerLeave}
-                  onClick={() => handlePeriodChange(index)}
-                >
-                  <div 
-                    className={`time-slider-marker ${isActive ? 'active' : ''}`}
-                  ></div>
-                  <div className={`time-marker-label ${isActive || isHovered ? 'visible' : ''}`}>
-                    {period.label}
-                  </div>
-                </div>
-              );
-            })}
+            <div className="win11-slider-track">
+              <div 
+                className="win11-slider-track-active" 
+                style={{ width: `${sliderValue}%` }}
+              />
+              <div 
+                className="win11-slider-thumb" 
+                style={{ left: `${sliderValue}%` }}
+              />
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={sliderValue}
+                ref={sliderRef}
+                className="win11-slider-input"
+                onChange={handleSliderChange}
+                onMouseDown={handleMouseDown}
+                onTouchStart={handleTouchStart}
+              />
+            </div>
           </div>
-          
-          <button 
-            className="time-slider-button next" 
-            onClick={handleNextPeriod}
-            disabled={selectedPeriodIndex === timePeriods.length - 1 || isAnimating}
-          >
-            Next
-          </button>
         </div>
 
         <div className="visible-events-info">
