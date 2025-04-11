@@ -3,12 +3,13 @@ import { useRive } from '@rive-app/react-canvas';
 
 interface PyramidAnimationProps {
   isVisible: boolean;
+  isPlaying: boolean;
 }
 
-export function PyramidAnimation({ isVisible }: PyramidAnimationProps) {
-  const { RiveComponent } = useRive({
+export function PyramidAnimation({ isVisible, isPlaying }: PyramidAnimationProps) {
+  const { RiveComponent, rive } = useRive({
     src: '/assets/rive/pyramid_building.riv',
-    autoplay: true,
+    autoplay: false,
   });
   
   const containerRef = useRef<HTMLDivElement>(null);
@@ -60,6 +61,17 @@ export function PyramidAnimation({ isVisible }: PyramidAnimationProps) {
       preRenderListener();
     };
   }, [isVisible]);
+
+  // Control animation playback based on isPlaying prop
+  useEffect(() => {
+    if (rive) {
+      if (isPlaying) {
+        rive.play();
+      } else {
+        rive.pause();
+      }
+    }
+  }, [isPlaying, rive]);
   
   if (!isVisible) return null;
   

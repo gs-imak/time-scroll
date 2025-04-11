@@ -189,6 +189,8 @@ function App() {
   // Track active event listeners for cleanup
   const activeListenersRef = useRef<(() => void)[]>([]);
 
+  const [isPlaying, setIsPlaying] = useState(false);
+
   useEffect(() => {
     if (showLandingPage) return; // Don't initialize Cesium on the landing page
 
@@ -1229,6 +1231,26 @@ function App() {
         // Set camera to new position while preserving direction
         cesiumViewer.current.camera.position = newPosition;
       }
+
+      // Only control animation if we're in Egypt view
+      if (currentLocation === 'egypt') {
+        const ANIMATION_START_ZOOM = 3000000;
+        const ANIMATION_STOP_ZOOM = 3500000;
+        
+        if (currentHeight <= ANIMATION_START_ZOOM) {
+          // Start animation when zoomed in close enough
+          setIsPlaying(true);
+          setShowPyramidAnimation(true);
+        } else if (currentHeight > ANIMATION_STOP_ZOOM) {
+          // Stop animation and hide it when zoomed out too far
+          setIsPlaying(false);
+          setShowPyramidAnimation(false);
+        }
+      } else {
+        // If we're not in Egypt view, make sure animation is hidden
+        setShowPyramidAnimation(false);
+        setIsPlaying(false);
+      }
     };
 
     // Clean up any existing listeners before adding new ones
@@ -1643,6 +1665,7 @@ function App() {
         {/* Add the PyramidAnimation component */}
         <PyramidAnimation
           isVisible={showPyramidAnimation}
+          isPlaying={isPlaying}
         />
       </div>
     </>
