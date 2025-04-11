@@ -1,5 +1,6 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useRive } from '@rive-app/react-canvas';
+import { PyramidInfoPopup } from './PyramidInfoPopup';
 
 interface PyramidAnimationProps {
   isVisible: boolean;
@@ -7,6 +8,7 @@ interface PyramidAnimationProps {
 }
 
 export function PyramidAnimation({ isVisible, isPlaying }: PyramidAnimationProps) {
+  const [showPopup, setShowPopup] = useState<boolean>(false);
   const { RiveComponent, rive } = useRive({
     src: '/assets/rive/pyramid_building.riv',
     autoplay: false,
@@ -73,21 +75,37 @@ export function PyramidAnimation({ isVisible, isPlaying }: PyramidAnimationProps
     }
   }, [isPlaying, rive]);
   
+  const handleAnimationClick = () => {
+    setShowPopup(true);
+  };
+  
+  const handleClosePopup = () => {
+    setShowPopup(false);
+  };
+  
   if (!isVisible) return null;
   
   return (
-    <div
-      ref={containerRef}
-      style={{
-        position: 'absolute',
-        width: '300px',
-        height: '300px',
-        pointerEvents: 'none',
-        zIndex: 1000,
-        display: 'none', // Initially hidden until positioned
-      }}
-    >
-      <RiveComponent />
-    </div>
+    <>
+      <div
+        ref={containerRef}
+        style={{
+          position: 'absolute',
+          width: '300px',
+          height: '300px',
+          pointerEvents: 'auto', // Changed from 'none' to make it clickable
+          zIndex: 1000,
+          display: 'none', // Initially hidden until positioned
+          cursor: 'pointer', // Show pointer cursor on hover
+        }}
+        onClick={handleAnimationClick}
+      >
+        <RiveComponent />
+      </div>
+      
+      {showPopup && (
+        <PyramidInfoPopup onClose={handleClosePopup} />
+      )}
+    </>
   );
 } 
