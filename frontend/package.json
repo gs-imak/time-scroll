@@ -16,10 +16,12 @@
   "type": "commonjs",
   "dependencies": {
     "@rive-app/react-canvas": "^4.18.6",
+    "@types/react-datepicker": "^6.2.0",
     "@types/three": "^0.175.0",
     "cesium": "^1.128.0",
     "gsap": "^3.12.7",
     "react": "^19.1.0",
+    "react-datepicker": "^8.3.0",
     "react-dom": "^19.1.0",
     "three": "^0.175.0"
   },

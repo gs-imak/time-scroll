@@ -140,9 +140,9 @@ function App() {
   const [currentGlobalPeriod, setCurrentGlobalPeriod] = useState(GLOBAL_TIME_PERIODS[GLOBAL_TIME_PERIODS.length - 1].id);
   
   // New state variables for the landing page experience
-  const [selectedEra, setSelectedEra] = useState<string | null>(null);
-  const [isSystemReady, setIsSystemReady] = useState(false);
-  const [isPortalStabilized, setIsPortalStabilized] = useState(false);
+  const [selectedEra, setSelectedEra] = useState<string | null>('modern');
+  const [isSystemReady, setIsSystemReady] = useState(true);
+  const [isPortalStabilized, setIsPortalStabilized] = useState(true);
   const [availableEras] = useState([
     { id: 'ancient', name: 'Ancient World' },
     { id: 'medieval', name: 'Medieval Era' },
@@ -1435,68 +1435,44 @@ function App() {
           </div>
           <div className="landing-content">
             <h1>Time Machine</h1>
-            <p className="landing-subtitle">Select an era to begin your journey through space and time</p>
-            
-            {/* Era selection buttons */}
-            <div className="era-selection">
-              {availableEras.map(era => (
-                <button 
-                  key={era.id}
-                  className={`era-button ${selectedEra === era.id ? 'selected' : ''}`}
-                  onClick={() => handleEraSelection(era.id)}
-                  disabled={transitioning}
-                >
-                  {era.name}
-                </button>
-              ))}
-            </div>
+            <p className="landing-subtitle">Begin your journey through space and time</p>
             
             {/* Year and Month Selection - only show when era is selected */}
             {selectedEra && (
               <div className="time-picker-container">
-                {/* Year Selection */}
+                {/* Year Selection - converted to scroll toggle */}
                 <div className="time-picker year-picker">
                   <label className="time-picker-label">Select Year</label>
-                  <div className="time-picker-controls">
-                    <button 
-                      className="time-picker-btn"
-                      onClick={() => handleYearChange(selectedYear - 1)}
-                      disabled={selectedYear <= getAvailableYears().min}
-                    >
-                      ◀
-                    </button>
+                  <div className="scroll-toggle">
+                    <input 
+                      type="range" 
+                      min={getAvailableYears().min} 
+                      max={getAvailableYears().max}
+                      value={selectedYear}
+                      onChange={(e) => handleYearChange(parseInt(e.target.value))}
+                      className="time-scroll-input"
+                    />
                     <div className="time-picker-value">
                       {selectedYear < 0 ? `${Math.abs(selectedYear)} BCE` : `${selectedYear} CE`}
                     </div>
-                    <button 
-                      className="time-picker-btn"
-                      onClick={() => handleYearChange(selectedYear + 1)}
-                      disabled={selectedYear >= getAvailableYears().max}
-                    >
-                      ▶
-                    </button>
                   </div>
                 </div>
                 
-                {/* Month Selection */}
+                {/* Month Selection - converted to scroll toggle */}
                 <div className="time-picker month-picker">
                   <label className="time-picker-label">Select Month</label>
-                  <div className="time-picker-controls">
-                    <button 
-                      className="time-picker-btn"
-                      onClick={() => handleMonthChange(selectedMonth === 1 ? 12 : selectedMonth - 1)}
-                    >
-                      ◀
-                    </button>
+                  <div className="scroll-toggle">
+                    <input 
+                      type="range" 
+                      min={1} 
+                      max={12}
+                      value={selectedMonth}
+                      onChange={(e) => handleMonthChange(parseInt(e.target.value))}
+                      className="time-scroll-input"
+                    />
                     <div className="time-picker-value">
                       {new Date(2000, selectedMonth - 1, 1).toLocaleString('default', { month: 'long' })}
                     </div>
-                    <button 
-                      className="time-picker-btn"
-                      onClick={() => handleMonthChange(selectedMonth === 12 ? 1 : selectedMonth + 1)}
-                    >
-                      ▶
-                    </button>
                   </div>
                 </div>
               </div>
@@ -1543,7 +1519,7 @@ function App() {
               disabled={transitioning || !isSystemReady}
             >
               <span className="button-text">
-                {isSystemReady ? "Initialize Time Portal" : "Awaiting Era Selection"}
+                Initialize Time Portal
               </span>
               <span className="button-icon">→</span>
             </button>
