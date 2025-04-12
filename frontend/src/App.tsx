@@ -231,9 +231,9 @@ function App() {
         
         // Load GeoJSON data and style it
         window.Cesium.GeoJsonDataSource.load('/data/countries.geo.json', {
-          stroke: window.Cesium.Color.WHITE,
-          fill: window.Cesium.Color.TRANSPARENT,
-          strokeWidth: 2,
+          stroke: window.Cesium.Color.fromCssColorString('#60efff'),
+          fill: window.Cesium.Color.fromCssColorString('rgba(96, 239, 255, 0.05)'),
+          strokeWidth: 3,
           markerSymbol: '' // Prevent default markers
         }).then((dataSource) => {
           cesiumViewer.current.dataSources.add(dataSource);
@@ -258,11 +258,17 @@ function App() {
             entity.position = center;
             entity.label = new window.Cesium.LabelGraphics({
               text: countryName,
-              font: '14px sans-serif',
-              fillColor: window.Cesium.Color.WHITE,
-              style: window.Cesium.LabelStyle.FILL,
+              font: '18px Helvetica, Arial, sans-serif',
+              fillColor: window.Cesium.Color.fromCssColorString('#60efff'), // Bright cyan blue
+              outlineColor: window.Cesium.Color.BLACK,
+              outlineWidth: 3,
+              style: window.Cesium.LabelStyle.FILL_AND_OUTLINE,
               horizontalOrigin: window.Cesium.HorizontalOrigin.CENTER,
-              verticalOrigin: window.Cesium.VerticalOrigin.CENTER
+              verticalOrigin: window.Cesium.VerticalOrigin.CENTER,
+              pixelOffset: new window.Cesium.Cartesian2(0, 0),
+              translucencyByDistance: new window.Cesium.NearFarScalar(1.5e7, 1.0, 3.5e7, 0.4),
+              scale: 1.0,
+              scaleByDistance: new window.Cesium.NearFarScalar(1.5e7, 1.0, 3.5e7, 0.8)
             });
           }
           
@@ -284,15 +290,27 @@ function App() {
         // Basic terrain setup
         if (window.Cesium.createWorldTerrain) {
           const terrainProvider = window.Cesium.createWorldTerrain({
-            requestWaterMask: false,
-            requestVertexNormals: false
+            requestWaterMask: true,
+            requestVertexNormals: true
           });
           cesiumViewer.current.terrainProvider = terrainProvider;
         }
         
         // Improve performance and appearance
-        cesiumViewer.current.scene.fog.enabled = false;
-        cesiumViewer.current.scene.globe.showGroundAtmosphere = false;
+        cesiumViewer.current.scene.fog.enabled = true;
+        cesiumViewer.current.scene.fog.density = 0.0002;
+        cesiumViewer.current.scene.fog.screenSpaceErrorFactor = 2.0;
+        
+        // Enable atmosphere for better visual appearance
+        cesiumViewer.current.scene.globe.showGroundAtmosphere = true;
+        cesiumViewer.current.scene.globe.enableLighting = true;
+        
+        // Add sky atmosphere for a more realistic look
+        cesiumViewer.current.scene.skyAtmosphere.show = true;
+        cesiumViewer.current.scene.skyAtmosphere.hueShift = 0.0;
+        cesiumViewer.current.scene.skyAtmosphere.saturationShift = 0.1;
+        cesiumViewer.current.scene.skyAtmosphere.brightnessShift = 0.1;
+        
         cesiumViewer.current.scene.globe.maximumScreenSpaceError = 2;
         
         // Add camera constraints - set maximum zoom distance to prevent zooming out too far
@@ -586,52 +604,44 @@ function App() {
     }
   };
   
-  // Function to add location pins
+  // Function to add location pins for interactive locations
   const addLocationPins = () => {
     if (!cesiumViewer.current) return;
     
-    // Keep track of pins created for better management
-    const locationPinsArray: any[] = [];
+    console.log("Adding location pins for:", Object.keys(LOCATIONS));
     
     Object.values(LOCATIONS).forEach(location => {
-      // Skip the label for Pyramids of Giza when the pyramid animation is showing
-      const showLabel = !(location.id === 'egypt' && showPyramidAnimation);
+      // Create the pin canvas
+      const pinCanvas = buildPin(location.emoji);
       
-      // Create a pin entity with improved visibility options
-      const pinEntity = cesiumViewer.current.entities.add({
-        id: `location_pin_${location.name.replace(/\s+/g, '_').toLowerCase()}`,
+      // Create billboard entity
+      cesiumViewer.current.entities.add({
+        id: `location_pin_${location.id}`,
         name: location.name,
-        position: window.Cesium.Cartesian3.fromDegrees(location.longitude, location.latitude),
+        position: window.Cesium.Cartesian3.fromDegrees(location.longitude, location.latitude, 10000),
         billboard: {
-          image: buildPin(location.emoji),
+          image: pinCanvas.toDataURL(),
+          scale: 1.2, // Larger pins for better visibility
+          horizontalOrigin: window.Cesium.HorizontalOrigin.CENTER,
           verticalOrigin: window.Cesium.VerticalOrigin.BOTTOM,
-          scale: 0.8, // Smaller scale for Google Maps style
-          heightReference: window.Cesium.HeightReference.CLAMP_TO_GROUND,
-          disableDepthTestDistance: Number.POSITIVE_INFINITY, // Always show on top
-          eyeOffset: new window.Cesium.Cartesian3(0, 0, -10) // Slight offset toward camera
+          heightReference: window.Cesium.HeightReference.CLAMP_TO_GROUND
         },
         label: {
-          text: showLabel ? location.name : '', // Only show the label if showLabel is true
-          font: '14pt sans-serif', // Increased font size
-          style: window.Cesium.LabelStyle.FILL_AND_OUTLINE,
-          outlineWidth: 3, // Increased outline width
+          text: location.name,
+          font: '16px Helvetica, Arial, sans-serif',
+          fillColor: window.Cesium.Color.fromCssColorString('#60efff'),
           outlineColor: window.Cesium.Color.BLACK,
-          fillColor: window.Cesium.Color.WHITE,
+          outlineWidth: 4,
+          style: window.Cesium.LabelStyle.FILL_AND_OUTLINE,
           verticalOrigin: window.Cesium.VerticalOrigin.TOP,
-          pixelOffset: new window.Cesium.Cartesian2(0, -12), // Adjusted offset for larger icon
-          showBackground: showLabel, // Only show background if showing label
-          backgroundColor: new window.Cesium.Color(0.1, 0.1, 0.1, 0.8), // More opaque background
-          backgroundPadding: new window.Cesium.Cartesian2(8, 6),
-          horizontalOrigin: window.Cesium.HorizontalOrigin.CENTER,
-          disableDepthTestDistance: Number.POSITIVE_INFINITY, // Always show on top
-          translucencyByDistance: new window.Cesium.NearFarScalar(1.5e6, 1.0, 8.0e6, 0.6) // Adjusted fade distance and opacity
+          pixelOffset: new window.Cesium.Cartesian2(0, 6),
+          showBackground: true,
+          backgroundColor: window.Cesium.Color.fromCssColorString('rgba(0, 30, 60, 0.7)'),
+          backgroundPadding: new window.Cesium.Cartesian2(8, 4),
+          horizontalOrigin: window.Cesium.HorizontalOrigin.CENTER
         }
       });
-      
-      locationPinsArray.push(pinEntity);
     });
-    
-    return locationPinsArray;
   };
 
   // Function to clean up any active listeners
@@ -1250,8 +1260,7 @@ function App() {
         scale: 0.8,
         horizontalOrigin: window.Cesium.HorizontalOrigin.CENTER,
         verticalOrigin: window.Cesium.VerticalOrigin.BOTTOM,
-        heightReference: window.Cesium.HeightReference.RELATIVE_TO_GROUND,
-        disableDepthTestDistance: 50000 // Less priority than location pins but still visible
+        heightReference: window.Cesium.HeightReference.RELATIVE_TO_GROUND
       },
       label: {
         text: displayLabel,

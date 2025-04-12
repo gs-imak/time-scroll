@@ -1407,3 +1407,42 @@ input:checked + .toggle-slider:before {
     max-width: 320px;
   }
 }
+
+/* Country Label Enhancement for Cesium */
+.cesium-viewer .cesium-entity-label {
+  pointer-events: auto;
+  font-family: 'Helvetica', 'Arial', sans-serif;
+  letter-spacing: 0.5px;
+}
+
+/* Fix the sometimes dim appearance of Cesium labels */
+.cesium-viewer .cesium-entity-label text {
+  fill: #60efff !important;
+  stroke: black;
+  stroke-width: 3px;
+  paint-order: stroke fill;
+  filter: drop-shadow(0px 0px 6px rgba(0, 0, 0, 0.8));
+  font-weight: bold;
+}
+
+/* Add pulsing animation to country labels on hover */
+.cesium-viewer .cesium-entity-label:hover text {
+  fill: #ffffff !important;
+  animation: labelPulse 2s infinite;
+  filter: drop-shadow(0px 0px 8px rgba(96, 239, 255, 0.9));
+}
+
+@keyframes labelPulse {
+  0% {
+    fill: #60efff !important;
+    filter: drop-shadow(0px 0px 4px rgba(96, 239, 255, 0.7));
+  }
+  50% {
+    fill: #ffffff !important;
+    filter: drop-shadow(0px 0px 10px rgba(96, 239, 255, 1));
+  }
+  100% {
+    fill: #60efff !important;
+    filter: drop-shadow(0px 0px 4px rgba(96, 239, 255, 0.7));
+  }
+}
