@@ -140,6 +140,7 @@ function App() {
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [showEventDetail, setShowEventDetail] = useState(false);
   const [currentGlobalPeriod, setCurrentGlobalPeriod] = useState(GLOBAL_TIME_PERIODS[GLOBAL_TIME_PERIODS.length - 1].id);
+  const [currentGlobalYear, setCurrentGlobalYear] = useState<number>(-2023);
   
   // New state variables for the landing page experience
   const [selectedEra, setSelectedEra] = useState<string | null>('modern');
@@ -465,14 +466,27 @@ function App() {
       }
     }
     
-    // Restore location pins immediately
-    locationPins.forEach((pin: any) => {
-      cesiumViewer.current.entities.add(pin);
-    });
-    
-    // Only show specific time period visualization for Egypt
+    // Add time period visualization
     console.log(`Adding visualization for period: ${newPeriod.id}`);
     addTimePeriodVisualization(newPeriod.id);
+    
+    // Refresh location pins to ensure correct label visibility with animation
+    if (showPyramidAnimation) {
+      // Small delay to ensure animation state is updated
+      setTimeout(() => {
+        // First remove any existing location pins
+        const entities = cesiumViewer.current.entities.values;
+        for (let i = entities.length - 1; i >= 0; i--) {
+          const entity = entities[i];
+          if (entity && entity.id && entity.id.toString().startsWith('location_pin_')) {
+            cesiumViewer.current.entities.remove(entity);
+          }
+        }
+        
+        // Add location pins with proper label visibility
+        addLocationPins();
+      }, 50);
+    }
   };
   
   // Function to add visualization for a specific time period
@@ -580,6 +594,9 @@ function App() {
     const locationPinsArray: any[] = [];
     
     Object.values(LOCATIONS).forEach(location => {
+      // Skip the label for Pyramids of Giza when the pyramid animation is showing
+      const showLabel = !(location.id === 'egypt' && showPyramidAnimation);
+      
       // Create a pin entity with improved visibility options
       const pinEntity = cesiumViewer.current.entities.add({
         id: `location_pin_${location.name.replace(/\s+/g, '_').toLowerCase()}`,
@@ -594,7 +611,7 @@ function App() {
           eyeOffset: new window.Cesium.Cartesian3(0, 0, -10) // Slight offset toward camera
         },
         label: {
-          text: location.name,
+          text: showLabel ? location.name : '', // Only show the label if showLabel is true
           font: '14pt sans-serif', // Increased font size
           style: window.Cesium.LabelStyle.FILL_AND_OUTLINE,
           outlineWidth: 3, // Increased outline width
@@ -602,7 +619,7 @@ function App() {
           fillColor: window.Cesium.Color.WHITE,
           verticalOrigin: window.Cesium.VerticalOrigin.TOP,
           pixelOffset: new window.Cesium.Cartesian2(0, -12), // Adjusted offset for larger icon
-          showBackground: true,
+          showBackground: showLabel, // Only show background if showing label
           backgroundColor: new window.Cesium.Color(0.1, 0.1, 0.1, 0.8), // More opaque background
           backgroundPadding: new window.Cesium.Cartesian2(8, 6),
           horizontalOrigin: window.Cesium.HorizontalOrigin.CENTER,
@@ -685,6 +702,21 @@ function App() {
       // Double-check that animation is shown
       setShowPyramidAnimation(true);
       setIsPlaying(true);
+      
+      // Refresh location pins to hide the label
+      if (cesiumViewer.current) {
+        // First remove any existing location pins
+        const entities = cesiumViewer.current.entities.values;
+        for (let i = entities.length - 1; i >= 0; i--) {
+          const entity = entities[i];
+          if (entity && entity.id && entity.id.toString().startsWith('location_pin_')) {
+            cesiumViewer.current.entities.remove(entity);
+          }
+        }
+        
+        // Then add them back with updated visibility settings
+        addLocationPins();
+      }
     }, 100);
     
     // Set minimum allowed zoom height for Egypt
@@ -788,18 +820,9 @@ function App() {
 
   // Function to handle global time period change
   const handleGlobalTimePeriodChange = (period: TimePeriod) => {
-    // Update the current global period using the period id
-    if (period.id) {
-      setCurrentGlobalPeriod(period.id);
-    } else {
-      // Fallback to finding by start/end dates
-      const periodId = GLOBAL_TIME_PERIODS.findIndex(p => 
-        p.start === period.start && p.end === period.end);
-      
-      if (periodId >= 0) {
-        setCurrentGlobalPeriod(String(periodId));
-      }
-    }
+    setCurrentGlobalPeriod(period.id || 'all');
+    // Set the middle year of the period as the current global year
+    setCurrentGlobalYear(Math.floor((period.start + period.end) / 2));
     
     console.log(`Switched to period: ${period.label}, ${period.start} - ${period.end}`);
   };
@@ -1110,7 +1133,25 @@ function App() {
 
   // Helper to get selected event
   const getSelectedEvent = () => {
-    return HISTORICAL_EVENTS.find(event => event.id === selectedEventId) || null;
+    const event = HISTORICAL_EVENTS.find(event => event.id === selectedEventId) || null;
+    
+    if (!event) return null;
+    
+    // Create a copy of the event so we can modify properties without affecting the original
+    const eventCopy = { ...event };
+    
+    // For the Great Pyramid, determine the appropriate label based on timeline
+    if (event.id === 'great-pyramid-construction' && event.constructionPeriod) {
+      // During construction period show "Construction of the Pyramids of Giza"
+      if (currentGlobalYear >= event.constructionPeriod.start && currentGlobalYear <= event.constructionPeriod.end) {
+        eventCopy.name = event.label || 'Construction of the Pyramids of Giza';
+      } else if (currentGlobalYear > event.constructionPeriod.end) {
+        // After construction completed, show "Pyramids of Giza"
+        eventCopy.name = 'Pyramids of Giza';
+      }
+    }
+    
+    return eventCopy;
   };
   
   // Function to create event marker image
@@ -1173,6 +1214,26 @@ function App() {
     const description = event.description || '';
     const emoji = event.emoji || '📍';
     
+    // Determine the appropriate label for the Pyramids of Giza based on timeline
+    let displayLabel = name;
+    
+    // For the Great Pyramid, use special label handling
+    if (event.id === 'great-pyramid-construction') {
+      // If we're in the construction period or have a specific label in the event, use it
+      if (event.constructionPeriod) {
+        // Get the current year from the slider or the global state
+        const currentYear = currentGlobalYear || event.year;
+        
+        // During construction period show "Construction of the Pyramids of Giza"
+        if (currentYear >= event.constructionPeriod.start && currentYear <= event.constructionPeriod.end) {
+          displayLabel = event.label || 'Construction of the Pyramids of Giza';
+        } else if (currentYear > event.constructionPeriod.end) {
+          // After construction completed, show "Pyramids of Giza"
+          displayLabel = 'Pyramids of Giza';
+        }
+      }
+    }
+    
     // Add a small offset to event markers to prevent overlap with location pins
     // Adjust the latitude slightly to separate event markers from location pins
     const offsetLatitude = event.latitude + 0.02; // Smaller offset for smaller pins
@@ -1182,7 +1243,7 @@ function App() {
     
     cesiumViewer.current.entities.add({
       id: `event_${event.id}`, // Add event_ prefix to ID to make it easier to filter
-      name: name,
+      name: displayLabel,
       position: window.Cesium.Cartesian3.fromDegrees(event.longitude, offsetLatitude, 100), // Lower altitude
       billboard: {
         image: markerImage,
@@ -1193,7 +1254,7 @@ function App() {
         disableDepthTestDistance: 50000 // Less priority than location pins but still visible
       },
       label: {
-        text: name,
+        text: displayLabel,
         font: '11pt sans-serif', // Smaller than location pins
         style: window.Cesium.LabelStyle.FILL_AND_OUTLINE,
         outlineWidth: 2,
@@ -1210,7 +1271,7 @@ function App() {
       description: description,
       properties: {
         id: event.id,
-        title: name,
+        title: displayLabel,
         type: 'event'
       }
     });
@@ -1459,6 +1520,20 @@ function App() {
     }
   }, [currentLocation, cesiumViewer.current]);
 
+  // Add a useEffect to update event markers when the current global year changes
+  useEffect(() => {
+    if (!cesiumViewer.current || !cesiumLoaded) return;
+    
+    // Get the currently filtered events
+    const filteredEvents = HISTORICAL_EVENTS.filter(
+      event => event.period === currentGlobalPeriod || currentGlobalPeriod === 'all'
+    );
+    
+    // Update the events with potentially new labels based on the current year
+    handleEventsFiltered(filteredEvents);
+    
+  }, [currentGlobalYear, cesiumLoaded]);
+
   if (showLandingPage) {
     return (
       <>
@@ -1640,10 +1715,10 @@ function App() {
           <EventDetailModal
             isOpen={showEventDetail}
             onClose={handleCloseEventDetail}
-            name={getSelectedEvent()!.name}
+            name={getSelectedEvent()!.name || ''}
             year={getSelectedEvent()!.year}
-            emoji={getSelectedEvent()!.emoji}
-            description={getSelectedEvent()!.description}
+            emoji={getSelectedEvent()!.emoji || '📍'}
+            description={getSelectedEvent()!.description || ''}
           />
         )}
         

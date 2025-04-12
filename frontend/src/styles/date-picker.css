@@ -7,6 +7,152 @@
   z-index: 100;
 }
 
+/* Apple-style Date Picker */
+.apple-date-picker {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 320px;
+  height: 210px;
+  background: rgba(0, 10, 40, 0.8);
+  border-radius: 16px;
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3), 0 0 30px rgba(56, 189, 248, 0.2);
+  overflow: hidden;
+  z-index: 100;
+  padding: 5px 0;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.wheel-container {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.wheel-column {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  height: 100%;
+}
+
+.wheel-label {
+  text-align: center;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: rgba(56, 189, 248, 0.8);
+  letter-spacing: 1px;
+  padding: 8px 0;
+  text-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+}
+
+.wheel {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch; /* For smooth scrolling on iOS */
+  position: relative;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  scroll-snap-type: y mandatory;
+  scroll-behavior: smooth;
+  /* Adjust padding to ensure items can center properly */
+  padding-top: 85px;
+  padding-bottom: 85px;
+  mask-image: linear-gradient(to bottom, transparent, black 25%, black 75%, transparent);
+  -webkit-mask-image: linear-gradient(to bottom, transparent, black 25%, black 75%, transparent);
+}
+
+/* Hide scrollbar */
+.wheel::-webkit-scrollbar {
+  display: none;
+}
+
+.wheel-items {
+  display: flex;
+  flex-direction: column;
+}
+
+.wheel-item {
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 1.1rem;
+  transition: all 0.2s ease;
+  padding: 0 10px;
+  cursor: pointer;
+  text-align: center;
+  width: 100%;
+  box-sizing: border-box;
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
+}
+
+.wheel-item:hover {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.wheel-item.selected {
+  color: white;
+  font-weight: 600;
+  font-size: 1.2rem;
+  text-shadow: 0 0 10px rgba(56, 189, 248, 0.6);
+}
+
+.wheel-item.wheel-padding {
+  height: 40px;
+  background: transparent;
+  pointer-events: none;
+}
+
+/* Create a focus effect to ensure visual centering */
+.wheel:before, .wheel:after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 85px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.wheel:before {
+  top: 0;
+  background: linear-gradient(to bottom, rgba(0, 10, 40, 0.9), transparent);
+}
+
+.wheel:after {
+  bottom: 0;
+  background: linear-gradient(to top, rgba(0, 10, 40, 0.9), transparent);
+}
+
+.wheel-selection-indicator {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 40px;
+  background: rgba(56, 189, 248, 0.15);
+  border-top: 1px solid rgba(56, 189, 248, 0.4);
+  border-bottom: 1px solid rgba(56, 189, 248, 0.4);
+  transform: translateY(-50%);
+  pointer-events: none;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Original Date Picker Styles Below */
+
 .date-picker-trigger {
   display: flex;
   align-items: center;

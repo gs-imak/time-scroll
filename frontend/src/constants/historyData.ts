@@ -45,6 +45,11 @@ export const HISTORICAL_EVENTS = [
     id: 'great-pyramid-construction',
     title: 'Great Pyramid Construction',
     name: 'Great Pyramid Construction',
+    label: 'Construction of the Pyramids of Giza',
+    constructionPeriod: {
+      start: -2580, 
+      end: -2560
+    },
     year: -2560,
     period: 'ancient',
     locationId: 'egypt',

@@ -34,6 +34,8 @@ export function DatePicker({
   const [viewMonth, setViewMonth] = useState(selectedMonth);
   const [viewDay, setViewDay] = useState(selectedDay);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const yearWheelRef = useRef<HTMLDivElement>(null);
+  const monthWheelRef = useRef<HTMLDivElement>(null);
 
   // Format selected date for display
   const formattedDate = `${MonthNames[selectedMonth - 1]} ${selectedDay}, ${selectedYear < 0 ? Math.abs(selectedYear) + ' BCE' : selectedYear + ' CE'}`;
@@ -184,110 +186,152 @@ export function DatePicker({
     return `${year} CE`;
   };
 
+  // Generate years for the wheel
+  const generateYears = () => {
+    const years: number[] = [];
+    for (let year = availableYearRange.min; year <= availableYearRange.max; year++) {
+      years.push(year);
+    }
+    return years;
+  };
+  
+  // Scroll to selected items initially and when selection changes
+  useEffect(() => {
+    setTimeout(() => {
+      if (yearWheelRef.current) {
+        const years = generateYears();
+        const yearIndex = years.findIndex(y => y === selectedYear);
+        if (yearIndex !== -1) {
+          const itemHeight = 40; // Height of each wheel item in pixels
+          yearWheelRef.current.scrollTop = yearIndex * itemHeight;
+        }
+      }
+      
+      if (monthWheelRef.current) {
+        const monthIndex = selectedMonth - 1; // Convert 1-based to 0-based
+        const itemHeight = 40; // Height of each wheel item in pixels
+        monthWheelRef.current.scrollTop = monthIndex * itemHeight;
+      }
+    }, 50); // Small delay to ensure DOM is ready
+  }, [selectedYear, selectedMonth, availableYearRange]);
+  
+  // Handle year wheel scroll
+  const handleYearScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    if (yearWheelRef.current) {
+      // Debounce scroll events
+      const timeout = yearWheelRef.current.dataset.scrollTimeout;
+      if (timeout) {
+        clearTimeout(parseInt(timeout));
+      }
+      
+      const timeoutId = setTimeout(() => {
+        const scrollTop = e.currentTarget.scrollTop;
+        const itemHeight = 40;
+        
+        // Calculate which year is centered
+        const yearIndex = Math.round(scrollTop / itemHeight);
+        const years = generateYears();
+        
+        if (yearIndex >= 0 && yearIndex < years.length && years[yearIndex] !== selectedYear) {
+          onYearChange(years[yearIndex]);
+        }
+      }, 150);
+      
+      yearWheelRef.current.dataset.scrollTimeout = timeoutId.toString();
+    }
+  };
+  
+  // Handle month wheel scroll
+  const handleMonthScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    if (monthWheelRef.current) {
+      // Debounce scroll events
+      const timeout = monthWheelRef.current.dataset.scrollTimeout;
+      if (timeout) {
+        clearTimeout(parseInt(timeout));
+      }
+      
+      const timeoutId = setTimeout(() => {
+        const scrollTop = e.currentTarget.scrollTop;
+        const itemHeight = 40;
+        
+        // Calculate which month is centered
+        const monthIndex = Math.round(scrollTop / itemHeight);
+        
+        if (monthIndex >= 0 && monthIndex < 12 && (monthIndex + 1) !== selectedMonth) {
+          onMonthChange(monthIndex + 1); // Convert 0-based to 1-based
+        }
+      }, 150);
+      
+      monthWheelRef.current.dataset.scrollTimeout = timeoutId.toString();
+    }
+  };
+  
+  // Handle direct click selection on year
+  const handleYearClick = (year: number) => {
+    if (year !== selectedYear) {
+      onYearChange(year);
+    }
+  };
+  
+  // Handle direct click selection on month
+  const handleMonthClick = (month: number) => {
+    if (month !== selectedMonth) {
+      onMonthChange(month);
+    }
+  };
+
   return (
-    <div ref={wrapperRef} className={`date-picker-wrapper ${className}`}>
-      <button 
-        className="date-picker-trigger"
-        onClick={() => setIsOpen(!isOpen)}
-      >
-        <span className="date-text">{formattedDate}</span>
-        <span className="date-icon">📅</span>
-      </button>
-
-      {isOpen && (
-        <div className="date-picker-dropdown">
-          <div className="date-picker-header">
-            {currentView === 'calendar' && (
-              <>
-                <button className="header-button" onClick={prevMonth}>⟨</button>
-                <div className="header-title">
-                  <button className="month-title" onClick={() => setCurrentView('months')}>
-                    {MonthNames[viewMonth - 1]}
-                  </button>
-                  <button className="year-title" onClick={() => setCurrentView('years')}>
-                    {formatYear(viewYear)}
-                  </button>
+    <div ref={wrapperRef} className={`apple-date-picker ${className}`}>
+      <div className="wheel-container">
+        {/* Year wheel */}
+        <div className="wheel-column">
+          <div className="wheel-label">YEAR</div>
+          <div 
+            className="wheel year-wheel" 
+            ref={yearWheelRef}
+            onScroll={handleYearScroll}
+          >
+            <div className="wheel-items">
+              {/* Year items */}
+              {generateYears().map(year => (
+                <div 
+                  key={year} 
+                  className={`wheel-item ${year === selectedYear ? 'selected' : ''}`}
+                  onClick={() => handleYearClick(year)}
+                >
+                  {formatYear(year)}
                 </div>
-                <button className="header-button" onClick={nextMonth}>⟩</button>
-              </>
-            )}
-            
-            {currentView === 'months' && (
-              <>
-                <button className="header-button" onClick={() => setCurrentView('calendar')}>⟨</button>
-                <div className="header-title">
-                  <button className="year-title" onClick={() => setCurrentView('years')}>
-                    {formatYear(viewYear)}
-                  </button>
-                </div>
-                <button className="header-button invisible">⟩</button>
-              </>
-            )}
-            
-            {currentView === 'years' && (
-              <>
-                <button className="header-button" onClick={prevDecade}>⟨</button>
-                <div className="header-title">
-                  <span>{formatYear(Math.floor(viewYear / 10) * 10)} - {formatYear(Math.floor(viewYear / 10) * 10 + 9)}</span>
-                </div>
-                <button className="header-button" onClick={nextDecade}>⟩</button>
-              </>
-            )}
-          </div>
-
-          <div className="date-picker-body">
-            {currentView === 'calendar' && (
-              <>
-                <div className="calendar-days-header">
-                  {DayNames.map((name, index) => (
-                    <div key={index} className="day-name">{name}</div>
-                  ))}
-                </div>
-                <div className="calendar-days-grid">
-                  {generateCalendarDays().map((day, index) => (
-                    <button
-                      key={index}
-                      className={`day-cell ${day === null ? 'empty' : ''} ${day === viewDay && viewMonth === selectedMonth && viewYear === selectedYear ? 'selected' : ''}`}
-                      onClick={() => handleDaySelect(day)}
-                      disabled={day === null}
-                    >
-                      {day}
-                    </button>
-                  ))}
-                </div>
-              </>
-            )}
-
-            {currentView === 'months' && (
-              <div className="months-grid">
-                {MonthNames.map((month, index) => (
-                  <button
-                    key={index}
-                    className={`month-cell ${index + 1 === selectedMonth && viewYear === selectedYear ? 'selected' : ''}`}
-                    onClick={() => handleMonthSelect(index + 1)}
-                  >
-                    {month.substring(0, 3)}
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {currentView === 'years' && (
-              <div className="years-grid">
-                {generateYearRange().map((year, index) => (
-                  <button
-                    key={index}
-                    className={`year-cell ${year === selectedYear ? 'selected' : ''}`}
-                    onClick={() => handleYearSelect(year)}
-                  >
-                    {formatYear(year)}
-                  </button>
-                ))}
-              </div>
-            )}
+              ))}
+            </div>
           </div>
         </div>
-      )}
+        
+        {/* Month wheel */}
+        <div className="wheel-column">
+          <div className="wheel-label">MONTH</div>
+          <div 
+            className="wheel month-wheel" 
+            ref={monthWheelRef}
+            onScroll={handleMonthScroll}
+          >
+            <div className="wheel-items">
+              {/* Month items */}
+              {MonthNames.map((month, index) => (
+                <div 
+                  key={month} 
+                  className={`wheel-item ${index + 1 === selectedMonth ? 'selected' : ''}`}
+                  onClick={() => handleMonthClick(index + 1)}
+                >
+                  {month}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {/* Center selection indicator */}
+      <div className="wheel-selection-indicator"></div>
     </div>
   );
 } 

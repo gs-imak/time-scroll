@@ -11,18 +11,30 @@ interface PyramidAnimationProps {
 export function PyramidAnimation({ isVisible, isPlaying, currentTimePeriod }: PyramidAnimationProps) {
   const [showPopup, setShowPopup] = useState<boolean>(false);
   const [animationFile, setAnimationFile] = useState<string>('/assets/rive/pyramid_building.riv');
+  const [labelText, setLabelText] = useState<string>("Construction of the Pyramids of Giza");
   
   useEffect(() => {
     const isPresentDay = currentTimePeriod === 'modern-era';
+    const isConstructionCompleted = currentTimePeriod === 'construction-complete' || 
+                                   currentTimePeriod === 'middle-kingdom' || 
+                                   currentTimePeriod === 'modern-era';
     
     console.log(`Current time period: ${currentTimePeriod}, isPresentDay: ${isPresentDay}`);
     
+    // Set the animation file based on the time period
     if (isPresentDay) {
       console.log('Switching to pyramid_finished animation');
       setAnimationFile('/assets/rive/pyramid_finished.riv');
     } else {
       console.log('Switching to pyramid_building animation');
       setAnimationFile('/assets/rive/pyramid_building.riv');
+    }
+    
+    // Set the label text based on the construction phase
+    if (isConstructionCompleted) {
+      setLabelText("Pyramids of Giza");
+    } else {
+      setLabelText("Construction of the Pyramids of Giza");
     }
   }, [currentTimePeriod]);
   
@@ -70,8 +82,8 @@ export function PyramidAnimation({ isVisible, isPlaying, currentTimePeriod }: Py
       );
       
       if (position && containerRef.current) {
-        containerRef.current.style.left = `${position.x - 150}px`;
-        containerRef.current.style.top = `${position.y - 150}px`;
+        containerRef.current.style.left = `${position.x - 160}px`;
+        containerRef.current.style.top = `${position.y - 180}px`;
         containerRef.current.style.display = 'block';
         containerRef.current.style.transform = 'none';
       } else if (containerRef.current) {
@@ -111,18 +123,15 @@ export function PyramidAnimation({ isVisible, isPlaying, currentTimePeriod }: Py
     <>
       <div
         ref={containerRef}
-        style={{
-          position: 'absolute',
-          width: '300px',
-          height: '300px',
-          pointerEvents: 'auto',
-          zIndex: 1000,
-          display: 'block',
-          cursor: 'pointer',
-        }}
+        className="pyramid-animation-container"
         onClick={handleAnimationClick}
       >
-        <RiveComponent key={animationFile} />
+        <div className="pyramid-animation-wrapper">
+          <RiveComponent key={animationFile} />
+        </div>
+        <div className="pyramid-label">
+          {labelText}
+        </div>
       </div>
       
       {showPopup && (

@@ -215,3 +215,53 @@ body, html, #root, .App {
     }
   }
   
+  /* Pyramid Animation Styling */
+  .pyramid-animation-container {
+    position: absolute;
+    width: 320px;
+    height: 360px;
+    pointer-events: auto;
+    z-index: 1000;
+    display: block;
+    cursor: pointer;
+    transform-origin: center;
+    transition: transform 0.2s ease;
+  }
+  
+  .pyramid-animation-wrapper {
+    position: relative;
+    width: 300px;
+    height: 300px;
+    margin: 0 auto;
+  }
+  
+  .pyramid-label {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    text-align: center;
+    padding: 10px 8px;
+    color: white;
+    font-weight: bold;
+    text-shadow: 0 0 4px rgba(0,0,0,0.8), 0 0 8px rgba(0,0,0,0.6);
+    font-size: 16px;
+    background-color: rgba(0,0,0,0.5);
+    border-radius: 0 0 12px 12px;
+    backdrop-filter: blur(4px);
+    z-index: 1001;
+    width: calc(100% - 16px);
+    margin: 0 auto;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  
+  /* Add hover effect to make it more interactive */
+  .pyramid-animation-container:hover {
+    transform: scale(1.02);
+  }
+  
+  .pyramid-animation-container:hover .pyramid-label {
+    background-color: rgba(0,20,40,0.7);
+  }
+  

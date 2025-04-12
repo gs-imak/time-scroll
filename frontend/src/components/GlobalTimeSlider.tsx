@@ -12,6 +12,7 @@ export interface HistoricalEvent {
   id: string;
   title: string;
   name?: string;
+  label?: string; // Optional label for dynamic text
   year: number;
   period: string;
   description?: string;
@@ -19,6 +20,10 @@ export interface HistoricalEvent {
   latitude?: number;
   longitude?: number;
   emoji?: string;
+  constructionPeriod?: { // For construction events like the pyramids
+    start: number;
+    end: number;
+  };
 }
 
 interface GlobalTimeSliderProps {
