@@ -228,7 +228,7 @@ export function MiniTimeline({
             className={`win11-slider-tooltip ${showTooltip || isDragging ? 'visible' : ''}`}
             ref={tooltipRef}
           >
-            {periods[currentPeriodIndex].title}
+            {periods[currentPeriodIndex].year}
           </div>
           
           <div className="win11-slider-track">

@@ -308,7 +308,7 @@ export const GlobalTimeSlider: React.FC<GlobalTimeSliderProps> = ({
               className={`win11-slider-tooltip ${showTooltip || isDragging ? 'visible' : ''}`}
               ref={tooltipRef}
             >
-              {timePeriods[selectedPeriodIndex].label}
+              {formatYear(timePeriods[selectedPeriodIndex].start)} - {formatYear(timePeriods[selectedPeriodIndex].end)}
             </div>
             
             <div className="win11-slider-track">
