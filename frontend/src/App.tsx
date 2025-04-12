@@ -423,17 +423,18 @@ function App() {
   const handleTimePeriodChange = (periodIndex: number) => {
     if (!cesiumViewer.current || periodIndex === currentTimePeriodIndex) return;
     
-    console.log(`Changing time period to ${PYRAMID_TIME_PERIODS[periodIndex].title}`);
+    const newPeriod = PYRAMID_TIME_PERIODS[periodIndex];
+    console.log(`Changing time period to ${newPeriod.title} (${newPeriod.id})`);
     
     // Show transition effect
     setShowEraTransition(true);
     setTransitionData({
       location: LOCATIONS[currentLocation as keyof typeof LOCATIONS].name,
-      year: PYRAMID_TIME_PERIODS[periodIndex].year
+      year: newPeriod.year
     });
     
     // Update the selected period for the description panel
-    setSelectedPeriod(PYRAMID_TIME_PERIODS[periodIndex]);
+    setSelectedPeriod(newPeriod);
     
     // Clear any existing overlays immediately
     if (activeOverlay) {
@@ -470,8 +471,8 @@ function App() {
     });
     
     // Only show specific time period visualization for Egypt
-    console.log(`Adding visualization for period: ${PYRAMID_TIME_PERIODS[periodIndex].id}`);
-    addTimePeriodVisualization(PYRAMID_TIME_PERIODS[periodIndex].id);
+    console.log(`Adding visualization for period: ${newPeriod.id}`);
+    addTimePeriodVisualization(newPeriod.id);
   };
   
   // Function to add visualization for a specific time period
@@ -738,11 +739,11 @@ function App() {
     // Then fly to the location
     flyToLocation(location.longitude, location.latitude, location.height, location.name);
 
-    // Set the default time period to modern era (index 4) with proper timing
+    // Set the default time period to construction begin (index 0) instead of modern era (index 4)
     setTimeout(() => {
       console.log("Setting up Egypt time periods");
-      setCurrentTimePeriodIndex(4);
-      setSelectedPeriod(PYRAMID_TIME_PERIODS[4]);
+      setCurrentTimePeriodIndex(0);
+      setSelectedPeriod(PYRAMID_TIME_PERIODS[0]);
       
       if (cesiumViewer.current) {
         // Instead of removing all entities, we need to preserve the country borders
@@ -766,17 +767,19 @@ function App() {
           }
         }
         
-        if (PYRAMID_TIME_PERIODS[4].id === "modern-era") {
+        // For modern era, add location pins (but we're starting with construction era)
+        if (PYRAMID_TIME_PERIODS[0].id === "modern-era") {
           addLocationPins();
         }
         
-        addTimePeriodVisualization("modern-era");
+        // Start with construction-begin visualization
+        addTimePeriodVisualization("construction-begin");
       }
       
       setTimeout(() => {
         setTransitionData({
           location: location.name,
-          year: PYRAMID_TIME_PERIODS[4].year
+          year: PYRAMID_TIME_PERIODS[0].year
         });
         setShowEraTransition(true);
       }, 300);
@@ -1648,6 +1651,7 @@ function App() {
         <PyramidAnimation
           isVisible={showPyramidAnimation}
           isPlaying={isPlaying}
+          currentTimePeriod={selectedPeriod?.id}
         />
       </div>
     </>

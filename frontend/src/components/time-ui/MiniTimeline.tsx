@@ -28,49 +28,61 @@ export function MiniTimeline({
   
   const sliderRef = useRef<HTMLInputElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
+  const trackActiveRef = useRef<HTMLDivElement>(null);
+  const thumbRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<number | null>(null);
-
-  // Calculate slider position from period index
+  
+  // Calculate slider position from period index (0-100)
   const getSliderValueFromPeriodIndex = (index: number): number => {
-    return index / (periods.length - 1) * 100;
+    if (periods.length <= 1) return 0;
+    return (index / (periods.length - 1)) * 100;
   };
   
-  // Calculate period index from slider value
+  // Calculate period index from slider value (0-100)
   const getPeriodIndexFromSliderValue = (value: number): number => {
+    if (periods.length <= 1) return 0;
     const rawIndex = (value / 100) * (periods.length - 1);
     return Math.round(rawIndex);
   };
 
+  // Update slider visuals based on current value
+  const updateSliderVisuals = () => {
+    if (trackActiveRef.current) {
+      trackActiveRef.current.style.width = `${sliderValue}%`;
+    }
+    
+    if (thumbRef.current) {
+      thumbRef.current.style.left = `${sliderValue}%`;
+    }
+    
+    // Also update tooltip position
+    updateTooltipPosition();
+  };
+
   // Update tooltip position
   const updateTooltipPosition = () => {
-    if (sliderRef.current && tooltipRef.current) {
+    if (sliderRef.current && tooltipRef.current && thumbRef.current) {
       const slider = sliderRef.current;
-      const thumb = slider.closest('.win11-slider-track')?.querySelector('.win11-slider-thumb');
       const tooltip = tooltipRef.current;
+      const sliderRect = slider.closest('.win11-slider-wrapper')?.getBoundingClientRect();
       
-      if (thumb) {
-        // Use the thumb's position directly
-        const thumbRect = thumb.getBoundingClientRect();
-        const tooltipRect = tooltip.getBoundingClientRect();
-        const sliderRect = slider.getBoundingClientRect();
+      if (sliderRect) {
+        // Position tooltip based on slider value percentage
+        const tooltipWidth = tooltip.offsetWidth;
+        const totalWidth = sliderRect.width;
+        const position = (sliderValue / 100) * totalWidth;
         
-        // Position tooltip above thumb
-        const thumbCenterX = thumbRect.left + thumbRect.width / 2 - sliderRect.left;
+        // Constrain position to prevent going off-screen
+        const minPosition = tooltipWidth / 2;
+        const maxPosition = totalWidth - (tooltipWidth / 2);
         
-        // Get tooltip width for positioning constraints
-        const tooltipWidth = tooltipRect.width;
-        const minPosition = tooltipWidth / 2; // Don't let left edge go below this
-        const maxPosition = sliderRect.width - (tooltipWidth / 2); // Don't let right edge exceed this
-        
-        // Constrain tooltip position to prevent it from going off-screen
-        let constrainedPosition = thumbCenterX;
-        if (thumbCenterX < minPosition) {
+        let constrainedPosition = position;
+        if (position < minPosition) {
           constrainedPosition = minPosition;
-        } else if (thumbCenterX > maxPosition) {
+        } else if (position > maxPosition) {
           constrainedPosition = maxPosition;
         }
         
-        // Center the tooltip over the thumb, with constraints
         tooltip.style.left = `${constrainedPosition}px`;
       }
     }
@@ -81,14 +93,17 @@ export function MiniTimeline({
     const newValue = parseFloat(e.target.value);
     setSliderValue(newValue);
     
+    // Update visuals immediately
+    setTimeout(() => updateSliderVisuals(), 0);
+    
     if (isDragging) {
       const newIndex = getPeriodIndexFromSliderValue(newValue);
       if (newIndex !== currentPeriodIndex) {
         onPeriodChange(newIndex);
+        console.log(`Timeline changed to period ${periods[newIndex].id} (index ${newIndex})`);
       }
     }
     
-    updateTooltipPosition();
     resetFadeTimer();
   };
 
@@ -141,47 +156,34 @@ export function MiniTimeline({
 
   // Initialize slider value
   useEffect(() => {
-    setSliderValue(getSliderValueFromPeriodIndex(currentPeriodIndex));
+    const initialValue = getSliderValueFromPeriodIndex(currentPeriodIndex);
+    setSliderValue(initialValue);
+    
+    // Schedule visual update after component has mounted
+    setTimeout(() => updateSliderVisuals(), 10);
+    
     resetFadeTimer();
   }, []);
   
   // Update slider value when current period changes externally
   useEffect(() => {
-    setSliderValue(getSliderValueFromPeriodIndex(currentPeriodIndex));
+    const newValue = getSliderValueFromPeriodIndex(currentPeriodIndex);
+    setSliderValue(newValue);
+    
+    // Schedule visual update to ensure it happens after state update
+    setTimeout(() => updateSliderVisuals(), 10);
+    
     resetFadeTimer();
   }, [currentPeriodIndex]);
-  
-  // Update tooltip when slider value changes
-  useEffect(() => {
-    updateTooltipPosition();
-    
-    // Update CSS variables for positioning
-    if (sliderRef.current) {
-      // Find the track and thumb elements
-      const track = sliderRef.current.closest('.win11-slider-track');
-      if (track) {
-        const trackActive = track.querySelector('.win11-slider-track-active') as HTMLElement;
-        const thumb = track.querySelector('.win11-slider-thumb') as HTMLElement;
-        
-        if (trackActive) {
-          trackActive.style.width = `${sliderValue}%`;
-        }
-        
-        if (thumb) {
-          thumb.style.left = `${sliderValue}%`;
-        }
-      }
-    }
-  }, [sliderValue]);
-  
-  // Clean up event listeners on unmount
+
+  // Clean up timers on unmount
   useEffect(() => {
     return () => {
-      document.removeEventListener('mouseup', handleMouseUp);
-      document.removeEventListener('touchend', handleTouchEnd);
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
+      document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener('touchend', handleTouchEnd);
     };
   }, []);
 
@@ -234,11 +236,13 @@ export function MiniTimeline({
           <div className="win11-slider-track">
             <div 
               className="win11-slider-track-active"
-              data-value={sliderValue}
+              ref={trackActiveRef}
+              style={{ width: `${sliderValue}%` }}
             />
             <div 
               className="win11-slider-thumb"
-              data-position={sliderValue}
+              ref={thumbRef}
+              style={{ left: `${sliderValue}%` }}
             />
             <input
               type="range"

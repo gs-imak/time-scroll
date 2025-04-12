@@ -5,12 +5,29 @@ import { PyramidInfoPopup } from './PyramidInfoPopup';
 interface PyramidAnimationProps {
   isVisible: boolean;
   isPlaying: boolean;
+  currentTimePeriod?: string;
 }
 
-export function PyramidAnimation({ isVisible, isPlaying }: PyramidAnimationProps) {
+export function PyramidAnimation({ isVisible, isPlaying, currentTimePeriod }: PyramidAnimationProps) {
   const [showPopup, setShowPopup] = useState<boolean>(false);
+  const [animationFile, setAnimationFile] = useState<string>('/assets/rive/pyramid_building.riv');
+  
+  useEffect(() => {
+    const isPresentDay = currentTimePeriod === 'modern-era';
+    
+    console.log(`Current time period: ${currentTimePeriod}, isPresentDay: ${isPresentDay}`);
+    
+    if (isPresentDay) {
+      console.log('Switching to pyramid_finished animation');
+      setAnimationFile('/assets/rive/pyramid_finished.riv');
+    } else {
+      console.log('Switching to pyramid_building animation');
+      setAnimationFile('/assets/rive/pyramid_building.riv');
+    }
+  }, [currentTimePeriod]);
+  
   const { RiveComponent, rive } = useRive({
-    src: '/assets/rive/pyramid_building.riv',
+    src: animationFile,
     autoplay: true,
   });
   
@@ -105,7 +122,7 @@ export function PyramidAnimation({ isVisible, isPlaying }: PyramidAnimationProps
         }}
         onClick={handleAnimationClick}
       >
-        <RiveComponent />
+        <RiveComponent key={animationFile} />
       </div>
       
       {showPopup && (
