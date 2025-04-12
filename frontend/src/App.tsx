@@ -1,12 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import './App.css';
 import './styles/cesium.css';
+import './styles/date-picker.css';
 import { MiniTimeline, TimeDial, EraTransition, DescriptionPanel } from './components/time-ui';
 import { LocationsPanel } from './components/LocationsPanel';
 import { GlobalTimeSlider } from './components/GlobalTimeSlider';
 import { HistoricalEventMarker } from './components/HistoricalEventMarker';
 import { EventDetailModal } from './components/EventDetailModal';
 import { PyramidAnimation } from './components/PyramidAnimation';
+import { DatePicker } from './components/DatePicker';
 import { GLOBAL_TIME_PERIODS, HISTORICAL_EVENTS } from './constants/historyData';
 
 // Get the interfaces from the GlobalTimeSlider component
@@ -155,6 +157,7 @@ function App() {
   const currentYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState<number>(currentYear);
   const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth() + 1); // 1-12
+  const [selectedDay, setSelectedDay] = useState<number>(1); // Add day state
   
   // Available years based on selected era
   const getAvailableYears = () => {
@@ -672,8 +675,16 @@ function App() {
     // First update the current location state to trigger UI updates
     setCurrentLocation("egypt");
     
-    // Show the pyramid animation
+    // Immediately show the pyramid animation - critical fix to ensure it's visible
     setShowPyramidAnimation(true);
+    setIsPlaying(true);
+    
+    // Force animation to be visible in case it's not shown
+    setTimeout(() => {
+      // Double-check that animation is shown
+      setShowPyramidAnimation(true);
+      setIsPlaying(true);
+    }, 100);
     
     // Set minimum allowed zoom height for Egypt
     const MIN_EGYPT_HEIGHT = 2000;
@@ -885,6 +896,32 @@ function App() {
     }
   };
 
+  // New function to handle day selection
+  const handleDayChange = (day: number) => {
+    setSelectedDay(day);
+    
+    // Update system status after selection
+    if (selectedEra && selectedYear && selectedMonth) {
+      setIsSystemReady(true);
+      
+      // Similar animation timing as era selection
+      setTimeout(() => {
+        const sandTimer = document.querySelector('.loading-sand-timer');
+        if (sandTimer) {
+          sandTimer.classList.add('fade-out');
+          setTimeout(() => {
+            sandTimer.classList.remove('active');
+            sandTimer.classList.remove('fade-out');
+          }, 800);
+        }
+        
+        setTimeout(() => {
+          setIsPortalStabilized(true);
+        }, 600);
+      }, 1500);
+    }
+  };
+
   // New function to handle era selection on landing page
   const handleEraSelection = (eraId: string) => {
     setSelectedEra(eraId);
@@ -920,7 +957,7 @@ function App() {
     // Set transition data with date information
     setTransitionData({ 
       location: eraName, 
-      year: `${monthName} ${yearFormatted}`
+      year: `${monthName} ${selectedDay}, ${yearFormatted}`
     });
     
     // Apply transition effects
@@ -1234,18 +1271,9 @@ function App() {
 
       // Only control animation if we're in Egypt view
       if (currentLocation === 'egypt') {
-        const ANIMATION_START_ZOOM = 3000000;
-        const ANIMATION_STOP_ZOOM = 3500000;
-        
-        if (currentHeight <= ANIMATION_START_ZOOM) {
-          // Start animation when zoomed in close enough
-          setIsPlaying(true);
-          setShowPyramidAnimation(true);
-        } else if (currentHeight > ANIMATION_STOP_ZOOM) {
-          // Stop animation and hide it when zoomed out too far
-          setIsPlaying(false);
-          setShowPyramidAnimation(false);
-        }
+        // Always keep the animation visible and playing when in Egypt view
+        setIsPlaying(true);
+        setShowPyramidAnimation(true);
       } else {
         // If we're not in Egypt view, make sure animation is hidden
         setShowPyramidAnimation(false);
@@ -1419,6 +1447,15 @@ function App() {
     };
   }, [cesiumViewer.current, cesiumLoaded]);
 
+  // Add useEffect to ensure PyramidAnimation is shown immediately on load when the location is Egypt
+  useEffect(() => {
+    if (currentLocation === 'egypt' && cesiumViewer.current) {
+      // Immediately show and start the pyramid animation when in Egypt view
+      setShowPyramidAnimation(true);
+      setIsPlaying(true);
+    }
+  }, [currentLocation, cesiumViewer.current]);
+
   if (showLandingPage) {
     return (
       <>
@@ -1437,48 +1474,20 @@ function App() {
             <h1>Time Machine</h1>
             <p className="landing-subtitle">Begin your journey through space and time</p>
             
-            {/* Year and Month Selection - only show when era is selected */}
+            {/* Date Selection - only show when era is selected */}
             {selectedEra && (
               <div className="time-picker-container">
-                {/* Year Selection - converted to scroll toggle */}
-                <div className="time-picker year-picker">
-                  <label className="time-picker-label">Select Year</label>
-                  <div className="scroll-toggle">
-                    <input 
-                      type="range" 
-                      min={getAvailableYears().min} 
-                      max={getAvailableYears().max}
-                      value={selectedYear}
-                      onChange={(e) => handleYearChange(parseInt(e.target.value))}
-                      className="time-scroll-input"
-                    />
-                    <div className="time-picker-value">
-                      {selectedYear < 0 ? `${Math.abs(selectedYear)} BCE` : `${selectedYear} CE`}
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Month Selection - converted to scroll toggle */}
-                <div className="time-picker month-picker">
-                  <label className="time-picker-label">Select Month</label>
-                  <div className="scroll-toggle">
-                    <input 
-                      type="range" 
-                      min={1} 
-                      max={12}
-                      value={selectedMonth}
-                      onChange={(e) => handleMonthChange(parseInt(e.target.value))}
-                      className="time-scroll-input"
-                    />
-                    <div className="time-picker-value">
-                      {new Date(2000, selectedMonth - 1, 1).toLocaleString('default', { month: 'long' })}
-                    </div>
-                  </div>
-                </div>
+                <DatePicker
+                  selectedYear={selectedYear}
+                  selectedMonth={selectedMonth}
+                  selectedDay={selectedDay}
+                  onYearChange={handleYearChange}
+                  onMonthChange={handleMonthChange}
+                  onDayChange={handleDayChange}
+                  availableYearRange={getAvailableYears()}
+                />
               </div>
             )}
-            
-            {/* Show loading sand timer when era is selected - REMOVED */}
             
             <div className="time-indicators">
               <div className="time-indicator">
@@ -1491,7 +1500,7 @@ function App() {
                 <span className="time-label">Date</span>
                 <span className="time-value">
                   {selectedEra 
-                    ? `${new Date(2000, selectedMonth - 1, 1).toLocaleString('default', { month: 'long' })} ${selectedYear < 0 ? Math.abs(selectedYear) + ' BCE' : selectedYear + ' CE'}`
+                    ? `${new Date(2000, selectedMonth - 1, 1).toLocaleString('default', { month: 'long' })} ${selectedDay}, ${selectedYear < 0 ? Math.abs(selectedYear) + ' BCE' : selectedYear + ' CE'}`
                     : "Not Selected"}
                 </span>
               </div>
