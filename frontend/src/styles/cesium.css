@@ -313,26 +313,15 @@ button:disabled {
 }
 
 .journey-button::before {
-  content: "";
-  position: absolute;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.15);
-  left: 20px;
-  top: 50%;
-  transform: translateY(-50%);
-  box-shadow: inset 0 0 8px rgba(255, 255, 255, 0.4);
-  transition: all 0.3s ease;
+  display: none;
 }
 
 .journey-button:hover::before {
-  background: rgba(255, 255, 255, 0.3);
-  box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.6), 0 0 20px rgba(255, 255, 255, 0.3);
+  display: none;
 }
 
 .journey-button {
-  padding: 16px 42px 16px 60px;
+  padding: 16px 42px;
   font-size: 1.4rem;
   background: linear-gradient(135deg, #0061ff, #60efff);
   color: white;
@@ -361,19 +350,16 @@ button:disabled {
 
 /* Button click ripple effect */
 .journey-button::after {
-  content: '';
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  top: 0;
-  left: 0;
-  pointer-events: none;
-  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.8) 10%, transparent 10.01%);
-  background-repeat: no-repeat;
-  background-position: 50%;
-  transform: scale(10, 10);
-  opacity: 0;
-  transition: transform 0.6s, opacity 0.6s;
+  display: none;
+}
+
+/* Button icon */
+.button-icon {
+  display: none;
+}
+
+.journey-button:hover .button-icon {
+  display: none;
 }
 
 /* Time-related decoration */
