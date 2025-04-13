@@ -238,26 +238,24 @@ function App() {
         }).then((dataSource) => {
           cesiumViewer.current.dataSources.add(dataSource);
           
-          // Add labels for each country
+          // Style each entity in the dataSource to ensure borders are visible
           const entities = dataSource.entities.values;
+          for (const entity of entities) {
+            if (entity.polygon) {
+              // Set polygon material and outline
+              entity.polygon.material = window.Cesium.Color.fromCssColorString('rgba(96, 239, 255, 0.05)');
+              entity.polygon.outline = true;
+              entity.polygon.outlineColor = window.Cesium.Color.fromCssColorString('#60efff');
+              entity.polygon.outlineWidth = 2;
+              
+              // Make sure borders are always visible regardless of zoom
+              entity.polygon.distanceDisplayCondition = undefined;
+            }
+          }
+          
+          // Add labels for each country
           const addedCountries = new Set(); // Track countries we've already labeled
           
-          // Define zoom level ranges for different label types
-          const ZOOM_LEVELS = {
-            CONTINENT: {
-              min: 20000000,
-              max: 50000000
-            },
-            COUNTRY: {
-              min: 5000000,
-              max: 20000000
-            },
-            CITY: {
-              min: 1000000,
-              max: 5000000
-            }
-          };
-
           for (const entity of entities) {
             if (!entity.polygon || !entity.properties) continue;
             
@@ -282,72 +280,23 @@ function App() {
               horizontalOrigin: window.Cesium.HorizontalOrigin.CENTER,
               verticalOrigin: window.Cesium.VerticalOrigin.CENTER,
               pixelOffset: new window.Cesium.Cartesian2(0, 0),
-              // Enhanced distance-based visibility control
-              distanceDisplayCondition: new window.Cesium.DistanceDisplayCondition(
-                ZOOM_LEVELS.COUNTRY.min,
-                ZOOM_LEVELS.COUNTRY.max
-              ),
-              // Improved scale and translucency transitions
-              translucencyByDistance: new window.Cesium.NearFarScalar(
-                ZOOM_LEVELS.COUNTRY.min,
-                1.0,
-                ZOOM_LEVELS.COUNTRY.max,
-                0.4
-              ),
-              scaleByDistance: new window.Cesium.NearFarScalar(
-                ZOOM_LEVELS.COUNTRY.min,
-                1.2,
-                ZOOM_LEVELS.COUNTRY.max,
-                0.8
-              )
+              translucencyByDistance: new window.Cesium.NearFarScalar(1000000, 1.0, 20000000, 0.4),
+              scaleByDistance: new window.Cesium.NearFarScalar(1000000, 1.2, 20000000, 0.8),
+              distanceDisplayCondition: new window.Cesium.DistanceDisplayCondition(10000, 20000000)
             });
-
-            // Add continent label for larger zoom levels
-            if (entity.properties.CONTINENT) {
-              const continentName = entity.properties.CONTINENT.getValue();
-              dataSource.entities.add({
-                position: center,
-                label: new window.Cesium.LabelGraphics({
-                  text: continentName,
-                  font: '24px Helvetica, Arial, sans-serif',
-                  fillColor: window.Cesium.Color.fromCssColorString('#ffffff'),
-                  outlineColor: window.Cesium.Color.BLACK,
-                  outlineWidth: 4,
-                  style: window.Cesium.LabelStyle.FILL_AND_OUTLINE,
-                  horizontalOrigin: window.Cesium.HorizontalOrigin.CENTER,
-                  verticalOrigin: window.Cesium.VerticalOrigin.CENTER,
-                  pixelOffset: new window.Cesium.Cartesian2(0, 0),
-                  distanceDisplayCondition: new window.Cesium.DistanceDisplayCondition(
-                    ZOOM_LEVELS.CONTINENT.min,
-                    ZOOM_LEVELS.CONTINENT.max
-                  ),
-                  translucencyByDistance: new window.Cesium.NearFarScalar(
-                    ZOOM_LEVELS.CONTINENT.min,
-                    1.0,
-                    ZOOM_LEVELS.CONTINENT.max,
-                    0.4
-                  ),
-                  scaleByDistance: new window.Cesium.NearFarScalar(
-                    ZOOM_LEVELS.CONTINENT.min,
-                    1.5,
-                    ZOOM_LEVELS.CONTINENT.max,
-                    1.0
-                  )
-                })
-              });
-            }
           }
           
-          // Remove ArcGIS labels by using the same imagery provider without labels
-          cesiumViewer.current.imageryLayers.removeAll();
+          // Remove ArcGIS labels but keep the imagery
+          const layers = cesiumViewer.current.imageryLayers;
+          layers.removeAll();
           
-          // Add base satellite imagery without labels - no additional layers
+          // Add base satellite imagery without labels
           const imageryProvider = new window.Cesium.ArcGisMapServerImageryProvider({
             url: 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer',
             enablePickFeatures: false
           });
           
-          cesiumViewer.current.imageryLayers.addImageryProvider(imageryProvider);
+          layers.addImageryProvider(imageryProvider);
           
           // Zoom to show all countries
           cesiumViewer.current.zoomTo(dataSource);
