@@ -1411,18 +1411,27 @@ input:checked + .toggle-slider:before {
 /* Country Label Enhancement for Cesium */
 .cesium-viewer .cesium-entity-label {
   pointer-events: auto;
-  font-family: 'Helvetica', 'Arial', sans-serif;
+  font-family: 'Roboto', 'Arial', sans-serif;
+  font-size: 1rem;
+  font-weight: 500;
   letter-spacing: 0.5px;
+  fill: #ffffff;
+  stroke: #000000;
+  stroke-width: 3px;
+  paint-order: stroke fill;
+  filter: drop-shadow(0px 0px 5px rgba(0, 0, 0, 0.7));
+  transition: transform 0.3s ease, opacity 0.3s ease;
 }
 
 /* Fix the sometimes dim appearance of Cesium labels */
 .cesium-viewer .cesium-entity-label text {
-  fill: #60efff !important;
-  stroke: black;
+  fill: #ffffff !important;
+  stroke: #000000;
   stroke-width: 3px;
   paint-order: stroke fill;
-  filter: drop-shadow(0px 0px 6px rgba(0, 0, 0, 0.8));
-  font-weight: bold;
+  filter: drop-shadow(0px 0px 5px rgba(0, 0, 0, 0.7));
+  font-weight: 500;
+  transition: transform 0.3s ease, opacity 0.3s ease;
 }
 
 /* Add pulsing animation to country labels on hover */
@@ -1430,11 +1439,12 @@ input:checked + .toggle-slider:before {
   fill: #ffffff !important;
   animation: labelPulse 2s infinite;
   filter: drop-shadow(0px 0px 8px rgba(96, 239, 255, 0.9));
+  transform: scale(1.05);
 }
 
 @keyframes labelPulse {
   0% {
-    fill: #60efff !important;
+    fill: #ffffff !important;
     filter: drop-shadow(0px 0px 4px rgba(96, 239, 255, 0.7));
   }
   50% {
@@ -1442,7 +1452,7 @@ input:checked + .toggle-slider:before {
     filter: drop-shadow(0px 0px 10px rgba(96, 239, 255, 1));
   }
   100% {
-    fill: #60efff !important;
+    fill: #ffffff !important;
     filter: drop-shadow(0px 0px 4px rgba(96, 239, 255, 0.7));
   }
 }

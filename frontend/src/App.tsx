@@ -242,6 +242,22 @@ function App() {
           const entities = dataSource.entities.values;
           const addedCountries = new Set(); // Track countries we've already labeled
           
+          // Define zoom level ranges for different label types
+          const ZOOM_LEVELS = {
+            CONTINENT: {
+              min: 20000000,
+              max: 50000000
+            },
+            COUNTRY: {
+              min: 5000000,
+              max: 20000000
+            },
+            CITY: {
+              min: 1000000,
+              max: 5000000
+            }
+          };
+
           for (const entity of entities) {
             if (!entity.polygon || !entity.properties) continue;
             
@@ -259,17 +275,67 @@ function App() {
             entity.label = new window.Cesium.LabelGraphics({
               text: countryName,
               font: '18px Helvetica, Arial, sans-serif',
-              fillColor: window.Cesium.Color.fromCssColorString('#60efff'), // Bright cyan blue
+              fillColor: window.Cesium.Color.fromCssColorString('#60efff'),
               outlineColor: window.Cesium.Color.BLACK,
               outlineWidth: 3,
               style: window.Cesium.LabelStyle.FILL_AND_OUTLINE,
               horizontalOrigin: window.Cesium.HorizontalOrigin.CENTER,
               verticalOrigin: window.Cesium.VerticalOrigin.CENTER,
               pixelOffset: new window.Cesium.Cartesian2(0, 0),
-              translucencyByDistance: new window.Cesium.NearFarScalar(1.5e7, 1.0, 3.5e7, 0.4),
-              scale: 1.0,
-              scaleByDistance: new window.Cesium.NearFarScalar(1.5e7, 1.0, 3.5e7, 0.8)
+              // Enhanced distance-based visibility control
+              distanceDisplayCondition: new window.Cesium.DistanceDisplayCondition(
+                ZOOM_LEVELS.COUNTRY.min,
+                ZOOM_LEVELS.COUNTRY.max
+              ),
+              // Improved scale and translucency transitions
+              translucencyByDistance: new window.Cesium.NearFarScalar(
+                ZOOM_LEVELS.COUNTRY.min,
+                1.0,
+                ZOOM_LEVELS.COUNTRY.max,
+                0.4
+              ),
+              scaleByDistance: new window.Cesium.NearFarScalar(
+                ZOOM_LEVELS.COUNTRY.min,
+                1.2,
+                ZOOM_LEVELS.COUNTRY.max,
+                0.8
+              )
             });
+
+            // Add continent label for larger zoom levels
+            if (entity.properties.CONTINENT) {
+              const continentName = entity.properties.CONTINENT.getValue();
+              dataSource.entities.add({
+                position: center,
+                label: new window.Cesium.LabelGraphics({
+                  text: continentName,
+                  font: '24px Helvetica, Arial, sans-serif',
+                  fillColor: window.Cesium.Color.fromCssColorString('#ffffff'),
+                  outlineColor: window.Cesium.Color.BLACK,
+                  outlineWidth: 4,
+                  style: window.Cesium.LabelStyle.FILL_AND_OUTLINE,
+                  horizontalOrigin: window.Cesium.HorizontalOrigin.CENTER,
+                  verticalOrigin: window.Cesium.VerticalOrigin.CENTER,
+                  pixelOffset: new window.Cesium.Cartesian2(0, 0),
+                  distanceDisplayCondition: new window.Cesium.DistanceDisplayCondition(
+                    ZOOM_LEVELS.CONTINENT.min,
+                    ZOOM_LEVELS.CONTINENT.max
+                  ),
+                  translucencyByDistance: new window.Cesium.NearFarScalar(
+                    ZOOM_LEVELS.CONTINENT.min,
+                    1.0,
+                    ZOOM_LEVELS.CONTINENT.max,
+                    0.4
+                  ),
+                  scaleByDistance: new window.Cesium.NearFarScalar(
+                    ZOOM_LEVELS.CONTINENT.min,
+                    1.5,
+                    ZOOM_LEVELS.CONTINENT.max,
+                    1.0
+                  )
+                })
+              });
+            }
           }
           
           // Remove ArcGIS labels by using the same imagery provider without labels
