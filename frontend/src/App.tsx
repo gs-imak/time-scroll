@@ -883,10 +883,11 @@ function App() {
         addLocationPins();
       }
       
-      // Then add any filtered event markers
+      // Then add any filtered event markers, but exclude the Pyramids of Giza event
       if (filteredEvents.length > 0) {
         filteredEvents.forEach(event => {
-          if (event.latitude && event.longitude) {
+          // Skip adding the Great Pyramid Construction event
+          if (event.latitude && event.longitude && event.id !== 'great-pyramid-construction') {
             addEventMarker(event);
           }
         });
