@@ -20,7 +20,6 @@ interface WheelProps {
 const Wheel = ({ options, selected, onChange }: WheelProps) => {
   return (
     <div className="wheel-container">
-      <div className="wheel-spacer"></div>
       {options.map((opt, idx) => (
         <div
           key={idx}
@@ -30,7 +29,6 @@ const Wheel = ({ options, selected, onChange }: WheelProps) => {
           {opt}
         </div>
       ))}
-      <div className="wheel-spacer"></div>
     </div>
   );
 };
