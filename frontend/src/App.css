@@ -265,6 +265,15 @@ body, html, #root, .App {
     background-color: rgba(0,20,40,0.7);
   }
   
+  .cesium-viewer .cesium-entity-label,
+  .cesium-viewer .cesium-billboard,
+  .pyramid-animation-visible .cesium-entity-label {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+  
   /* Location Pin Styles */
   .location-pin-container {
     position: absolute;

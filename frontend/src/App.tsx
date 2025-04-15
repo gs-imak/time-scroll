@@ -11,7 +11,6 @@ import { EventDetailModal } from './components/EventDetailModal';
 import { PyramidAnimation } from './components/PyramidAnimation';
 import { DateWheelPicker } from './components/DateWheelPicker';
 import { GLOBAL_TIME_PERIODS, HISTORICAL_EVENTS } from './constants/historyData';
-import { LocationPin } from './components/LocationPin';
 
 // Get the interfaces from the GlobalTimeSlider component
 import type { TimePeriod, HistoricalEvent } from './components/GlobalTimeSlider';
@@ -144,7 +143,6 @@ function App() {
   const [currentGlobalPeriod, setCurrentGlobalPeriod] = useState(GLOBAL_TIME_PERIODS[GLOBAL_TIME_PERIODS.length - 1].id);
   const [currentGlobalYear, setCurrentGlobalYear] = useState<number>(-2023);
   const [currentZoomLevel, setCurrentZoomLevel] = useState<number>(30000000);
-  const [showLocationPin, setShowLocationPin] = useState<boolean>(true);
   
   // New state variables for the landing page experience
   const [selectedEra, setSelectedEra] = useState<string | null>('modern');
@@ -1375,7 +1373,6 @@ function App() {
           }
         } else if (height >= 3000000 && height < 20000000) {
           // At medium zoom, show pin but hide animation
-          setShowLocationPin(true);
           setShowPyramidAnimation(false);
           
           // If we're not already in Egypt view and we're focusing on it, set the location
@@ -1637,19 +1634,6 @@ function App() {
             position: "relative",
           }} 
         >
-          {cesiumLoaded && currentLocation === 'egypt' && (
-            <LocationPin 
-              isVisible={showLocationPin}
-              locationId="egypt"
-              longitude={31.1342}
-              latitude={29.9792}
-              height={1000000}
-              emoji="🏛️"
-              name="Pyramids of Giza"
-              zoomLevel={currentZoomLevel}
-            />
-          )}
-          
           <PyramidAnimation
             isVisible={showPyramidAnimation}
             isPlaying={isPlaying}
