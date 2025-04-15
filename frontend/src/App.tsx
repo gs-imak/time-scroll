@@ -255,8 +255,13 @@ function App() {
             }
           }
           
-          // Add labels for each country
+          // Add labels for each country - IMPROVED VERSION WITH LARGER TEXT AND NO BACKGROUND
           const addedCountries = new Set(); // Track countries we've already labeled
+          
+          // Define larger countries that should always have visible labels
+          const majorCountries = ['United States', 'Canada', 'Russia', 'China', 'Brazil', 
+                                  'India', 'Australia', 'France', 'Germany', 'Egypt', 
+                                  'South Africa', 'Japan', 'United Kingdom', 'Mexico', 'Italy'];
           
           for (const entity of entities) {
             if (!entity.polygon || !entity.properties) continue;
@@ -271,20 +276,36 @@ function App() {
             const positions = entity.polygon.hierarchy.getValue(window.Cesium.JulianDate.now()).positions;
             const center = window.Cesium.BoundingSphere.fromPoints(positions).center;
             
+            // Check if this is a major country that should always have its label visible
+            const isMajorCountry = majorCountries.includes(countryName);
+            
             entity.position = center;
             entity.label = new window.Cesium.LabelGraphics({
               text: countryName,
-              font: '18px Helvetica, Arial, sans-serif',
-              fillColor: window.Cesium.Color.fromCssColorString('#60efff'),
-              outlineColor: window.Cesium.Color.BLACK,
-              outlineWidth: 3,
+              font: isMajorCountry ? '28px Roboto, sans-serif' : '22px Roboto, sans-serif', // Much larger text
+              fillColor: window.Cesium.Color.fromCssColorString('#FFFFFF'), // White text
+              outlineColor: window.Cesium.Color.fromCssColorString('#0066CC'), // Blue outline instead of black
+              outlineWidth: 3, // Thicker outline for better visibility
               style: window.Cesium.LabelStyle.FILL_AND_OUTLINE,
               horizontalOrigin: window.Cesium.HorizontalOrigin.CENTER,
               verticalOrigin: window.Cesium.VerticalOrigin.CENTER,
               pixelOffset: new window.Cesium.Cartesian2(0, 0),
-              translucencyByDistance: new window.Cesium.NearFarScalar(1000000, 1.0, 20000000, 0.4),
-              scaleByDistance: new window.Cesium.NearFarScalar(1000000, 1.2, 20000000, 0.8),
-              distanceDisplayCondition: new window.Cesium.DistanceDisplayCondition(10000, 20000000)
+              // More responsive zoom scaling
+              translucencyByDistance: new window.Cesium.NearFarScalar(1000000, 1.0, 30000000, isMajorCountry ? 0.6 : 0.3),
+              scaleByDistance: new window.Cesium.NearFarScalar(1000000, 1.2, 30000000, 0.5), // Better scaling with distance
+              // Enhanced distance display conditions
+              distanceDisplayCondition: new window.Cesium.DistanceDisplayCondition(
+                isMajorCountry ? 10000 : 1000000, // Show major countries from much closer
+                isMajorCountry ? 40000000 : 20000000 // Show major countries from much further away
+              ),
+              // Remove the background completely
+              showBackground: false,
+              // Prevent overlap with subtle offsets
+              eyeOffset: new window.Cesium.Cartesian3(
+                (Math.random() - 0.5) * 70000,
+                (Math.random() - 0.5) * 70000,
+                0
+              )
             });
           }
           
