@@ -2,13 +2,14 @@ import React, { useEffect, useRef, useState } from 'react';
 import './App.css';
 import './styles/cesium.css';
 import './styles/date-picker.css';
+import './styles/DateWheelPicker.css';
 import { MiniTimeline, TimeDial, EraTransition, DescriptionPanel } from './components/time-ui';
 import { LocationsPanel } from './components/LocationsPanel';
 import { GlobalTimeSlider } from './components/GlobalTimeSlider';
 import { HistoricalEventMarker } from './components/HistoricalEventMarker';
 import { EventDetailModal } from './components/EventDetailModal';
 import { PyramidAnimation } from './components/PyramidAnimation';
-import { DatePicker } from './components/DatePicker';
+import { DateWheelPicker } from './components/DateWheelPicker';
 import { GLOBAL_TIME_PERIODS, HISTORICAL_EVENTS } from './constants/historyData';
 
 // Get the interfaces from the GlobalTimeSlider component
@@ -1579,7 +1580,7 @@ function App() {
             {/* Date Selection - only show when era is selected */}
             {selectedEra && (
               <div className="time-picker-container">
-                <DatePicker
+                <DateWheelPicker
                   selectedYear={selectedYear}
                   selectedMonth={selectedMonth}
                   selectedDay={selectedDay}
