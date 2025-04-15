@@ -1371,10 +1371,26 @@ function App() {
           if (!showPyramidAnimation) {
             setShowPyramidAnimation(true);
             setIsPlaying(true);
+            
+            // Hide the Egypt location pin when animation is shown
+            if (cesiumViewer.current) {
+              const egyptPin = cesiumViewer.current.entities.getById(`location_pin_egypt`);
+              if (egyptPin) {
+                egyptPin.show = false;
+              }
+            }
           }
         } else if (height >= 3000000 && height < 20000000) {
           // At medium zoom, show pin but hide animation
           setShowPyramidAnimation(false);
+          
+          // Show the Egypt location pin again
+          if (cesiumViewer.current) {
+            const egyptPin = cesiumViewer.current.entities.getById(`location_pin_egypt`);
+            if (egyptPin) {
+              egyptPin.show = true;
+            }
+          }
           
           // If we're not already in Egypt view and we're focusing on it, set the location
           if (currentLocation !== 'egypt' && isNearEgypt && height < 10000000) {
@@ -1385,6 +1401,14 @@ function App() {
         // If we're in Egypt location but camera moved far away, reset the view
         if (height > 10000000 || !isNearEgypt) {
           setShowPyramidAnimation(false);
+          
+          // Show the Egypt location pin again
+          if (cesiumViewer.current) {
+            const egyptPin = cesiumViewer.current.entities.getById(`location_pin_egypt`);
+            if (egyptPin) {
+              egyptPin.show = true;
+            }
+          }
           
           // Only reset location if we're really far away
           if (height > 30000000 || (!isNearEgypt && height > 15000000)) {
@@ -1510,6 +1534,18 @@ function App() {
       // Immediately show and start the pyramid animation when in Egypt view
       setShowPyramidAnimation(true);
       setIsPlaying(true);
+      
+      // Hide the Egypt location pin when animation is shown
+      const egyptPin = cesiumViewer.current.entities.getById(`location_pin_egypt`);
+      if (egyptPin) {
+        egyptPin.show = false;
+      }
+    } else if (cesiumViewer.current) {
+      // When leaving Egypt view, show the pin again
+      const egyptPin = cesiumViewer.current.entities.getById(`location_pin_egypt`);
+      if (egyptPin) {
+        egyptPin.show = true;
+      }
     }
   }, [currentLocation, cesiumViewer.current]);
 
