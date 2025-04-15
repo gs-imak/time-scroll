@@ -11,6 +11,7 @@ import { EventDetailModal } from './components/EventDetailModal';
 import { PyramidAnimation } from './components/PyramidAnimation';
 import { DateWheelPicker } from './components/DateWheelPicker';
 import { GLOBAL_TIME_PERIODS, HISTORICAL_EVENTS } from './constants/historyData';
+import { LocationPin } from './components/LocationPin';
 
 // Get the interfaces from the GlobalTimeSlider component
 import type { TimePeriod, HistoricalEvent } from './components/GlobalTimeSlider';
@@ -142,6 +143,8 @@ function App() {
   const [showEventDetail, setShowEventDetail] = useState(false);
   const [currentGlobalPeriod, setCurrentGlobalPeriod] = useState(GLOBAL_TIME_PERIODS[GLOBAL_TIME_PERIODS.length - 1].id);
   const [currentGlobalYear, setCurrentGlobalYear] = useState<number>(-2023);
+  const [currentZoomLevel, setCurrentZoomLevel] = useState<number>(30000000);
+  const [showLocationPin, setShowLocationPin] = useState<boolean>(true);
   
   // New state variables for the landing page experience
   const [selectedEra, setSelectedEra] = useState<string | null>('modern');
@@ -1313,123 +1316,90 @@ function App() {
     setShowEventDetail(false);
   };
 
-  // Update the camera change listener to properly handle zoom levels
+  // Add a new effect to track camera zoom level and control transitions
   useEffect(() => {
-    if (!cesiumViewer.current || !cesiumLoaded) return;
+    if (!cesiumLoaded || !cesiumViewer.current) return;
     
-    // Set global camera constraints - make sure they're applied after any state changes
-    cesiumViewer.current.scene.screenSpaceCameraController.maximumZoomDistance = 50000000;
-    cesiumViewer.current.scene.screenSpaceCameraController.minimumZoomDistance = 1000000;
+    const viewer = cesiumViewer.current;
     
-    const handleCameraChange = () => {
-      // Check if camera is at or close to the default home position
-      const cameraPosition = cesiumViewer.current.camera.position;
-      const cameraCartographic = window.Cesium.Cartographic.fromCartesian(cameraPosition);
-      const currentHeight = cameraCartographic.height;
+    // Save reference for other components to use
+    (window as any)._pyramidCesiumViewer = viewer;
+    
+    // Create a camera change event listener to track zoom level
+    const cameraChangedEvent = viewer.camera.changed.addEventListener(() => {
+      // Get current camera height/zoom level
+      const cameraPosition = viewer.camera.position;
+      const ellipsoid = viewer.scene.globe.ellipsoid;
+      const cartographic = ellipsoid.cartesianToCartographic(cameraPosition);
+      const height = cartographic.height;
       
-      // Enforce global maximum zoom distance
-      if (currentHeight > 50000000) {
-        const surfacePoint = window.Cesium.Cartesian3.fromRadians(
-          cameraCartographic.longitude,
-          cameraCartographic.latitude,
-          0
-        );
-        const direction = window.Cesium.Cartesian3.normalize(
-          window.Cesium.Cartesian3.subtract(
-            cameraPosition, 
-            surfacePoint, 
-            new window.Cesium.Cartesian3()
-          ),
-          new window.Cesium.Cartesian3()
-        );
-        
-        // Calculate new position at maximum height
-        const newPosition = window.Cesium.Cartesian3.add(
-          surfacePoint,
-          window.Cesium.Cartesian3.multiplyByScalar(
-            direction,
-            50000000,
-            new window.Cesium.Cartesian3()
-          ),
-          new window.Cesium.Cartesian3()
-        );
-        
-        // Set camera to new position while preserving direction
-        cesiumViewer.current.camera.position = newPosition;
-      }
-
-      // Only control animation if we're in Egypt view
-      if (currentLocation === 'egypt') {
-        // Always keep the animation visible and playing when in Egypt view
-        setIsPlaying(true);
-        setShowPyramidAnimation(true);
-      } else {
-        // If we're not in Egypt view, make sure animation is hidden
-        setShowPyramidAnimation(false);
-        setIsPlaying(false);
-      }
-    };
-
-    // Clean up any existing listeners before adding new ones
-    cleanupActiveListeners();
-
-    // Add the camera changed event listener
-    const cameraChangedEventRemove = cesiumViewer.current.camera.changed.addEventListener(handleCameraChange);
-    
-    // Add this to active listeners for cleanup
-    activeListenersRef.current.push(cameraChangedEventRemove);
-    
-    // Add an event listener specifically for the home button
-    const homeButton = document.querySelector('.cesium-button-home');
-    
-    const handleHomeButtonClick = () => {
-      // When home button is clicked, reset all location-specific state
-      setCurrentLocation(null);
-      setShowPyramidAnimation(false);
-      setShowDescriptionPanel(false);
-      setSelectedPeriod(null);
+      // Update zoom level state
+      setCurrentZoomLevel(height);
       
-      // Clean up any location-specific listeners
-      cleanupActiveListeners();
+      // Check if we're close to Egypt's coordinates regardless of current location
+      const longitude = cartographic.longitude * 180 / Math.PI; // Convert to degrees
+      const latitude = cartographic.latitude * 180 / Math.PI;  // Convert to degrees
       
-      if (cesiumViewer.current) {
-        // Instead of removing all entities, we should selectively remove them
-        // preserving the country borders from the data sources
-        const entities = cesiumViewer.current.entities.values;
-        for (let i = entities.length - 1; i >= 0; i--) {
-          const entity = entities[i];
-          // Only remove entities that are directly in the viewer's entity collection
-          if (entity && cesiumViewer.current.entities.contains(entity)) {
-            cesiumViewer.current.entities.remove(entity);
+      // Check if camera is near Egypt (within a reasonable radius)
+      const isNearEgypt = 
+        Math.abs(longitude - 31.1342) < 5 && 
+        Math.abs(latitude - 29.9792) < 5;
+      
+      if (isNearEgypt) {
+        // When we're near Egypt's coordinates
+        if (height < 3000000) {
+          // When close enough, set location to Egypt and show the animation
+          if (currentLocation !== 'egypt') {
+            setCurrentLocation('egypt');
+            
+            // Set up initial time period for the Egypt view
+            setCurrentTimePeriodIndex(0);
+            setSelectedPeriod(PYRAMID_TIME_PERIODS[0]);
+            
+            // Show the transition effect to make it clear something happened
+            setTransitionData({
+              location: LOCATIONS.egypt.name,
+              year: PYRAMID_TIME_PERIODS[0].year
+            });
+            
+            // Show era transition UI
+            setTimeout(() => {
+              setShowEraTransition(true);
+            }, 300);
+          }
+          
+          // When zoomed in close enough, show the pyramid animation
+          if (!showPyramidAnimation) {
+            setShowPyramidAnimation(true);
+            setIsPlaying(true);
+          }
+        } else if (height >= 3000000 && height < 20000000) {
+          // At medium zoom, show pin but hide animation
+          setShowLocationPin(true);
+          setShowPyramidAnimation(false);
+          
+          // If we're not already in Egypt view and we're focusing on it, set the location
+          if (currentLocation !== 'egypt' && isNearEgypt && height < 10000000) {
+            setCurrentLocation('egypt');
           }
         }
-        
-        addLocationPins();
-        
-        // Reset to filtered events for global view
-        const filteredEvents = HISTORICAL_EVENTS.filter(
-          event => event.period === currentGlobalPeriod || currentGlobalPeriod === 'all'
-        );
-        handleEventsFiltered(filteredEvents);
+      } else if (currentLocation === 'egypt') {
+        // If we're in Egypt location but camera moved far away, reset the view
+        if (height > 10000000 || !isNearEgypt) {
+          setShowPyramidAnimation(false);
+          
+          // Only reset location if we're really far away
+          if (height > 30000000 || (!isNearEgypt && height > 15000000)) {
+            setCurrentLocation(null);
+          }
+        }
       }
-    };
-    
-    if (homeButton) {
-      homeButton.addEventListener('click', handleHomeButtonClick);
-    }
+    });
     
     return () => {
-      // Clean up all listeners
-      cleanupActiveListeners();
-      
-      // Also remove the specific event listeners created in this useEffect
-      cameraChangedEventRemove();
-      
-      if (homeButton) {
-        homeButton.removeEventListener('click', handleHomeButtonClick);
-      }
+      cameraChangedEvent();
     };
-  }, [cesiumViewer.current, cesiumLoaded, currentLocation, currentGlobalPeriod, showPyramidAnimation]);
+  }, [cesiumLoaded, cesiumViewer.current, currentLocation, showPyramidAnimation]);
 
   // Add cleanup when leaving Egypt view or unmounting
   useEffect(() => {
@@ -1666,7 +1636,26 @@ function App() {
             height: "100vh", 
             position: "relative",
           }} 
-        />
+        >
+          {cesiumLoaded && currentLocation === 'egypt' && (
+            <LocationPin 
+              isVisible={showLocationPin}
+              locationId="egypt"
+              longitude={31.1342}
+              latitude={29.9792}
+              height={1000000}
+              emoji="🏛️"
+              name="Pyramids of Giza"
+              zoomLevel={currentZoomLevel}
+            />
+          )}
+          
+          <PyramidAnimation
+            isVisible={showPyramidAnimation}
+            isPlaying={isPlaying}
+            currentTimePeriod={selectedPeriod?.id}
+          />
+        </div>
         
         {showVisualEffect && (
           <div className="time-travel-effect"></div>
@@ -1746,13 +1735,6 @@ function App() {
             description={getSelectedEvent()!.description || ''}
           />
         )}
-        
-        {/* Add the PyramidAnimation component */}
-        <PyramidAnimation
-          isVisible={showPyramidAnimation}
-          isPlaying={isPlaying}
-          currentTimePeriod={selectedPeriod?.id}
-        />
       </div>
     </>
   );

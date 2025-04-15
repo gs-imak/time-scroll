@@ -12,6 +12,7 @@ export function PyramidAnimation({ isVisible, isPlaying, currentTimePeriod }: Py
   const [showPopup, setShowPopup] = useState<boolean>(false);
   const [animationFile, setAnimationFile] = useState<string>('/assets/rive/pyramid_building.riv');
   const [labelText, setLabelText] = useState<string>("Construction of the Pyramids of Giza");
+  const [hasTransitioned, setHasTransitioned] = useState<boolean>(false);
   
   useEffect(() => {
     const isPresentDay = currentTimePeriod === 'modern-era';
@@ -49,6 +50,19 @@ export function PyramidAnimation({ isVisible, isPlaying, currentTimePeriod }: Py
     if (!isVisible || !containerRef.current) return;
     
     containerRef.current.style.display = 'block';
+    
+    // Add zoom transition class when first appearing
+    if (!hasTransitioned) {
+      containerRef.current.classList.add('zoom-transition');
+      
+      // Remove class after animation completes
+      setTimeout(() => {
+        if (containerRef.current) {
+          containerRef.current.classList.remove('zoom-transition');
+          setHasTransitioned(true);
+        }
+      }, 800);
+    }
     
     if (!window.Cesium) {
       containerRef.current.style.left = '50%';
@@ -97,6 +111,19 @@ export function PyramidAnimation({ isVisible, isPlaying, currentTimePeriod }: Py
     return () => {
       preRenderListener();
     };
+  }, [isVisible, hasTransitioned]);
+
+  // Add reset effect when visibility changes from false to true
+  useEffect(() => {
+    if (isVisible) {
+      // If animation becomes visible again, reset transition state
+      // so it will animate in again next time
+      if (!hasTransitioned) {
+        // Already false, nothing to do
+      } else {
+        setHasTransitioned(false);
+      }
+    }
   }, [isVisible]);
 
   useEffect(() => {

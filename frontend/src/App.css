@@ -265,3 +265,157 @@ body, html, #root, .App {
     background-color: rgba(0,20,40,0.7);
   }
   
+  /* Location Pin Styles */
+  .location-pin-container {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    pointer-events: auto;
+  }
+  
+  .location-pin {
+    position: relative;
+    width: 48px;
+    height: 48px;
+    background: rgba(96, 239, 255, 0.85);
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 0 20px rgba(96, 239, 255, 0.6);
+    transform-origin: center bottom;
+    transform: scale(0);
+    opacity: 0;
+    transition: transform 0.2s ease;
+  }
+  
+  .location-pin:hover {
+    background: rgba(96, 239, 255, 1);
+    box-shadow: 0 0 25px rgba(96, 239, 255, 0.8);
+    transform: scale(1.1) !important;
+  }
+  
+  .location-pin-emoji {
+    font-size: 22px;
+    line-height: 1;
+  }
+  
+  .location-pin-pulse {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 3px solid rgba(96, 239, 255, 0.4);
+    animation: pin-pulse 2s infinite;
+    pointer-events: none;
+    opacity: 0;
+  }
+  
+  @keyframes pin-pulse {
+    0% {
+      transform: scale(1);
+      opacity: 0.8;
+    }
+    70% {
+      transform: scale(1.5);
+      opacity: 0;
+    }
+    100% {
+      transform: scale(1.5);
+      opacity: 0;
+    }
+  }
+  
+  .location-pin-label {
+    position: absolute;
+    top: -40px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(96, 239, 255, 0.4);
+    border-radius: 6px;
+    padding: 6px 10px;
+    min-width: 120px;
+    text-align: center;
+    white-space: nowrap;
+    opacity: 0;
+    transform: translateY(10px);
+    z-index: 11;
+  }
+  
+  .location-pin-name {
+    color: white;
+    font-weight: 500;
+    font-size: 14px;
+  }
+  
+  /* Animation for pin drop-in and pop-out */
+  @keyframes pin-drop-in {
+    0% {
+      transform: scale(0) translateY(-50px);
+      opacity: 0;
+    }
+    70% {
+      transform: scale(1.2) translateY(5px);
+      opacity: 1;
+    }
+    100% {
+      transform: scale(1) translateY(0);
+      opacity: 1;
+    }
+  }
+  
+  @keyframes pin-pop-out {
+    0% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    100% {
+      transform: scale(0);
+      opacity: 0;
+    }
+  }
+  
+  /* Pop-in animation for PyramidAnimation when zoom is close enough */
+  @keyframes pyramid-pop-in {
+    0% {
+      transform: scale(0.2);
+      opacity: 0;
+    }
+    60% {
+      transform: scale(1.1);
+      opacity: 1;
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+  
+  .pyramid-animation-container.zoom-transition {
+    animation: pyramid-pop-in 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  }
+  
+  /* Enhanced transition for the pin */
+  @keyframes pin-zoom-out {
+    0% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    50% {
+      transform: scale(1.3);
+      opacity: 0.7;
+    }
+    100% {
+      transform: scale(0);
+      opacity: 0;
+    }
+  }
+  
+  .location-pin.zoom-transition-out {
+    animation: pin-zoom-out 0.5s ease-out forwards;
+  }
+  
