@@ -252,110 +252,55 @@ function App() {
               
               // Make sure borders are always visible regardless of zoom
               entity.polygon.distanceDisplayCondition = undefined;
+              
+              // Calculate centroid position for the polygon
+              try {
+                const positions = entity.polygon.hierarchy.getValue(window.Cesium.JulianDate.now()).positions;
+                const center = window.Cesium.BoundingSphere.fromPoints(positions).center;
+                
+                // Set entity position to the centroid of its polygon
+                entity.position = center;
+                
+                // Add label for polygon entities at their centroid
+                const name = entity.name || entity.id || '';
+                if (name) {
+                  entity.label = new window.Cesium.LabelGraphics({
+                    text: name,
+                    font: '18px Roboto, sans-serif',
+                    fillColor: window.Cesium.Color.WHITE,
+                    outlineColor: window.Cesium.Color.BLACK,
+                    outlineWidth: 2,
+                    style: window.Cesium.LabelStyle.FILL_AND_OUTLINE,
+                    horizontalOrigin: window.Cesium.HorizontalOrigin.CENTER,
+                    verticalOrigin: window.Cesium.VerticalOrigin.CENTER,
+                    distanceDisplayCondition: new window.Cesium.DistanceDisplayCondition(0.0, 2e7),
+                    scaleByDistance: new window.Cesium.NearFarScalar(1e6, 1.2, 2e7, 0.3),
+                    showBackground: false
+                  });
+                }
+              } catch (e) {
+                console.error("Error calculating centroid for polygon:", e);
+              }
             }
-          }
-          
-          // Add labels for each country - IMPROVED VERSION WITH BETTER CLUSTERING LOGIC
-          const addedCountries = new Set(); // Track countries we've already labeled
-          
-          // Define countries by region for prioritization
-          const regionPriorities = {
-            // Major countries that should always have visible labels
-            major: ['United States', 'Canada', 'Russia', 'China', 'Brazil', 
-                    'India', 'Australia', 'Egypt', 
-                    'South Africa', 'Japan', 'Mexico'], // Removed European major countries
-            
-            // European countries that need special handling to avoid clutter
-            europe: ['France', 'Germany', 'United Kingdom', 'Italy', 'Spain', 'Portugal', 
-                     'Poland', 'Ukraine', 'Romania', 'Netherlands', 'Belgium', 'Greece', 
-                     'Czech Republic', 'Sweden', 'Hungary', 'Austria', 'Switzerland', 'Bulgaria', 
-                     'Denmark', 'Finland', 'Slovakia', 'Norway', 'Ireland', 'Croatia', 'Moldova', 
-                     'Bosnia and Herzegovina', 'Albania', 'Lithuania', 'Slovenia', 'Latvia', 
-                     'Estonia', 'Montenegro', 'Luxembourg', 'Malta', 'Iceland', 'Andorra', 
-                     'Monaco', 'Liechtenstein', 'San Marino', 'Vatican City'],
-            
-            // Small European countries that should only appear at very close zoom
-            europeMicro: ['Luxembourg', 'Malta', 'Andorra', 'Monaco', 'Liechtenstein', 
-                          'San Marino', 'Vatican City']
-          };
-          
-          for (const entity of entities) {
-            if (!entity.polygon || !entity.properties) continue;
-            
-            const countryName = entity.properties.ADMIN?.getValue() || entity.properties.NAME?.getValue() || entity.name;
-            
-            // Skip if we've already labeled this country
-            if (addedCountries.has(countryName)) continue;
-            addedCountries.add(countryName);
-            
-            // Get the center of the polygon
-            const positions = entity.polygon.hierarchy.getValue(window.Cesium.JulianDate.now()).positions;
-            const center = window.Cesium.BoundingSphere.fromPoints(positions).center;
-            
-            // Determine country category for visibility rules
-            const isMajorCountry = regionPriorities.major.includes(countryName);
-            const isEuropeanCountry = regionPriorities.europe.includes(countryName);
-            const isMicroEuropeanCountry = regionPriorities.europeMicro.includes(countryName);
-            
-            // Skip micro European countries unless at very close zoom
-            if (isMicroEuropeanCountry) {
-              // Only create these labels, but with extreme zoom constraints
-              entity.position = center;
-              entity.label = new window.Cesium.LabelGraphics({
-                text: countryName,
-                font: '16px Roboto, sans-serif',
-                fillColor: window.Cesium.Color.WHITE,
-                outlineColor: window.Cesium.Color.fromCssColorString('#0066CC'),
-                outlineWidth: 2,
-                style: window.Cesium.LabelStyle.FILL_AND_OUTLINE,
-                horizontalOrigin: window.Cesium.HorizontalOrigin.CENTER,
-                verticalOrigin: window.Cesium.VerticalOrigin.CENTER,
-                // Very restrictive display conditions - only show at extremely close zoom
-                distanceDisplayCondition: new window.Cesium.DistanceDisplayCondition(10000, 1000000),
-                showBackground: false
-              });
-              continue;
+            // Handle entities that already have a position but no polygon
+            else if (entity.position) {
+              const name = entity.name || entity.id || '';
+              if (name) {
+                entity.label = new window.Cesium.LabelGraphics({
+                  text: name,
+                  font: '18px Roboto, sans-serif',
+                  fillColor: window.Cesium.Color.WHITE,
+                  outlineColor: window.Cesium.Color.BLACK,
+                  outlineWidth: 2,
+                  style: window.Cesium.LabelStyle.FILL_AND_OUTLINE,
+                  horizontalOrigin: window.Cesium.HorizontalOrigin.CENTER,
+                  verticalOrigin: window.Cesium.VerticalOrigin.CENTER,
+                  distanceDisplayCondition: new window.Cesium.DistanceDisplayCondition(0.0, 2e7),
+                  scaleByDistance: new window.Cesium.NearFarScalar(1e6, 1.2, 2e7, 0.3),
+                  showBackground: false
+                });
+              }
             }
-            
-            // For European countries, apply consistent styles but make them more visible when zoomed in
-            const fontSize = isEuropeanCountry ? 22 : 24; // Increased European font size from 18 to 22
-            const maxDistance = isEuropeanCountry ? 10000000 : 20000000; // Keep different visibility distances
-            const minDistance = isEuropeanCountry ? 500000 : 300000; // Keep different minimum distances
-            
-            // Apply offset based on region to separate European labels
-            const offsetMultiplier = isEuropeanCountry ? 120000 : 70000;
-            
-            entity.position = center;
-            entity.label = new window.Cesium.LabelGraphics({
-              text: countryName,
-              font: `${fontSize}px Roboto, sans-serif`,
-              fillColor: window.Cesium.Color.WHITE,
-              outlineColor: window.Cesium.Color.fromCssColorString('#0066CC'),
-              outlineWidth: 4, // Thicker outline for better visibility
-              style: window.Cesium.LabelStyle.FILL_AND_OUTLINE,
-              horizontalOrigin: window.Cesium.HorizontalOrigin.CENTER,
-              verticalOrigin: window.Cesium.VerticalOrigin.CENTER,
-              pixelOffset: new window.Cesium.Cartesian2(0, 0),
-              // Modified to make labels larger when zoomed in
-              translucencyByDistance: new window.Cesium.NearFarScalar(minDistance, 1.0, maxDistance * 0.7, 0.4),
-              // Make European labels scale more aggressively when zoomed in
-              scaleByDistance: new window.Cesium.NearFarScalar(
-                minDistance, 
-                isEuropeanCountry ? 1.5 : 1.2, // Larger scale factor for European countries when zoomed in close
-                maxDistance * 0.7, 
-                0.7
-              ),
-              // Same distance display conditions
-              distanceDisplayCondition: new window.Cesium.DistanceDisplayCondition(minDistance, maxDistance),
-              // No background
-              showBackground: false,
-              // Same offset multipliers to prevent overlap
-              eyeOffset: new window.Cesium.Cartesian3(
-                (Math.random() - 0.5) * offsetMultiplier,
-                (Math.random() - 0.5) * offsetMultiplier,
-                0
-              )
-            });
           }
           
           // Remove ArcGIS labels but keep the imagery
