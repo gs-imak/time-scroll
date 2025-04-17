@@ -16,14 +16,15 @@ export function PyramidAnimation({ isVisible, isPlaying, currentTimePeriod }: Py
   
   useEffect(() => {
     const isPresentDay = currentTimePeriod === 'modern-era';
+    const isMiddleKingdomOrLater = currentTimePeriod === 'middle-kingdom' || currentTimePeriod === 'modern-era';
     const isConstructionCompleted = currentTimePeriod === 'construction-complete' || 
                                    currentTimePeriod === 'middle-kingdom' || 
                                    currentTimePeriod === 'modern-era';
     
-    console.log(`Current time period: ${currentTimePeriod}, isPresentDay: ${isPresentDay}`);
+    console.log(`Current time period: ${currentTimePeriod}, isConstructionCompleted: ${isConstructionCompleted}`);
     
-    // Set the animation file based on the time period
-    if (isPresentDay) {
+    // Set the animation file based on the time period - now showing finished pyramid from construction-complete onwards
+    if (isConstructionCompleted) {
       console.log('Switching to pyramid_finished animation');
       setAnimationFile('/assets/rive/pyramid_finished.riv');
     } else {
