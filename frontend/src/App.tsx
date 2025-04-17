@@ -266,16 +266,18 @@ function App() {
                 if (name) {
                   entity.label = new window.Cesium.LabelGraphics({
                     text: name,
-                    font: '18px Roboto, sans-serif',
+                    font: '20px Roboto, sans-serif',
                     fillColor: window.Cesium.Color.WHITE,
                     outlineColor: window.Cesium.Color.BLACK,
-                    outlineWidth: 2,
+                    outlineWidth: 3,
                     style: window.Cesium.LabelStyle.FILL_AND_OUTLINE,
                     horizontalOrigin: window.Cesium.HorizontalOrigin.CENTER,
                     verticalOrigin: window.Cesium.VerticalOrigin.CENTER,
                     distanceDisplayCondition: new window.Cesium.DistanceDisplayCondition(0.0, 2e7),
-                    scaleByDistance: new window.Cesium.NearFarScalar(1e6, 1.2, 2e7, 0.3),
-                    showBackground: false
+                    scaleByDistance: new window.Cesium.NearFarScalar(1e6, 1.5, 2e7, 0.4),
+                    showBackground: false,
+                    pixelOffset: new window.Cesium.Cartesian2(0, 0),
+                    translucencyByDistance: new window.Cesium.NearFarScalar(1e6, 1.0, 2e7, 0.6)
                   });
                 }
               } catch (e) {
@@ -288,16 +290,18 @@ function App() {
               if (name) {
                 entity.label = new window.Cesium.LabelGraphics({
                   text: name,
-                  font: '18px Roboto, sans-serif',
+                  font: '20px Roboto, sans-serif',
                   fillColor: window.Cesium.Color.WHITE,
                   outlineColor: window.Cesium.Color.BLACK,
-                  outlineWidth: 2,
+                  outlineWidth: 3,
                   style: window.Cesium.LabelStyle.FILL_AND_OUTLINE,
                   horizontalOrigin: window.Cesium.HorizontalOrigin.CENTER,
                   verticalOrigin: window.Cesium.VerticalOrigin.CENTER,
                   distanceDisplayCondition: new window.Cesium.DistanceDisplayCondition(0.0, 2e7),
-                  scaleByDistance: new window.Cesium.NearFarScalar(1e6, 1.2, 2e7, 0.3),
-                  showBackground: false
+                  scaleByDistance: new window.Cesium.NearFarScalar(1e6, 1.5, 2e7, 0.4),
+                  showBackground: false,
+                  pixelOffset: new window.Cesium.Cartesian2(0, 0),
+                  translucencyByDistance: new window.Cesium.NearFarScalar(1e6, 1.0, 2e7, 0.6)
                 });
               }
             }
