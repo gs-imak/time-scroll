@@ -63,6 +63,24 @@ export function PyramidAnimation({ isVisible, isPlaying, currentTimePeriod }: Py
         }
       }, 800);
     }
+
+    // Find the cesium container parent and add the showing-pyramid-animation class
+    const cesiumContainer = document.querySelector('.cesium-container');
+    if (cesiumContainer) {
+      cesiumContainer.classList.add('showing-pyramid-animation');
+      
+      // Also add pyramid-animation-visible class to body for global selector effects
+      document.body.classList.add('pyramid-animation-visible');
+    }
+    
+    // Directly hide the Egypt pin if it exists
+    if (window.Cesium && (window as any)._pyramidCesiumViewer) {
+      const viewer = (window as any)._pyramidCesiumViewer;
+      const egyptPin = viewer.entities.getById('location_pin_egypt');
+      if (egyptPin) {
+        egyptPin.show = false;
+      }
+    }
     
     if (!window.Cesium) {
       containerRef.current.style.left = '50%';
@@ -110,8 +128,28 @@ export function PyramidAnimation({ isVisible, isPlaying, currentTimePeriod }: Py
     
     return () => {
       preRenderListener();
+      
+      // Remove the showing-pyramid-animation class when component unmounts or becomes invisible
+      const cesiumContainer = document.querySelector('.cesium-container');
+      if (cesiumContainer) {
+        cesiumContainer.classList.remove('showing-pyramid-animation');
+      }
+      
+      // Remove the pyramid-animation-visible class from body
+      document.body.classList.remove('pyramid-animation-visible');
     };
   }, [isVisible, hasTransitioned]);
+
+  // When the component unmounts entirely or visibility changes to false, clean up classes
+  useEffect(() => {
+    if (!isVisible) {
+      const cesiumContainer = document.querySelector('.cesium-container');
+      if (cesiumContainer) {
+        cesiumContainer.classList.remove('showing-pyramid-animation');
+      }
+      document.body.classList.remove('pyramid-animation-visible');
+    }
+  }, [isVisible]);
 
   // Add reset effect when visibility changes from false to true
   useEffect(() => {

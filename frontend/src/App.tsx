@@ -513,53 +513,45 @@ function App() {
 
   // Function to handle time period changes and update the map visualization
   const handleTimePeriodChange = (periodIndex: number) => {
-    if (!cesiumViewer.current || periodIndex === currentTimePeriodIndex) return;
+    // Prevent redundant updates to improve performance
+    if (currentTimePeriodIndex === periodIndex) return;
     
+    // Update the current period index
+    setCurrentTimePeriodIndex(periodIndex);
+    
+    // Update the selected period for animation settings
     const newPeriod = PYRAMID_TIME_PERIODS[periodIndex];
-    console.log(`Changing time period to ${newPeriod.title} (${newPeriod.id})`);
+    setSelectedPeriod(newPeriod);
     
-    // Show transition effect
-    setShowEraTransition(true);
+    // Show transition effect for era changes
     setTransitionData({
-      location: LOCATIONS[currentLocation as keyof typeof LOCATIONS].name,
+      location: "Pyramids of Giza",
       year: newPeriod.year
     });
     
-    // Update the selected period for the description panel
-    setSelectedPeriod(newPeriod);
+    // If we're changing between major eras, show a transition effect
+    const isPreviousHistorical = currentTimePeriodIndex <= 3;
+    const isNewModern = periodIndex === 4;
+    const isPreviousModern = currentTimePeriodIndex === 4;
+    const isNewHistorical = periodIndex <= 3;
     
-    // Clear any existing overlays immediately
-    if (activeOverlay) {
-      try {
-        cesiumViewer.current.entities.remove(activeOverlay);
-        setActiveOverlay(null);
-      } catch (e) {
-        console.error("Error removing overlay:", e);
-      }
+    // Only show the transition if we're crossing between historical and modern
+    if ((isPreviousHistorical && isNewModern) || (isPreviousModern && isNewHistorical)) {
+      setShowEraTransition(true);
     }
     
-    // Update state immediately to avoid lag
-    setCurrentTimePeriodIndex(periodIndex);
-    
-    // Store existing location pins before clearing
-    const locationPins = cesiumViewer.current.entities.values.filter(
-      (entity: any) => entity.id && entity.id.toString().startsWith('location_pin_')
-    );
-    
-    // Instead of removing all entities, we need to preserve the country borders
-    // and only remove the entities added directly to the viewer's collection
-    const entities = cesiumViewer.current.entities.values;
-    for (let i = entities.length - 1; i >= 0; i--) {
-      const entity = entities[i];
-      // Only remove entities that are directly in the viewer's entity collection
-      if (entity && cesiumViewer.current.entities.contains(entity)) {
-        cesiumViewer.current.entities.remove(entity);
+    // Update the visualization for the new time period
+    if (cesiumViewer.current) {
+      addTimePeriodVisualization(newPeriod.id);
+      
+      // Always ensure the Egypt pin is hidden when the animation is showing
+      if (showPyramidAnimation) {
+        const egyptPin = cesiumViewer.current.entities.getById('location_pin_egypt');
+        if (egyptPin) {
+          egyptPin.show = false;
+        }
       }
     }
-    
-    // Add time period visualization
-    console.log(`Adding visualization for period: ${newPeriod.id}`);
-    addTimePeriodVisualization(newPeriod.id);
     
     // Refresh location pins to ensure correct label visibility with animation
     if (showPyramidAnimation) {
@@ -576,6 +568,12 @@ function App() {
         
         // Add location pins with proper label visibility
         addLocationPins();
+        
+        // Re-hide the Egypt pin if animation is showing
+        const egyptPin = cesiumViewer.current.entities.getById('location_pin_egypt');
+        if (egyptPin && showPyramidAnimation) {
+          egyptPin.show = false;
+        }
       }, 50);
     }
   };
@@ -1605,6 +1603,33 @@ function App() {
     }
   }, [currentLocation, cesiumViewer.current]);
 
+  // Add a specific effect to handle pyramid animation visibility changes
+  useEffect(() => {
+    if (!cesiumViewer.current) return;
+    
+    if (showPyramidAnimation) {
+      // Hide the Egypt pin when animation becomes visible
+      const egyptPin = cesiumViewer.current.entities.getById('location_pin_egypt');
+      if (egyptPin) {
+        egyptPin.show = false;
+      }
+      
+      // Add a class to the document body to help with global CSS selectors
+      document.body.classList.add('pyramid-animation-visible');
+    } else {
+      // Only show the pin if we're in Egypt view but not showing the animation
+      if (currentLocation === 'egypt') {
+        const egyptPin = cesiumViewer.current.entities.getById('location_pin_egypt');
+        if (egyptPin) {
+          egyptPin.show = true;
+        }
+      }
+      
+      // Remove the class from body
+      document.body.classList.remove('pyramid-animation-visible');
+    }
+  }, [showPyramidAnimation, currentLocation]);
+
   // Add a useEffect to update event markers when the current global year changes
   useEffect(() => {
     if (!cesiumViewer.current || !cesiumLoaded) return;
@@ -1797,7 +1822,7 @@ function App() {
         
         <div 
           ref={viewerRef} 
-          className="cesium-container"
+          className={`cesium-container ${showPyramidAnimation ? 'showing-pyramid-animation' : ''}`}
           style={{ 
             width: "100%", 
             height: "100vh", 

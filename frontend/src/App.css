@@ -265,13 +265,23 @@ body, html, #root, .App {
     background-color: rgba(0,20,40,0.7);
   }
   
-  .cesium-viewer .cesium-entity-label,
-  .cesium-viewer .cesium-billboard,
-  .pyramid-animation-visible .cesium-entity-label {
+  /* Fix: Update selector to properly hide Cesium entities when the animation is visible */
+  .pyramid-animation-visible .cesium-entity-label,
+  .pyramid-animation-visible .cesium-billboard,
+  .cesium-container.showing-pyramid-animation .cesium-entity-label,
+  .cesium-container.showing-pyramid-animation .cesium-billboard {
     display: none !important;
     opacity: 0 !important;
     visibility: hidden !important;
     pointer-events: none !important;
+  }
+  
+  /* Specifically hide the Egypt location pin when showing the pyramid animation */
+  body.pyramid-animation-visible [id^="location_pin_egypt"],
+  .showing-pyramid-animation [id^="location_pin_egypt"] {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
   }
   
   /* Location Pin Styles */
