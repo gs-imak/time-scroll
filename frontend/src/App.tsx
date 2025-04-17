@@ -261,23 +261,60 @@ function App() {
                 // Set entity position to the centroid of its polygon
                 entity.position = center;
                 
-                // Add label for polygon entities at their centroid
+                // Add label for polygon entities at their centroid with improved decluttering
                 const name = entity.name || entity.id || '';
                 if (name) {
+                  // Determine region and importance level
+                  const isEuropean = isInEurope(entity);
+                  const importanceLevel = getImportanceLevel(entity);
+                  
+                  // Set different distance thresholds based on region and importance
+                  let minDistance = 300000;  // Default min visibility distance
+                  let maxDistance = 2e7;     // Default max visibility distance
+                  
+                  // Apply progressive visibility based on region and importance
+                  if (isEuropean) {
+                    // European countries need more decluttering
+                    if (importanceLevel === 'major') {
+                      // Major European countries (France, Germany, UK, etc)
+                      minDistance = 300000;
+                      maxDistance = 2e7;
+                    } else if (importanceLevel === 'medium') {
+                      // Medium European countries (Austria, Portugal, etc)
+                      minDistance = 500000;
+                      maxDistance = 1.5e7;
+                    } else if (importanceLevel === 'minor') {
+                      // Minor European countries (Luxembourg, etc)
+                      minDistance = 800000;
+                      maxDistance = 8e6;
+                    } else {
+                      // Micro states
+                      minDistance = 1e6;
+                      maxDistance = 4e6;
+                    }
+                  }
+                  
                   entity.label = new window.Cesium.LabelGraphics({
                     text: name,
-                    font: '20px Roboto, sans-serif',
-                    fillColor: window.Cesium.Color.WHITE,
-                    outlineColor: window.Cesium.Color.BLACK,
-                    outlineWidth: 3,
+                    font: 'bold 20px Roboto, sans-serif', // Add bold for better visibility
+                    fillColor: window.Cesium.Color.fromCssColorString('#FFFFFF'), // Pure white
+                    outlineColor: window.Cesium.Color.fromCssColorString('#000000'), // Pure black outline
+                    outlineWidth: 4, // Thicker outline for better contrast
                     style: window.Cesium.LabelStyle.FILL_AND_OUTLINE,
                     horizontalOrigin: window.Cesium.HorizontalOrigin.CENTER,
                     verticalOrigin: window.Cesium.VerticalOrigin.CENTER,
-                    distanceDisplayCondition: new window.Cesium.DistanceDisplayCondition(0.0, 2e7),
-                    scaleByDistance: new window.Cesium.NearFarScalar(1e6, 1.5, 2e7, 0.4),
+                    distanceDisplayCondition: new window.Cesium.DistanceDisplayCondition(minDistance, maxDistance),
+                    scaleByDistance: new window.Cesium.NearFarScalar(minDistance, 1.5, maxDistance * 0.7, 0.4),
                     showBackground: false,
-                    pixelOffset: new window.Cesium.Cartesian2(0, 0),
-                    translucencyByDistance: new window.Cesium.NearFarScalar(1e6, 1.0, 2e7, 0.6)
+                    // Add a slight glow effect like Google Earth
+                    eyeOffset: new window.Cesium.Cartesian3(0, 0, 0),
+                    pixelOffset: isEuropean ? 
+                      new window.Cesium.Cartesian2(
+                        (Math.random() - 0.5) * 20, 
+                        (Math.random() - 0.5) * 20
+                      ) : 
+                      new window.Cesium.Cartesian2(0, 0),
+                    translucencyByDistance: new window.Cesium.NearFarScalar(minDistance, 1.0, maxDistance * 0.7, 0.5)
                   });
                 }
               } catch (e) {
@@ -290,10 +327,10 @@ function App() {
               if (name) {
                 entity.label = new window.Cesium.LabelGraphics({
                   text: name,
-                  font: '20px Roboto, sans-serif',
-                  fillColor: window.Cesium.Color.WHITE,
-                  outlineColor: window.Cesium.Color.BLACK,
-                  outlineWidth: 3,
+                  font: 'bold 20px Roboto, sans-serif', // Add bold for better visibility
+                  fillColor: window.Cesium.Color.fromCssColorString('#FFFFFF'), // Pure white
+                  outlineColor: window.Cesium.Color.fromCssColorString('#000000'), // Pure black outline
+                  outlineWidth: 4, // Thicker outline for better contrast
                   style: window.Cesium.LabelStyle.FILL_AND_OUTLINE,
                   horizontalOrigin: window.Cesium.HorizontalOrigin.CENTER,
                   verticalOrigin: window.Cesium.VerticalOrigin.CENTER,
@@ -301,7 +338,7 @@ function App() {
                   scaleByDistance: new window.Cesium.NearFarScalar(1e6, 1.5, 2e7, 0.4),
                   showBackground: false,
                   pixelOffset: new window.Cesium.Cartesian2(0, 0),
-                  translucencyByDistance: new window.Cesium.NearFarScalar(1e6, 1.0, 2e7, 0.6)
+                  translucencyByDistance: new window.Cesium.NearFarScalar(1e6, 1.0, 2e7, 0.5)
                 });
               }
             }
@@ -1581,6 +1618,83 @@ function App() {
     handleEventsFiltered(filteredEvents);
     
   }, [currentGlobalYear, cesiumLoaded]);
+
+  // Helper functions to implement the decluttering logic
+
+  // Determine if entity is in Europe (you can add more precise checks)
+  function isInEurope(entity) {
+    // Simple longitude/latitude check for European region
+    if (entity.properties) {
+      try {
+        // Try to get coordinates from centroid position
+        if (entity.position) {
+          const cartographic = window.Cesium.Cartographic.fromCartesian(entity.position);
+          const lon = window.Cesium.Math.toDegrees(cartographic.longitude);
+          const lat = window.Cesium.Math.toDegrees(cartographic.latitude);
+          
+          // Rough bounds of Europe
+          return (lon > -25 && lon < 40 && lat > 35 && lat < 72);
+        }
+      } catch (e) {
+        console.error("Error checking European location:", e);
+      }
+    }
+    return false;
+  }
+
+  // Enhance the importance level function to include scale factors
+  function getImportanceLevel(entity) {
+    const name = entity.name || '';
+    
+    // Major European countries - always visible first
+    const majorEuropean = [
+      'Russia', 'France', 'Germany', 'United Kingdom', 'Italy', 'Spain', 
+      'Poland', 'Ukraine', 'Romania'
+    ];
+    
+    // Medium European countries - visible at medium zoom
+    const mediumEuropean = [
+      'Netherlands', 'Belgium', 'Portugal', 'Sweden', 
+      'Greece', 'Czech Republic', 'Hungary', 'Austria', 
+      'Switzerland', 'Bulgaria', 'Denmark', 'Finland', 
+      'Slovakia', 'Norway', 'Ireland', 'Croatia'
+    ];
+    
+    // Minor European countries - visible only when zoomed in more
+    const minorEuropean = [
+      'Slovenia', 'Latvia', 'Estonia', 'Cyprus', 
+      'Lithuania', 'Montenegro', 'Luxembourg', 'Malta', 'Iceland',
+      'Belarus', 'Moldova', 'Albania', 'North Macedonia', 
+      'Bosnia', 'Herzegovina', 'Serbia'
+    ];
+    
+    // Micro states - visible only at closest zoom
+    const microStates = [
+      'Andorra', 'Monaco', 'Liechtenstein', 
+      'San Marino', 'Vatican', 'Vatican City'
+    ];
+    
+    // For non-European countries, use population data to determine importance
+    const majorCountries = [
+      'United States', 'China', 'India', 'Brazil', 'Japan', 
+      'Mexico', 'Egypt', 'Turkey', 'Iran', 'Canada', 'Australia'
+    ];
+    
+    if (majorEuropean.some(country => name.includes(country))) {
+      return 'major';
+    } else if (mediumEuropean.some(country => name.includes(country))) {
+      return 'medium';
+    } else if (minorEuropean.some(country => name.includes(country))) {
+      return 'minor';
+    } else if (microStates.some(country => name.includes(country))) {
+      return 'micro';
+    } else if (majorCountries.some(country => name.includes(country))) {
+      return 'major';
+    }
+    
+    // Default importance level
+    return 'standard';
+  }
 
   if (showLandingPage) {
     return (
