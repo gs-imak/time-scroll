@@ -425,53 +425,84 @@ function App() {
     }
   }, [cesiumLoaded, showLandingPage]);
 
-  // Function to create a pin with emoji
-  const buildPin = (emoji: string) => {
+  // Function to create a pin with CSS styling rendered on canvas
+  const buildCssStyledPin = (emoji: string) => {
     const canvas = document.createElement('canvas');
-    canvas.width = 40; // Much smaller size
-    canvas.height = 40; // Much smaller size
+    canvas.width = 32; // Smaller width
+    canvas.height = 48; // Smaller height
     const context = canvas.getContext('2d');
+    
     if (context) {
-      // Create a Google Maps style pin (teardrop shape)
+      // Clear the canvas
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Draw pin shape
+      context.save();
+      context.translate(16, 12); // Position at top
+      
+      // Draw the outer pin shape - pointing downward
       context.beginPath();
-      context.arc(20, 14, 10, 0, Math.PI * 2, true); // Circle for top part
-      context.moveTo(20, 14);
-      context.lineTo(26, 28); // Right side of pointer
-      context.lineTo(20, 36); // Tip of pointer
-      context.lineTo(14, 28); // Left side of pointer
-      context.lineTo(20, 14); // Back to start
+      context.arc(0, 0, 8, 0, Math.PI, true);
+      context.lineTo(-8, 8);
+      context.lineTo(0, 28); // Extend the point lower
+      context.lineTo(8, 8);
       context.closePath();
       
-      // Fill with nice gradient
-      const gradient = context.createLinearGradient(0, 0, 0, 36);
-      gradient.addColorStop(0, 'rgba(66, 133, 244, 0.95)'); // Google Maps blue
-      gradient.addColorStop(1, 'rgba(26, 115, 232, 0.98)');
-      context.fillStyle = gradient;
+      // Fill with solid color
+      context.fillStyle = '#38bdf8';
       context.fill();
       
-      // Add subtle border
-      context.strokeStyle = 'rgba(255, 255, 255, 0.8)';
-      context.lineWidth = 1;
-      context.stroke();
+      // Draw the inner circle
+      context.beginPath();
+      context.arc(0, 0, 4, 0, 2 * Math.PI, false);
+      context.fillStyle = '#FFFFFF';
+      context.fill();
       
-      // Add subtle shadow
-      context.shadowColor = 'rgba(0, 0, 0, 0.5)';
-      context.shadowBlur = 5;
-      context.shadowOffsetX = 0;
-      context.shadowOffsetY = 2;
-      
-      // Reset shadow for emoji
-      context.shadowBlur = 0;
-      context.shadowOffsetY = 0;
-      
-      // Draw emoji at smaller size
-      context.font = '14px Arial';
-      context.textAlign = 'center';
-      context.textBaseline = 'middle';
-      context.fillStyle = 'white';
-      context.fillText(emoji, 20, 14);
+      context.restore();
     }
+    
     return canvas;
+  };
+  
+  // Function to add location pins for interactive locations
+  const addLocationPins = () => {
+    if (!cesiumViewer.current) return;
+    
+    console.log("Adding location pins for:", Object.keys(LOCATIONS));
+    
+    Object.values(LOCATIONS).forEach(location => {
+      // Create the pin canvas with CSS styling
+      const pinCanvas = buildCssStyledPin(location.emoji);
+      
+      // Create billboard entity
+      cesiumViewer.current.entities.add({
+        id: `location_pin_${location.id}`,
+        name: location.name,
+        position: window.Cesium.Cartesian3.fromDegrees(location.longitude, location.latitude, 0),
+        billboard: {
+          image: pinCanvas.toDataURL(),
+          scale: 0.5,
+          horizontalOrigin: window.Cesium.HorizontalOrigin.CENTER,
+          verticalOrigin: window.Cesium.VerticalOrigin.BOTTOM,
+          heightReference: window.Cesium.HeightReference.CLAMP_TO_GROUND,
+          disableDepthTestDistance: 0 // Ensure proper depth testing
+        },
+        label: {
+          text: location.name,
+          font: '16px Helvetica, Arial, sans-serif',
+          fillColor: window.Cesium.Color.fromCssColorString('#60efff'),
+          outlineColor: window.Cesium.Color.BLACK,
+          outlineWidth: 4,
+          style: window.Cesium.LabelStyle.FILL_AND_OUTLINE,
+          verticalOrigin: window.Cesium.VerticalOrigin.TOP,
+          pixelOffset: new window.Cesium.Cartesian2(0, 0), // Move label higher above the pin
+          showBackground: true,
+          backgroundColor: window.Cesium.Color.fromCssColorString('rgba(0, 30, 60, 0.7)'),
+          backgroundPadding: new window.Cesium.Cartesian2(8, 4),
+          horizontalOrigin: window.Cesium.HorizontalOrigin.CENTER
+        }
+      });
+    });
   };
 
   const flyToLocation = (longitude: number, latitude: number, height: number, name: string) => {
@@ -671,46 +702,6 @@ function App() {
     } catch (error) {
       console.error("Error adding time period visualization:", error);
     }
-  };
-  
-  // Function to add location pins for interactive locations
-  const addLocationPins = () => {
-    if (!cesiumViewer.current) return;
-    
-    console.log("Adding location pins for:", Object.keys(LOCATIONS));
-    
-    Object.values(LOCATIONS).forEach(location => {
-      // Create the pin canvas
-      const pinCanvas = buildPin(location.emoji);
-      
-      // Create billboard entity
-      cesiumViewer.current.entities.add({
-        id: `location_pin_${location.id}`,
-        name: location.name,
-        position: window.Cesium.Cartesian3.fromDegrees(location.longitude, location.latitude, 10000),
-        billboard: {
-          image: pinCanvas.toDataURL(),
-          scale: 1.2, // Larger pins for better visibility
-          horizontalOrigin: window.Cesium.HorizontalOrigin.CENTER,
-          verticalOrigin: window.Cesium.VerticalOrigin.BOTTOM,
-          heightReference: window.Cesium.HeightReference.CLAMP_TO_GROUND
-        },
-        label: {
-          text: location.name,
-          font: '16px Helvetica, Arial, sans-serif',
-          fillColor: window.Cesium.Color.fromCssColorString('#60efff'),
-          outlineColor: window.Cesium.Color.BLACK,
-          outlineWidth: 4,
-          style: window.Cesium.LabelStyle.FILL_AND_OUTLINE,
-          verticalOrigin: window.Cesium.VerticalOrigin.TOP,
-          pixelOffset: new window.Cesium.Cartesian2(0, 6),
-          showBackground: true,
-          backgroundColor: window.Cesium.Color.fromCssColorString('rgba(0, 30, 60, 0.7)'),
-          backgroundPadding: new window.Cesium.Cartesian2(8, 4),
-          horizontalOrigin: window.Cesium.HorizontalOrigin.CENTER
-        }
-      });
-    });
   };
 
   // Function to clean up any active listeners
@@ -1237,50 +1228,35 @@ function App() {
   // Function to create event marker image
   const createEventMarkerImage = (id: string, emoji: string): string => {
     const canvas = document.createElement('canvas');
-    canvas.width = 36;  // Slightly smaller than location pins
-    canvas.height = 36;
+    canvas.width = 28;  // Slightly smaller than location pins
+    canvas.height = 40;  // Slightly smaller height
     const ctx = canvas.getContext('2d');
     
     if (!ctx) return '';
     
-    // Create Google Maps style pin but in red for events
+    // Create pin with CSS styling similar to location pins but in red
+    ctx.save();
+    ctx.translate(14, 10); // Position at top
+    
+    // Draw the outer pin shape - pointing downward
     ctx.beginPath();
-    ctx.arc(18, 12, 9, 0, Math.PI * 2, true); // Circle for top part
-    ctx.moveTo(18, 12);
-    ctx.lineTo(24, 24); // Right side of pointer
-    ctx.lineTo(18, 32); // Tip of pointer
-    ctx.lineTo(12, 24); // Left side of pointer
-    ctx.lineTo(18, 12); // Back to start
+    ctx.arc(0, 0, 7, 0, Math.PI, true);
+    ctx.lineTo(-7, 7);
+    ctx.lineTo(0, 22); // Extended point
+    ctx.lineTo(7, 7);
     ctx.closePath();
     
-    // Fill with red gradient for events
-    const gradient = ctx.createLinearGradient(0, 0, 0, 32);
-    gradient.addColorStop(0, 'rgba(234, 67, 53, 0.95)'); // Google Maps red
-    gradient.addColorStop(1, 'rgba(190, 25, 25, 0.98)');
-    ctx.fillStyle = gradient;
+    // Fill with red color
+    ctx.fillStyle = '#ea4335';
     ctx.fill();
     
-    // Add subtle border
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
-    ctx.lineWidth = 1;
-    ctx.stroke();
+    // Draw the inner circle
+    ctx.beginPath();
+    ctx.arc(0, 0, 3.5, 0, 2 * Math.PI, false);
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fill();
     
-    // Add subtle shadow
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
-    ctx.shadowBlur = 5;
-    ctx.shadowOffsetX = 0;
-    ctx.shadowOffsetY = 2;
-    
-    // Reset shadow for emoji
-    ctx.shadowBlur = 0;
-    ctx.shadowOffsetY = 0;
-    
-    // Draw emoji
-    ctx.font = '12px Arial';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillStyle = 'white';
-    ctx.fillText(emoji, 18, 12);
+    ctx.restore();
     
     // Convert to data URL
     return canvas.toDataURL();
@@ -1324,13 +1300,14 @@ function App() {
     cesiumViewer.current.entities.add({
       id: `event_${event.id}`, // Add event_ prefix to ID to make it easier to filter
       name: displayLabel,
-      position: window.Cesium.Cartesian3.fromDegrees(event.longitude, offsetLatitude, 100), // Lower altitude
+      position: window.Cesium.Cartesian3.fromDegrees(event.longitude, offsetLatitude, 0), // Set height to 0
       billboard: {
         image: markerImage,
-        scale: 0.8,
+        scale: 0.5,
         horizontalOrigin: window.Cesium.HorizontalOrigin.CENTER,
         verticalOrigin: window.Cesium.VerticalOrigin.BOTTOM,
-        heightReference: window.Cesium.HeightReference.RELATIVE_TO_GROUND
+        heightReference: window.Cesium.HeightReference.CLAMP_TO_GROUND,
+        disableDepthTestDistance: 0 // Ensure proper depth testing
       },
       label: {
         text: displayLabel,
@@ -1338,7 +1315,7 @@ function App() {
         style: window.Cesium.LabelStyle.FILL_AND_OUTLINE,
         outlineWidth: 2,
         verticalOrigin: window.Cesium.VerticalOrigin.TOP,
-        pixelOffset: new window.Cesium.Cartesian2(0, -6), // Adjusted for smaller icon
+        pixelOffset: new window.Cesium.Cartesian2(0, -6), // Place label just above pin
         showBackground: true,
         backgroundColor: new window.Cesium.Color(0.3, 0.1, 0.1, 0.7), // Reddish background
         backgroundPadding: new window.Cesium.Cartesian2(6, 4),
