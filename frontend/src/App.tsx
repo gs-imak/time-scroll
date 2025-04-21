@@ -248,9 +248,7 @@ function App() {
               entity.polygon.material = window.Cesium.Color.fromCssColorString('rgba(96, 239, 255, 0.05)');
               entity.polygon.outline = true;
               entity.polygon.outlineColor = window.Cesium.Color.fromCssColorString('#FFFFFF');
-              entity.polygon.outlineWidth = 2;
-              
-              // Make sure borders are always visible regardless of zoom
+              entity.polygon.outlineWidth = 1.5;
               entity.polygon.distanceDisplayCondition = undefined;
               
               // Calculate centroid position for the polygon

@@ -1552,19 +1552,7 @@
   inset: 0;
   border-radius: 16px;
   padding: 2px;
-  background: linear-gradient(
-    135deg,
-    rgba(56, 189, 248, 0.5) 0%,
-    rgba(96, 165, 250, 0.5) 25%,
-    rgba(129, 140, 248, 0.5) 50%, 
-    rgba(96, 165, 250, 0.5) 75%,
-    rgba(56, 189, 248, 0.5) 100%
-  );
-  background-size: 200% 200%;
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask-composite: exclude;
-  -webkit-mask-composite: xor;
+  background: white;
   pointer-events: none;
   z-index: -1;
 }
