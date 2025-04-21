@@ -233,8 +233,8 @@ function App() {
         
         // Load GeoJSON data and style it
         window.Cesium.GeoJsonDataSource.load('/data/countries.geo.json', {
-          stroke: window.Cesium.Color.fromCssColorString('#60efff'),
-          fill: window.Cesium.Color.fromCssColorString('rgba(96, 239, 255, 0.05)'),
+          stroke: window.Cesium.Color.fromCssColorString('#FFFFFF'), // Change border color to white
+          fill: window.Cesium.Color.fromCssColorString('rgba(255, 255, 255, 0.05)'), // Adjust fill color to match the new border color
           strokeWidth: 3,
           markerSymbol: '' // Prevent default markers
         }).then((dataSource) => {
@@ -247,7 +247,7 @@ function App() {
               // Set polygon material and outline
               entity.polygon.material = window.Cesium.Color.fromCssColorString('rgba(96, 239, 255, 0.05)');
               entity.polygon.outline = true;
-              entity.polygon.outlineColor = window.Cesium.Color.fromCssColorString('#60efff');
+              entity.polygon.outlineColor = window.Cesium.Color.fromCssColorString('#FFFFFF');
               entity.polygon.outlineWidth = 2;
               
               // Make sure borders are always visible regardless of zoom
