@@ -1792,10 +1792,9 @@ function App() {
               <span className="button-text">
                 Initialize Time Portal
               </span>
-              <span className="button-icon">→</span>
             </button>
             
-            <div className="version-info">v1.0.2 • Time Navigation System</div>
+            <div className="version-info">v1.0 Time Machine</div>
           </div>
         </div>
       </>
