@@ -444,7 +444,7 @@ function App() {
       context.beginPath();
       context.arc(0, 0, 8, 0, Math.PI, true);
       context.lineTo(-8, 8);
-      context.lineTo(0, 28); // Extend the point lower
+      context.lineTo(0, 22); // Extend the point lower
       context.lineTo(8, 8);
       context.closePath();
       
@@ -481,7 +481,7 @@ function App() {
         position: window.Cesium.Cartesian3.fromDegrees(location.longitude, location.latitude, 0),
         billboard: {
           image: pinCanvas.toDataURL(),
-          scale: 0.5,
+          scale: 1.0, // Increased scale to make pins larger
           horizontalOrigin: window.Cesium.HorizontalOrigin.CENTER,
           verticalOrigin: window.Cesium.VerticalOrigin.BOTTOM,
           heightReference: window.Cesium.HeightReference.CLAMP_TO_GROUND,
@@ -1303,7 +1303,7 @@ function App() {
       position: window.Cesium.Cartesian3.fromDegrees(event.longitude, offsetLatitude, 0), // Set height to 0
       billboard: {
         image: markerImage,
-        scale: 0.5,
+        scale: 1.5, // Increased scale to make pins larger
         horizontalOrigin: window.Cesium.HorizontalOrigin.CENTER,
         verticalOrigin: window.Cesium.VerticalOrigin.BOTTOM,
         heightReference: window.Cesium.HeightReference.CLAMP_TO_GROUND,
@@ -1315,7 +1315,7 @@ function App() {
         style: window.Cesium.LabelStyle.FILL_AND_OUTLINE,
         outlineWidth: 2,
         verticalOrigin: window.Cesium.VerticalOrigin.TOP,
-        pixelOffset: new window.Cesium.Cartesian2(0, -6), // Place label just above pin
+        pixelOffset: new window.Cesium.Cartesian2(0, -20), // Move label higher above the larger pin
         showBackground: true,
         backgroundColor: new window.Cesium.Color(0.3, 0.1, 0.1, 0.7), // Reddish background
         backgroundPadding: new window.Cesium.Cartesian2(6, 4),
