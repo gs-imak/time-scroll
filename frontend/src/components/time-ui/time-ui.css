@@ -1552,7 +1552,6 @@
   inset: 0;
   border-radius: 16px;
   padding: 2px;
-  background: white;
   pointer-events: none;
   z-index: -1;
 }
@@ -1561,6 +1560,7 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  padding-top: 20px;
   margin-bottom: 20px;
   padding-bottom: 14px;
   border-bottom: 1px solid rgba(56, 189, 248, 0.3);

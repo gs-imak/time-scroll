@@ -1,217 +1,184 @@
-This is the repository for the project of Lycia Djemili & Georges Simak
+# TimeScroll - Interactive Historical Timeline Map
 
-# Historical Timeline Map - time-scroll
+TimeScroll is an interactive historical timeline application that allows users to explore world history through an intuitive 3D map interface. Journey through time from ancient civilizations to the modern era, discovering events, cultural developments, and significant moments that shaped our world.
 
-Journey through time with our interactive historical mapping application. This project allows users to explore world history through an intuitive map interface, discovering events, cultural developments, and significant moments that shaped our world.
+## Project Overview
 
-## Overview
-
-The Historical Timeline Map is a web-based application that combines geographical visualization with historical data to create an immersive learning experience. Users can navigate through different time periods, explore historical events, and understand how our world has evolved over time.
+TimeScroll combines geographical visualization with historical data to create an immersive learning experience. Users can navigate through different time periods, explore historical events, and understand how our world has evolved over time.
 
 ## Features
 
-Our application provides an engaging way to explore history through several key features:
+- **Interactive 3D Globe**: Powered by CesiumJS, offering smooth navigation and realistic terrain visualization
+- **Time Navigation**: Intuitive timeline control system for navigating through different historical periods
+- **Historical Events**: Explore events categorized by type (wars, discoveries, cultural developments, etc.)
+- **Location-Based History**: Visit significant historical locations with detailed time-specific information
+- **Era Transitions**: Visual effects for time travel between different historical periods
+- **Responsive UI**: Modern interface adapting to different screen sizes and devices
 
-The interactive world map serves as the primary interface, displaying historical events and changing geographical boundaries as users navigate through time. Users can zoom, pan, and click on various markers to learn more about specific events.
+## Tech Stack
 
-The timeline control system enables smooth navigation through different historical periods. Users can play through time automatically, pause at interesting moments, or jump to specific dates of interest.
+### Frontend
+- **Framework**: React 19 with TypeScript
+- **3D Visualization**: CesiumJS for globe rendering
+- **State Management**: React Hooks
+- **Styling**: CSS with some Styled Components
+- **Animations**: GSAP for smooth transitions
+- **3D Effects**: Three.js for special visual effects
+- **Build Tool**: Vite
 
-Our event system categorizes historical moments into various types, including wars, discoveries, cultural developments, and natural disasters. Each event provides detailed information, images, and links to additional resources.
+### Backend
+- **Framework**: NestJS with TypeScript
+- **Database**: PostgreSQL with TypeORM
+- **Real-time Communication**: Socket.IO for WebSocket connections
 
-The filtering system allows users to focus on specific types of events or geographical regions, making it easy to study particular aspects of history or specific areas of interest.
+## Project Structure
+
+```
+│── frontend/                 # Frontend React application
+│   ├── src/                  # Source code
+│   │   ├── components/       # React components
+│   │   │   ├── time-ui/      # Time navigation components
+│   │   │   └── ...           # Other UI components
+│   │   ├── styles/           # CSS styles
+│   │   ├── lib/              # Utility libraries
+│   │   ├── types/            # TypeScript type definitions
+│   │   ├── constants/        # Constant values and data
+│   │   ├── api/              # API communication
+│   │   ├── utils/            # Helper functions
+│   │   ├── App.tsx           # Main application component
+│   │   └── main.tsx          # Application entry point
+│   ├── public/               # Static assets
+│   └── ...                   # Configuration files
+│
+│── backend/                  # NestJS backend
+│   ├── src/                  # Source code
+│   │   ├── database/         # Database configuration
+│   │   ├── map/              # WebSocket gateway for map interactions
+│   │   ├── health/           # Health check endpoints
+│   │   └── ...               # Other modules
+│   └── ...                   # Configuration files
+```
+
+## Key Components
+
+### CesiumJS Integration
+The application uses CesiumJS to create an interactive 3D globe visualization, allowing users to navigate to different geographical locations and view historical events in their spatial context.
+
+### Time Navigation
+The time navigation system includes:
+- Global timeline slider for traversing through major historical periods
+- Date wheel picker for precise date selection
+- Era transition effects for time travel visualization
+
+### Historical Events
+Events are displayed on the map as interactive markers with:
+- Categorization by type
+- Detailed information panels
+- Related imagery and additional resources
+
+### Location-Based History
+Special locations (like the Pyramids of Giza) feature:
+- Time-specific information
+- Visual reconstructions of historical states
+- Animated transitions between time periods
 
 ## Getting Started
 
 ### Prerequisites
-
-Before you begin, ensure you have installed:
-
 - Node.js (v16.0.0 or higher)
 - npm (v7.0.0 or higher)
-- Git
+- PostgreSQL (for backend)
 
 ### Installation
 
-First, clone the repository to your local machine:
-
+1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/historical-timeline-map.git
-cd historical-timeline-map
+git clone https://github.com/gs-imak/time-scroll.git
+cd time-scroll
 ```
 
-Install the required dependencies:
-
+2. Install dependencies for both frontend and backend:
 ```bash
+# Frontend
+cd frontend
+npm install
+
+# Backend
+cd ../backend
 npm install
 ```
 
-Create a .env file in the root directory and add the necessary environment variables:
+3. Set up environment variables:
+   - Create a `.env` file in the frontend directory with:
+     ```
+     VITE_MAPBOX_ACCESS_TOKEN=your_mapbox_token
+     VITE_CESIUM_ACCESS_TOKEN=your_cesium_token
+     ```
+   - Create a `.env` file in the backend directory with:
+     ```
+     DB_HOST=localhost
+     DB_USER=your_db_user
+     DB_PASS=your_db_password
+     DB_NAME=your_db_name
+     ```
 
-```env
-REACT_APP_API_URL=your_api_url
-REACT_APP_MAP_TOKEN=your_map_token
-```
-
-Start the development server:
-
+4. Start the development servers:
 ```bash
-npm start
-npm run web      # Start web app
-npm run desktop  # Start desktop app
-npm run mobile   # Start mobile app
-npm run backend  # Start backend
-npm run dev      # Start web + backend
+# Start backend
+cd backend
+npm run start:dev
+
+# Start frontend (in a new terminal)
+cd frontend
+npm run dev
 ```
 
-The application will be available at http://localhost:3000
-
-## Project Structure
-
-Our project follows a clean and organized structure:
-
-```
-│── backend/                 # Backend API and database
-│   ├── controllers/         # Handles API logic
-│   ├── models/              # Database schemas
-│   ├── routes/              # API routes
-│   ├── services/            # Business logic (processing)
-│   ├── app.js               # Main Express.js app
-│   ├── database.js          # Database connection
-│   ├── package.json         # Node.js dependencies
-│   ├── .env                 # Environment variables
-│   └── README.md            # Backend documentation
-│
-│── frontend/                # Frontend application
-│   ├── public/              # Static files (HTML, CSS, images)
-│   │   ├── index.html       # Main HTML page
-│   │   ├── style.css        # Stylesheet
-│   │   ├── assets/          # Static images or assets
-│   │   ├── cesium/          # Cesium library (if not using CDN)
-│   │   ├── models/          # 3D models (GLB, GLTF)
-│   ├── src/                 # Core frontend logic
-│   │   ├── components/      # Modular components (React/Vue/Svelte)
-│   │   ├── utils/           # Helper functions
-│   │   ├── api/             # API calls to backend
-│   │   ├── App.js           # Main frontend app (React/Vue/Svelte)
-│   │   ├── main.js          # Entry point for VanillaJS
-│   ├── package.json         # Frontend dependencies
-│   ├── vite.config.js       # Build configuration (if using Vite)
-│   ├── webpack.config.js    # Webpack config (if using Webpack)
-│   └── README.md            # Frontend documentation
-│
-│── docs/                    # Project documentation
-│   ├── roadmap.md           # Development roadmap
-│   ├── architecture.md      # System design overview
-│   ├── setup.md             # Setup instructions
-│
-│── .gitignore               # Git ignored files
-│── README.md                # Project overview
-│── LICENSE                  # Open-source license
-```
-
-For a detailed breakdown of the file structure, please refer to our [File Structure Documentation](./docs/FILE_STRUCTURE.md).
+5. The application will be available at http://localhost:5173
 
 ## Development
 
 ### Code Style
-
-We follow the Airbnb JavaScript Style Guide with some modifications. Our ESLint configuration enforces these standards:
+The project uses ESLint and Prettier for code style and formatting.
 
 ```bash
-npm run lint     # Check code style
-npm run lint:fix # Automatically fix code style issues
+# Check code style
+npm run lint
+
+# Fix code style issues
+npm run lint:fix
 ```
 
-### Testing
-
-We use Jest and React Testing Library for testing. Run the test suite with:
+### Building for Production
 
 ```bash
-npm test              # Run all tests
-npm run test:watch    # Run tests in watch mode
-npm run test:coverage # Generate coverage report
-```
+# Build frontend
+cd frontend
+npm run build
 
-### Building
-
-To create a production build:
-
-```bash
+# Build backend
+cd backend
 npm run build
 ```
 
-The built files will be in the `build/` directory.
+## Current Status
 
-## Contributing
+The project is currently in active development with the following components implemented:
+- Basic 3D globe visualization with CesiumJS
+- Time navigation controls
+- Historical event markers
+- Location-based time travel
+- Interactive UI components
+- Backend socket communication
 
-We welcome contributions! Please follow these steps:
+## Future Roadmap
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-For detailed information, see our [Contributing Guidelines](./CONTRIBUTING.md).
-
-## Documentation
-
-Additional documentation is available in the `docs/` directory:
-
-- [API Documentation](./docs/API.md)
-- [Component Documentation](./docs/COMPONENTS.md)
-- [Development Guide](./docs/DEVELOPMENT.md)
-
-## Roadmap
-
-We have exciting plans for future development:
-
-Phase 1 (Current):
-
-- Basic map implementation
-- Timeline slider functionality
-- Simple event display system
-- Basic user interface
-
-Phase 2 (Upcoming):
-
-- Historical event database integration
-- Dynamic boundary changes
-- Event categorization system
-- Search functionality
-
-Phase 3 (Future):
-
-- User accounts
-- Bookmarking system
-- Advanced filtering
-- Educational tools
-- Mobile optimization
+- Enhanced historical event database
+- User accounts and saved journeys
+- Educational tour guides
+- Mobile application
+- AR/VR integration
+- Collaborative exploration features
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Acknowledgments
-
-We would like to thank:
-
-- The open-source community for their invaluable tools and libraries
-- Historical data providers for their comprehensive databases
-- Our contributors and supporters
-
-## Contact
-
-Project Lead - [@yourusername](https://twitter.com/yourusername)
-
-Project Link: [https://github.com/yourusername/historical-timeline-map](https://github.com/yourusername/historical-timeline-map)
-
-## Support
-
-If you're having issues, please:
-
-1. Check our [FAQ](./docs/FAQ.md)
-2. Search through [Issues](https://github.com/yourusername/historical-timeline-map/issues)
-3. Create a new issue if your problem persists
-
-For urgent matters, contact our support team at support@yourdomain.com
+This project is licensed under the ISC License.
