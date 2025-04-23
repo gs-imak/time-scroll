@@ -12,6 +12,8 @@
   max-width: 340px;
   margin: 0 auto;
   flex-direction: row; /* Ensure horizontal layout */
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .wheel-container {
@@ -67,15 +69,79 @@
   opacity: 1;
 }
 
-/* Responsive adjustments */
+/* Enhanced responsive adjustments */
+/* Small screen (mobile) adjustments */
 @media (max-width: 480px) {
   .picker-container {
-    padding: 18px;
+    padding: 16px 12px;
+    gap: 10px;
+    max-width: 280px;
+  }
+  
+  .wheel-container {
+    width: 70px;
+    height: 160px;
+    font-size: 1rem;
+  }
+  
+  .wheel-container::before,
+  .wheel-container::after {
+    height: 60px;
+  }
+  
+  .wheel-item {
+    height: 36px;
+    min-height: 36px;
+    padding: 6px 0;
+  }
+}
+
+/* Extra small screen (small mobile) adjustments */
+@media (max-width: 360px) {
+  .picker-container {
+    padding: 12px 8px;
+    gap: 6px;
+    max-width: 240px;
+  }
+  
+  .wheel-container {
+    width: 60px;
+    height: 140px;
+    font-size: 0.9rem;
+  }
+  
+  .wheel-container::before,
+  .wheel-container::after {
+    height: 52px;
+  }
+  
+  .wheel-item {
+    height: 32px;
+    min-height: 32px;
+    padding: 4px 0;
+  }
+}
+
+/* Landscape orientation adjustments */
+@media (max-height: 500px) and (orientation: landscape) {
+  .picker-container {
+    padding: 12px;
+    max-width: 420px;
     gap: 12px;
   }
   
   .wheel-container {
-    width: 80px;
-    font-size: 1.1rem;
+    height: 140px;
+    width: 90px;
+  }
+  
+  .wheel-container::before,
+  .wheel-container::after {
+    height: 50px;
+  }
+  
+  .wheel-item {
+    height: 36px;
+    min-height: 36px;
   }
 } 

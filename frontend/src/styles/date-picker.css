@@ -406,18 +406,224 @@
   background: rgba(56, 189, 248, 0.7);
 }
 
-/* Responsive adjustments */
+/* Enhance existing media query and add new ones for better responsive design */
 @media (max-width: 768px) {
   .date-picker-wrapper {
-    max-width: 100%;
+    max-width: 280px;
   }
   
   .date-picker-dropdown {
-    width: 100%;
-    position: fixed;
-    top: 50%;
+    width: 280px;
     left: 50%;
-    transform: translate(-50%, -50%);
-    max-width: 320px;
+    transform: translateX(-50%);
+    max-height: 350px;
+  }
+  
+  .apple-date-picker {
+    max-width: 280px;
+    height: 190px;
+  }
+  
+  .wheel-item {
+    height: 36px;
+    font-size: 1rem;
+  }
+  
+  .wheel-item.selected {
+    font-size: 1.1rem;
+  }
+  
+  .wheel-selection-indicator {
+    height: 36px;
+  }
+  
+  .wheel {
+    padding-top: 77px;
+    padding-bottom: 77px;
+  }
+  
+  .wheel:before, .wheel:after {
+    height: 77px;
+  }
+  
+  .date-picker-header {
+    padding: 10px 12px;
+  }
+  
+  .header-button {
+    width: 30px;
+    height: 30px;
+  }
+  
+  .month-title, .year-title {
+    font-size: 0.95rem;
+  }
+  
+  .day-name {
+    font-size: 0.75rem;
+  }
+  
+  .day-cell {
+    height: 32px;
+    width: 32px;
+    font-size: 0.85rem;
+  }
+  
+  .month-cell, .year-cell {
+    font-size: 0.9rem;
+    padding: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .date-picker-wrapper {
+    max-width: 240px;
+  }
+  
+  .date-picker-dropdown {
+    width: 240px;
+    max-height: 320px;
+  }
+  
+  .apple-date-picker {
+    max-width: 240px;
+    height: 170px;
+  }
+  
+  .wheel-label {
+    font-size: 0.6rem;
+    padding: 6px 0;
+  }
+  
+  .wheel-item {
+    height: 32px;
+    font-size: 0.9rem;
+  }
+  
+  .wheel-item.selected {
+    font-size: 1rem;
+  }
+  
+  .wheel-selection-indicator {
+    height: 32px;
+  }
+  
+  .wheel {
+    padding-top: 69px;
+    padding-bottom: 69px;
+  }
+  
+  .wheel:before, .wheel:after {
+    height: 69px;
+  }
+  
+  .date-picker-trigger {
+    padding: 0.8rem 1rem;
+    font-size: 0.9rem;
+  }
+  
+  .date-picker-header {
+    padding: 8px 10px;
+  }
+  
+  .header-button {
+    width: 26px;
+    height: 26px;
+  }
+  
+  .month-title, .year-title {
+    font-size: 0.85rem;
+  }
+  
+  .day-name {
+    font-size: 0.7rem;
+  }
+  
+  .day-cell {
+    height: 28px;
+    width: 28px;
+    font-size: 0.8rem;
+  }
+  
+  .month-cell, .year-cell {
+    font-size: 0.8rem;
+    padding: 6px;
+  }
+}
+
+@media (max-width: 360px) {
+  .date-picker-wrapper {
+    max-width: 220px;
+  }
+  
+  .date-picker-dropdown {
+    width: 220px;
+    max-height: 300px;
+  }
+  
+  .apple-date-picker {
+    max-width: 220px;
+    height: 160px;
+  }
+  
+  .wheel-item {
+    height: 30px;
+    font-size: 0.85rem;
+  }
+  
+  .wheel-item.selected {
+    font-size: 0.95rem;
+  }
+  
+  .wheel-selection-indicator {
+    height: 30px;
+  }
+  
+  .wheel {
+    padding-top: 65px;
+    padding-bottom: 65px;
+  }
+  
+  .wheel:before, .wheel:after {
+    height: 65px;
+  }
+  
+  .date-picker-trigger {
+    padding: 0.7rem 0.9rem;
+    font-size: 0.85rem;
+  }
+  
+  .day-cell {
+    height: 26px;
+    width: 26px;
+    font-size: 0.75rem;
+  }
+}
+
+/* Add landscape orientation support */
+@media (max-height: 500px) and (orientation: landscape) {
+  .date-picker-dropdown {
+    max-height: 85vh;
+  }
+  
+  .apple-date-picker {
+    height: 160px;
+  }
+  
+  .wheel-item {
+    height: 34px;
+  }
+  
+  .wheel-selection-indicator {
+    height: 34px;
+  }
+  
+  .wheel {
+    padding-top: 63px;
+    padding-bottom: 63px;
+  }
+  
+  .wheel:before, .wheel:after {
+    height: 63px;
   }
 } 

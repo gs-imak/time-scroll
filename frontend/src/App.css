@@ -4,12 +4,14 @@ body, html, #root, .App {
     width: 100%;
     height: 100%;
     font-family: 'Inter', 'Roboto', sans-serif;
+    overflow-x: hidden;
   }
   
   .cesium-container {
     width: 100%;
     height: 100vh;
     position: relative;
+    touch-action: none; /* Improve touch handling */
   }
   
   /* Animation keyframes for various effects */
@@ -436,5 +438,273 @@ body, html, #root, .App {
   
   .location-pin.zoom-transition-out {
     animation: pin-zoom-out 0.5s ease-out forwards;
+  }
+  
+  /* Add responsive media queries at the end of the file */
+  /* General Responsive Layout */
+  @media (max-width: 1024px) {
+    .cesium-container {
+      height: calc(100vh - 60px);
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .pyramid-animation-container {
+      width: 260px;
+      height: 300px;
+      transform-origin: center bottom;
+    }
+    
+    .pyramid-animation-wrapper {
+      width: 240px;
+      height: 240px;
+    }
+    
+    .pyramid-label {
+      font-size: 14px;
+      padding: 8px 6px;
+    }
+    
+    .location-pin {
+      width: 40px;
+      height: 40px;
+    }
+    
+    .location-pin-emoji {
+      font-size: 18px;
+    }
+    
+    .location-pin-label {
+      min-width: 100px;
+      top: -35px;
+      padding: 4px 8px;
+    }
+    
+    .location-pin-name {
+      font-size: 12px;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .pyramid-animation-container {
+      width: 220px;
+      height: 260px;
+    }
+    
+    .pyramid-animation-wrapper {
+      width: 200px;
+      height: 200px;
+    }
+    
+    .location-pin {
+      width: 36px;
+      height: 36px;
+    }
+    
+    .location-pin-emoji {
+      font-size: 16px;
+    }
+    
+    .location-pin-label {
+      min-width: 80px;
+      top: -30px;
+      padding: 3px 6px;
+    }
+    
+    .location-pin-name {
+      font-size: 11px;
+    }
+  }
+  
+  /* Utility classes for responsive design */
+  .hidden-mobile {
+    display: block;
+  }
+  
+  .visible-mobile {
+    display: none;
+  }
+  
+  @media (max-width: 768px) {
+    .hidden-mobile {
+      display: none;
+    }
+    
+    .visible-mobile {
+      display: block;
+    }
+    
+    /* Adjust flex utility for responsive layouts */
+    .flex-col-mobile {
+      flex-direction: column;
+    }
+    
+    .w-full-mobile {
+      width: 100% !important;
+    }
+    
+    .text-sm-mobile {
+      font-size: 0.75rem !important;
+    }
+  }
+  
+  /* Event Detail Modal Responsive Styles */
+  .event-detail-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1001;
+    width: 600px;
+    max-width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    padding: 24px;
+    color: white;
+  }
+  
+  .event-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 1000;
+  }
+  
+  .event-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+  }
+  
+  .event-modal-title {
+    font-size: 1.75rem;
+    font-weight: bold;
+    margin: 0 0 8px 0;
+  }
+  
+  .event-modal-emoji {
+    display: inline-block;
+    margin-right: 8px;
+    font-size: 1.5rem;
+  }
+  
+  .event-modal-year {
+    color: #38bdf8;
+    font-size: 1.1rem;
+    font-weight: 500;
+  }
+  
+  .event-modal-content {
+    line-height: 1.7;
+    font-size: 1rem;
+  }
+  
+  .event-modal-content p {
+    margin-bottom: 16px;
+  }
+  
+  .event-modal-content p:last-child {
+    margin-bottom: 0;
+  }
+  
+  /* Modal Responsive Adjustments */
+  @media (max-width: 768px) {
+    .event-detail-modal {
+      width: 90%;
+      padding: 20px;
+      max-height: 70vh;
+    }
+    
+    .event-modal-title {
+      font-size: 1.5rem;
+    }
+    
+    .event-modal-emoji {
+      font-size: 1.3rem;
+    }
+    
+    .event-modal-year {
+      font-size: 1rem;
+    }
+    
+    .event-modal-content {
+      font-size: 0.95rem;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .event-detail-modal {
+      width: 95%;
+      padding: 16px;
+      max-height: 75vh;
+    }
+    
+    .event-modal-title {
+      font-size: 1.3rem;
+    }
+    
+    .event-modal-emoji {
+      font-size: 1.1rem;
+    }
+    
+    .event-modal-year {
+      font-size: 0.9rem;
+    }
+    
+    .event-modal-content {
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+    
+    .event-modal-content p {
+      margin-bottom: 12px;
+    }
+  }
+  
+  /* Landscape orientation support for modals */
+  @media (max-height: 500px) and (orientation: landscape) {
+    .event-detail-modal {
+      max-height: 85vh;
+      width: 80%;
+    }
+  }
+  
+  /* Add meta viewport rules to ensure proper mobile scaling */
+  @media screen and (max-width: 1024px) {
+    body {
+      -webkit-text-size-adjust: 100%; /* Prevent iOS font scaling */
+    }
+    
+    .cesium-container {
+      height: 100vh;
+      min-height: -webkit-fill-available; /* Fix for iOS Safari */
+    }
+  }
+  
+  /* Add additional responsive styles for touch devices */
+  @media (hover: none) and (pointer: coarse) {
+    .location-pin {
+      width: 44px; /* Slightly larger for touch */
+      height: 44px;
+    }
+    
+    .location-pin-emoji {
+      font-size: 20px;
+    }
+    
+    .toggle-panel-button,
+    .time-slider-button,
+    .close-button,
+    .info-button {
+      min-height: 44px; /* Minimum touch target size */
+      min-width: 44px;
+    }
   }
   
