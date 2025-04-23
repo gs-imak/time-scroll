@@ -267,6 +267,9 @@ button:disabled {
   position: relative;
   cursor: pointer;
   transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .time-indicator:hover {
@@ -299,8 +302,11 @@ button:disabled {
 .time-label {
   color: rgba(255, 255, 255, 0.7);
   font-size: 0.8rem;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.5rem;
   letter-spacing: 1px;
+  display: block;
+  width: 100%;
+  text-align: center;
 }
 
 .time-value {
@@ -308,6 +314,9 @@ button:disabled {
   font-size: 1.25rem;
   font-weight: 600;
   text-shadow: 0 0 10px rgba(96, 239, 255, 0.5);
+  display: block;
+  width: 100%;
+  text-align: center;
 }
 
 /* Media queries for time indicators */
