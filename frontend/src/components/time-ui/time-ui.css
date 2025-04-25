@@ -1518,11 +1518,10 @@
 .pyramid-info-popup {
   position: fixed;
   top: 50%;
-  left: 25%;
+  left: 40%;
   transform: translate(-50%, -50%);
   width: 550px;
-  max-width: 95vw;
-  max-height: 90vh;
+  max-width: 85vw;
   overflow-y: auto;
   background: rgba(15, 23, 42, 0.85);
   backdrop-filter: blur(12px);
@@ -1530,27 +1529,14 @@
   border-radius: 16px;
   padding: 24px;
   z-index: 1000;
+
   box-shadow: 
     0 10px 40px rgba(0, 0, 0, 0.5),
     0 0 100px rgba(56, 189, 248, 0.2);
   color: #fff;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(56, 189, 248, 0.5) rgba(255, 255, 255, 0.1);
+  margin: 20px;
 }
 
-.pyramid-info-popup::-webkit-scrollbar {
-  width: 8px;
-}
-
-.pyramid-info-popup::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-}
-
-.pyramid-info-popup::-webkit-scrollbar-thumb {
-  background: rgba(56, 189, 248, 0.5);
-  border-radius: 10px;
-}
 
 .pyramid-info-border {
   position: absolute;
@@ -2042,5 +2028,13 @@
     top: 50%;
     right: 1rem;
     transform: translateY(-50%);
+  }
+}
+
+/* Add responsive positioning for smaller screens */
+@media (max-width: 1200px) {
+  .pyramid-info-popup {
+    left: 50%;
+    top: 50%;
   }
 } 

@@ -138,9 +138,6 @@ export function PyramidInfoPopup({ onClose }: PyramidInfoPopupProps) {
         </div>
         
         <div className="pyramid-info-content">
-          <div className="pyramid-image-container">
-            <div className="pyramid-image"></div>
-          </div>
           
           <div className="pyramid-facts">
             <div className="fact-item">
