@@ -249,7 +249,9 @@ function App() {
               entity.polygon.outline = true;
               entity.polygon.outlineColor = window.Cesium.Color.fromCssColorString('#FFFFFF');
               entity.polygon.outlineWidth = 1.5;
-              entity.polygon.distanceDisplayCondition = undefined;
+              
+              // Add distance display condition for borders
+              entity.polygon.distanceDisplayCondition = new window.Cesium.DistanceDisplayCondition(0, 20000000); // Show borders only when closer than 20,000 km
               
               // Calculate centroid position for the polygon
               try {
