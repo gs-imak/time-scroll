@@ -477,18 +477,19 @@ function App() {
     Object.values(LOCATIONS).forEach(location => {
       // Create the pin canvas with CSS styling
       const pinCanvas = buildCssStyledPin(location.emoji);
-      // Create billboard entity
-      cesiumViewer.current.entities.add({
+      // Create billboard entity with initial scale/opacity 0
+      const entity = cesiumViewer.current.entities.add({
         id: `location_pin_${location.id}`,
         name: location.name,
         position: window.Cesium.Cartesian3.fromDegrees(location.longitude, location.latitude, 0),
         billboard: {
           image: pinCanvas.toDataURL(),
-          scale: 1.0, // Increased scale to make pins larger
+          scale: 0,
           horizontalOrigin: window.Cesium.HorizontalOrigin.CENTER,
           verticalOrigin: window.Cesium.VerticalOrigin.BOTTOM,
           heightReference: window.Cesium.HeightReference.CLAMP_TO_GROUND,
-          disableDepthTestDistance: 0 // Ensure proper depth testing
+          disableDepthTestDistance: 0,
+          color: window.Cesium.Color.WHITE.withAlpha(0) // Start fully transparent
         },
         label: {
           text: location.name,
@@ -498,13 +499,32 @@ function App() {
           outlineWidth: 4,
           style: window.Cesium.LabelStyle.FILL_AND_OUTLINE,
           verticalOrigin: window.Cesium.VerticalOrigin.TOP,
-          pixelOffset: new window.Cesium.Cartesian2(0, 0), // Move label higher above the pin
+          pixelOffset: new window.Cesium.Cartesian2(0, 0),
           showBackground: true,
           backgroundColor: window.Cesium.Color.fromCssColorString('rgba(0, 30, 60, 0.7)'),
           backgroundPadding: new window.Cesium.Cartesian2(8, 4),
           horizontalOrigin: window.Cesium.HorizontalOrigin.CENTER
         }
       });
+      // Animate scale and opacity
+      let start: number | null = null;
+      const duration = 400;
+      function animatePin(ts: number) {
+        if (!start) start = ts;
+        const elapsed = ts - start;
+        const t = Math.min(elapsed / duration, 1);
+        // Ease out cubic
+        const ease = 1 - Math.pow(1 - t, 3);
+        entity.billboard.scale = ease;
+        entity.billboard.color = window.Cesium.Color.WHITE.withAlpha(ease);
+        if (t < 1) {
+          requestAnimationFrame(animatePin);
+        } else {
+          entity.billboard.scale = 1;
+          entity.billboard.color = window.Cesium.Color.WHITE.withAlpha(1);
+        }
+      }
+      requestAnimationFrame(animatePin);
     });
   };
 
