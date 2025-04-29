@@ -1,6 +1,12 @@
 // Global time periods that can be used for filtering events across the map
 export const GLOBAL_TIME_PERIODS = [
   {
+    id: 'prehistory',
+    start: -10000,
+    end: -3000,
+    label: 'Prehistory'
+  },
+  {
     id: 'ancient',
     start: -3000,
     end: -500,

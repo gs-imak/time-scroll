@@ -140,7 +140,9 @@ function App() {
   const [visibleEvents, setVisibleEvents] = useState<HistoricalEvent[]>([]);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [showEventDetail, setShowEventDetail] = useState(false);
-  const [currentGlobalPeriod, setCurrentGlobalPeriod] = useState(GLOBAL_TIME_PERIODS[GLOBAL_TIME_PERIODS.length - 1].id);
+  const [currentGlobalPeriod, setCurrentGlobalPeriod] = useState<TimePeriod>(
+    GLOBAL_TIME_PERIODS[GLOBAL_TIME_PERIODS.length - 1]
+  );
   const [currentGlobalYear, setCurrentGlobalYear] = useState<number>(-2023);
   const [currentZoomLevel, setCurrentZoomLevel] = useState<number>(30000000);
   
@@ -207,7 +209,7 @@ function App() {
       try {
         cesiumViewer.current = new window.Cesium.Viewer(viewerRef.current, {
           terrainProvider: window.Cesium.createWorldTerrain(),
-          baseLayerPicker: false,
+          baseLayerPicker: true,
           timeline: false,
           animation: false,
           homeButton: true,
@@ -469,13 +471,12 @@ function App() {
   // Function to add location pins for interactive locations
   const addLocationPins = () => {
     if (!cesiumViewer.current) return;
-    
+    // Prevent pins in prehistory
+    if (currentGlobalPeriod && currentGlobalPeriod.id === 'prehistory') return;
     console.log("Adding location pins for:", Object.keys(LOCATIONS));
-    
     Object.values(LOCATIONS).forEach(location => {
       // Create the pin canvas with CSS styling
       const pinCanvas = buildCssStyledPin(location.emoji);
-      
       // Create billboard entity
       cesiumViewer.current.entities.add({
         id: `location_pin_${location.id}`,
@@ -506,6 +507,18 @@ function App() {
       });
     });
   };
+
+  // Helper to remove all location pins
+  function removeLocationPins() {
+    if (!cesiumViewer.current) return;
+    const entities = cesiumViewer.current.entities.values;
+    for (let i = entities.length - 1; i >= 0; i--) {
+      const entity = entities[i];
+      if (entity && entity.id && entity.id.toString().startsWith('location_pin_')) {
+        cesiumViewer.current.entities.remove(entity);
+      }
+    }
+  }
 
   const flyToLocation = (longitude: number, latitude: number, height: number, name: string) => {
     if (!cesiumViewer.current) return;
@@ -696,7 +709,7 @@ function App() {
           
         case "modern-era":
           // Modern era - add location pins since we're showing the modern map
-          if (isModernEra) {
+          if (isModernEra && currentGlobalPeriod && currentGlobalPeriod.id !== 'prehistory') {
             addLocationPins();
           }
           break;
@@ -738,20 +751,18 @@ function App() {
       if (cesiumViewer.current) {
         console.log("Preparing New York view");
         
-        // Preserve location pins while removing other entities
-        const entities = cesiumViewer.current.entities.values;
-        for (let i = entities.length - 1; i >= 0; i--) {
-          const entity = entities[i];
-          // Remove entities that are not location pins
-          if (!entity.id || !entity.id.startsWith('location_pin_')) {
-            cesiumViewer.current.entities.remove(entity);
-          }
+        // Remove all location pins first
+        removeLocationPins();
+        
+        // Only add pins if not prehistory
+        if (currentGlobalPeriod && currentGlobalPeriod.id !== 'prehistory') {
+          addLocationPins();
         }
         
         // Add filtered events for the current global period
         handleEventsFiltered(HISTORICAL_EVENTS.filter(
           event => event.locationId === 'newYork' && 
-          (event.period === currentGlobalPeriod || currentGlobalPeriod === 'all')
+          (event.period === currentGlobalPeriod.id || currentGlobalPeriod.id === 'all')
         ));
       }
     }, 800);
@@ -775,18 +786,11 @@ function App() {
       setShowPyramidAnimation(true);
       setIsPlaying(true);
       
-      // Refresh location pins to hide the label
-      if (cesiumViewer.current) {
-        // First remove any existing location pins
-        const entities = cesiumViewer.current.entities.values;
-        for (let i = entities.length - 1; i >= 0; i--) {
-          const entity = entities[i];
-          if (entity && entity.id && entity.id.toString().startsWith('location_pin_')) {
-            cesiumViewer.current.entities.remove(entity);
-          }
-        }
-        
-        // Then add them back with updated visibility settings
+      // Remove all location pins first
+      removeLocationPins();
+      
+      // Only add pins if not prehistory
+      if (currentGlobalPeriod && currentGlobalPeriod.id !== 'prehistory') {
         addLocationPins();
       }
     }, 100);
@@ -892,8 +896,7 @@ function App() {
 
   // Function to handle global time period change
   const handleGlobalTimePeriodChange = (period: TimePeriod) => {
-    setCurrentGlobalPeriod(period.id || 'all');
-    // Set the middle year of the period as the current global year
+    setCurrentGlobalPeriod(period);
     setCurrentGlobalYear(Math.floor((period.start + period.end) / 2));
     
     console.log(`Switched to period: ${period.label}, ${period.start} - ${period.end}`);
@@ -946,6 +949,13 @@ function App() {
   // New function to handle year selection
   const handleYearChange = (year: number) => {
     setSelectedYear(year);
+    // If year is outside current period, update global period
+    if (year < currentGlobalPeriod.start || year > currentGlobalPeriod.end) {
+      const newPeriod = GLOBAL_TIME_PERIODS.find(
+        p => year >= p.start && year <= p.end
+      );
+      if (newPeriod) setCurrentGlobalPeriod(newPeriod);
+    }
     
     // Update system status after selection
     if (selectedEra && selectedMonth) {
@@ -1470,7 +1480,7 @@ function App() {
     if (!cesiumLoaded || showLandingPage || currentLocation) return;
     
     const filteredEvents = HISTORICAL_EVENTS.filter(
-      event => event.period === currentGlobalPeriod || currentGlobalPeriod === 'all'
+      event => event.period === currentGlobalPeriod.id || currentGlobalPeriod.id === 'all'
     );
     handleEventsFiltered(filteredEvents);
   }, [cesiumLoaded, showLandingPage, currentLocation, currentGlobalPeriod]);
@@ -1510,6 +1520,8 @@ function App() {
   useEffect(() => {
     // Only apply this when not in a specific location view and when viewer is ready
     if (!currentLocation && cesiumViewer.current && cesiumLoaded) {
+      // Prevent pins in prehistory
+      if (currentGlobalPeriod && currentGlobalPeriod.id === 'prehistory') return;
       // Check if there are already pins visible
       const locationEntities = cesiumViewer.current.entities.values.filter(
         entity => entity.name && Object.values(LOCATIONS).some(loc => loc.name === entity.name)
@@ -1521,7 +1533,7 @@ function App() {
         addLocationPins();
       }
     }
-  }, [visibleEvents, currentLocation, cesiumLoaded]);
+  }, [visibleEvents, currentLocation, cesiumLoaded, currentGlobalPeriod]);
 
   // Add useEffect to set up entity click handling
   useEffect(() => {
@@ -1613,7 +1625,7 @@ function App() {
     
     // Get the currently filtered events
     const filteredEvents = HISTORICAL_EVENTS.filter(
-      event => event.period === currentGlobalPeriod || currentGlobalPeriod === 'all'
+      event => event.period === currentGlobalPeriod.id || currentGlobalPeriod.id === 'all'
     );
     
     // Update the events with potentially new labels based on the current year
@@ -1698,6 +1710,13 @@ function App() {
     return 'standard';
   }
 
+  // Remove all location pins whenever the period changes to prehistory
+  useEffect(() => {
+    if (currentGlobalPeriod && currentGlobalPeriod.id === 'prehistory') {
+      removeLocationPins();
+    }
+  }, [currentGlobalPeriod]);
+
   if (showLandingPage) {
     return (
       <>
@@ -1726,7 +1745,7 @@ function App() {
                   onYearChange={handleYearChange}
                   onMonthChange={handleMonthChange}
                   onDayChange={handleDayChange}
-                  availableYearRange={getAvailableYears()}
+                  availableYearRange={{ min: currentGlobalPeriod.start, max: currentGlobalPeriod.end }}
                 />
               </div>
             )}
