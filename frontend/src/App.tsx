@@ -517,11 +517,18 @@ function App() {
         const ease = 1 - Math.pow(1 - t, 3);
         entity.billboard.scale = ease;
         entity.billboard.color = window.Cesium.Color.WHITE.withAlpha(ease);
+        // Animate label opacity
+        if (entity.label && entity.label.fillColor) {
+          entity.label.fillColor = window.Cesium.Color.fromCssColorString('#60efff').withAlpha(ease);
+        }
         if (t < 1) {
           requestAnimationFrame(animatePin);
         } else {
           entity.billboard.scale = 1;
           entity.billboard.color = window.Cesium.Color.WHITE.withAlpha(1);
+          if (entity.label && entity.label.fillColor) {
+            entity.label.fillColor = window.Cesium.Color.fromCssColorString('#60efff').withAlpha(1);
+          }
         }
       }
       requestAnimationFrame(animatePin);
