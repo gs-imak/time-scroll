@@ -1600,24 +1600,18 @@ function App() {
 
   // Add useEffect to ensure PyramidAnimation is shown immediately on load when the location is Egypt
   useEffect(() => {
-    if (currentLocation === 'egypt' && cesiumViewer.current) {
-      // Immediately show and start the pyramid animation when in Egypt view
+    if (currentLocation === 'egypt' && cesiumViewer.current && isPyramidPeriod(selectedPeriod?.id) && currentGlobalPeriod.id !== 'prehistory') {
       setShowPyramidAnimation(true);
       setIsPlaying(true);
-      
-      // Hide the Egypt location pin when animation is shown
       const egyptPin = cesiumViewer.current.entities.getById(`location_pin_egypt`);
-      if (egyptPin) {
-        egyptPin.show = false;
-      }
+      if (egyptPin) egyptPin.show = false;
     } else if (cesiumViewer.current) {
-      // When leaving Egypt view, show the pin again
+      setShowPyramidAnimation(false);
+      setIsPlaying(false);
       const egyptPin = cesiumViewer.current.entities.getById(`location_pin_egypt`);
-      if (egyptPin) {
-        egyptPin.show = true;
-      }
+      if (egyptPin) egyptPin.show = true;
     }
-  }, [currentLocation, cesiumViewer.current]);
+  }, [currentLocation, cesiumViewer.current, selectedPeriod, currentGlobalPeriod]);
 
   // Add a specific effect to handle pyramid animation visibility changes
   useEffect(() => {
@@ -1744,6 +1738,17 @@ function App() {
     }
   }, [currentGlobalPeriod]);
 
+  // Helper: check if the current period is a pyramid period
+  function isPyramidPeriod(periodId?: string) {
+    return [
+      'construction-begin',
+      'construction-mid',
+      'construction-complete',
+      'middle-kingdom',
+      'modern-era'
+    ].includes(periodId || '');
+  }
+
   if (showLandingPage) {
     return (
       <>
@@ -1852,8 +1857,8 @@ function App() {
           }} 
         >
           <PyramidAnimation
-            isVisible={showPyramidAnimation}
-            isPlaying={isPlaying}
+            isVisible={currentLocation === 'egypt' && isPyramidPeriod(selectedPeriod?.id) && currentGlobalPeriod.id !== 'prehistory'}
+            isPlaying={currentLocation === 'egypt' && isPyramidPeriod(selectedPeriod?.id) && currentGlobalPeriod.id !== 'prehistory'}
             currentTimePeriod={selectedPeriod?.id}
           />
         </div>
@@ -1873,7 +1878,7 @@ function App() {
         )}
         
         {/* Only show the Egypt-specific UI components when in Egypt */}
-        {currentLocation === "egypt" && !showLandingPage && (
+        {currentLocation === "egypt" && !showLandingPage && currentGlobalPeriod.id !== 'prehistory' && (
           <>
             {/* Mini Timeline */}
             <MiniTimeline 
