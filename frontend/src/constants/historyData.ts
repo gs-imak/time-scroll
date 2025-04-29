@@ -78,4 +78,19 @@ export const HISTORICAL_EVENTS = [
     emoji: '🏙️',
     description: 'Peter Minuit, a Dutch colonist, purchased Manhattan Island from the Lenape Native Americans.\n\nThe transaction is often cited as being worth 60 guilders, or about $24, though this figure has been disputed. The purchase led to the establishment of New Amsterdam, which later became New York City.'
   },
+
+  // Rome events
+  {
+    id: 'roman-forum-inauguration',
+    title: 'Inauguration of the Roman Forum',
+    name: 'Roman Forum Inauguration',
+    label: 'Inauguration of the Roman Forum',
+    year: -500,
+    period: 'ancient',
+    locationId: 'rome',
+    latitude: 41.8925, // Rome, Italy
+    longitude: 12.4853,
+    emoji: '🏛️',
+    description: 'The Roman Forum, the heart of ancient Rome, is inaugurated. It becomes the center of Roman public life for centuries, hosting triumphal processions, elections, public speeches, and commercial affairs.'
+  },
 ]; 
