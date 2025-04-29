@@ -1264,43 +1264,6 @@ function App() {
     return eventCopy;
   };
   
-  // Function to create event marker image
-  const createEventMarkerImage = (id: string, emoji: string): string => {
-    const canvas = document.createElement('canvas');
-    canvas.width = 28;  // Slightly smaller than location pins
-    canvas.height = 40;  // Slightly smaller height
-    const ctx = canvas.getContext('2d');
-    
-    if (!ctx) return '';
-    
-    // Create pin with CSS styling similar to location pins but in red
-    ctx.save();
-    ctx.translate(14, 10); // Position at top
-    
-    // Draw the outer pin shape - pointing downward
-    ctx.beginPath();
-    ctx.arc(0, 0, 7, 0, Math.PI, true);
-    ctx.lineTo(-7, 7);
-    ctx.lineTo(0, 22); // Extended point
-    ctx.lineTo(7, 7);
-    ctx.closePath();
-    
-    // Fill with red color
-    ctx.fillStyle = '#ea4335';
-    ctx.fill();
-    
-    // Draw the inner circle
-    ctx.beginPath();
-    ctx.arc(0, 0, 3.5, 0, 2 * Math.PI, false);
-    ctx.fillStyle = '#FFFFFF';
-    ctx.fill();
-    
-    ctx.restore();
-    
-    // Convert to data URL
-    return canvas.toDataURL();
-  };
-
   // Function to add event marker to the map
   const addEventMarker = (event: HistoricalEvent) => {
     if (!event.latitude || !event.longitude || !cesiumViewer.current) return;
@@ -1314,55 +1277,49 @@ function App() {
     
     // For the Great Pyramid, use special label handling
     if (event.id === 'great-pyramid-construction') {
-      // If we're in the construction period or have a specific label in the event, use it
       if (event.constructionPeriod) {
-        // Get the current year from the slider or the global state
         const currentYear = currentGlobalYear || event.year;
-        
-        // During construction period show "Construction of the Pyramids of Giza"
         if (currentYear >= event.constructionPeriod.start && currentYear <= event.constructionPeriod.end) {
           displayLabel = event.label || 'Construction of the Pyramids of Giza';
         } else if (currentYear > event.constructionPeriod.end) {
-          // After construction completed, show "Pyramids of Giza"
           displayLabel = 'Pyramids of Giza';
         }
       }
     }
     
     // Add a small offset to event markers to prevent overlap with location pins
-    // Adjust the latitude slightly to separate event markers from location pins
-    const offsetLatitude = event.latitude + 0.02; // Smaller offset for smaller pins
+    const offsetLatitude = event.latitude + 0.02;
     
-    // Create an improved billboard image
-    const markerImage = createEventMarkerImage(event.id, emoji);
+    // Use the same pin rendering as location pins (with emoji)
+    const pinCanvas = buildCssStyledPin(emoji);
     
-    cesiumViewer.current.entities.add({
-      id: `event_${event.id}`, // Add event_ prefix to ID to make it easier to filter
+    const entity = cesiumViewer.current.entities.add({
+      id: `event_${event.id}`,
       name: displayLabel,
-      position: window.Cesium.Cartesian3.fromDegrees(event.longitude, offsetLatitude, 0), // Set height to 0
+      position: window.Cesium.Cartesian3.fromDegrees(event.longitude, offsetLatitude, 0),
       billboard: {
-        image: markerImage,
-        scale: 1.5, // Increased scale to make pins larger
+        image: pinCanvas.toDataURL(),
+        scale: 0,
         horizontalOrigin: window.Cesium.HorizontalOrigin.CENTER,
         verticalOrigin: window.Cesium.VerticalOrigin.BOTTOM,
         heightReference: window.Cesium.HeightReference.CLAMP_TO_GROUND,
-        disableDepthTestDistance: 0 // Ensure proper depth testing
+        disableDepthTestDistance: 0,
+        color: window.Cesium.Color.WHITE.withAlpha(0)
       },
       label: {
         text: displayLabel,
-        font: '11pt sans-serif', // Smaller than location pins
+        font: '16px Helvetica, Arial, sans-serif',
+        fillColor: window.Cesium.Color.fromCssColorString('#60efff'),
+        outlineColor: window.Cesium.Color.BLACK,
+        outlineWidth: 4,
         style: window.Cesium.LabelStyle.FILL_AND_OUTLINE,
-        outlineWidth: 2,
         verticalOrigin: window.Cesium.VerticalOrigin.TOP,
-        pixelOffset: new window.Cesium.Cartesian2(0, -20), // Move label higher above the larger pin
+        pixelOffset: new window.Cesium.Cartesian2(0, 0),
         showBackground: true,
-        backgroundColor: new window.Cesium.Color(0.3, 0.1, 0.1, 0.7), // Reddish background
-        backgroundPadding: new window.Cesium.Cartesian2(6, 4),
-        horizontalOrigin: window.Cesium.HorizontalOrigin.CENTER,
-        distanceDisplayCondition: new window.Cesium.DistanceDisplayCondition(0, 3000000),
-        translucencyByDistance: new window.Cesium.NearFarScalar(1.5e6, 1.0, 5.0e6, 0)
+        backgroundColor: window.Cesium.Color.fromCssColorString('rgba(0, 30, 60, 0.7)'),
+        backgroundPadding: new window.Cesium.Cartesian2(8, 4),
+        horizontalOrigin: window.Cesium.HorizontalOrigin.CENTER
       },
-      // Make the marker clickable
       description: description,
       properties: {
         id: event.id,
@@ -1370,6 +1327,30 @@ function App() {
         type: 'event'
       }
     });
+    // Animate scale and opacity (same as location pins)
+    let start: number | null = null;
+    const duration = 400;
+    function animatePin(ts: number) {
+      if (!start) start = ts;
+      const elapsed = ts - start;
+      const t = Math.min(elapsed / duration, 1);
+      const ease = 1 - Math.pow(1 - t, 3);
+      entity.billboard.scale = ease;
+      entity.billboard.color = window.Cesium.Color.WHITE.withAlpha(ease);
+      if (entity.label && entity.label.fillColor) {
+        entity.label.fillColor = window.Cesium.Color.fromCssColorString('#60efff').withAlpha(ease);
+      }
+      if (t < 1) {
+        requestAnimationFrame(animatePin);
+      } else {
+        entity.billboard.scale = 1;
+        entity.billboard.color = window.Cesium.Color.WHITE.withAlpha(1);
+        if (entity.label && entity.label.fillColor) {
+          entity.label.fillColor = window.Cesium.Color.fromCssColorString('#60efff').withAlpha(1);
+        }
+      }
+    }
+    requestAnimationFrame(animatePin);
   };
   
   // Function to handle click on an event marker
