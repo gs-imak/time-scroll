@@ -1,0 +1,250 @@
+import React, { useEffect, useRef, useState } from 'react';
+import { useRive } from '@rive-app/react-canvas';
+
+interface ColosseumAnimationProps {
+  isVisible: boolean;
+  isPlaying: boolean;
+  currentTimePeriod?: string;
+}
+
+export function ColosseumAnimation({ isVisible, isPlaying, currentTimePeriod }: ColosseumAnimationProps) {
+  const [showPopup, setShowPopup] = useState<boolean>(false);
+  const [animationFile, setAnimationFile] = useState<string>('/assets/rive/colosseum_planning.riv');
+  const [labelText, setLabelText] = useState<string>("Planning of the Colosseum");
+  const [hasTransitioned, setHasTransitioned] = useState<boolean>(false);
+  
+  useEffect(() => {
+    const isPresentDay = currentTimePeriod === 'modern-era';
+    const isInaugurationOrLater = currentTimePeriod === 'inauguration' || currentTimePeriod === 'modern-era';
+    const isMidConstructionOrLater = currentTimePeriod === 'construction-mid' || 
+                                   currentTimePeriod === 'inauguration' || 
+                                   currentTimePeriod === 'modern-era';
+    
+    console.log(`Current Colosseum time period: ${currentTimePeriod}, isInaugurationOrLater: ${isInaugurationOrLater}`);
+    
+    // Set the animation file based on the time period
+    if (isInaugurationOrLater) {
+      console.log('Switching to colosseum_complete animation');
+      setAnimationFile('/assets/rive/colosseum_complete.riv');
+    } else if (isMidConstructionOrLater) {
+      console.log('Switching to colosseum_mid_construction animation');
+      setAnimationFile('/assets/rive/colosseum_mid_construction.riv');
+    } else if (currentTimePeriod === 'construction-begin') {
+      console.log('Switching to colosseum_early_construction animation');
+      setAnimationFile('/assets/rive/colosseum_early_construction.riv');
+    } else {
+      console.log('Switching to colosseum_planning animation');
+      setAnimationFile('/assets/rive/colosseum_planning.riv');
+    }
+    
+    // Set the label text based on the construction phase
+    if (isPresentDay) {
+      setLabelText("Colosseum of Rome");
+    } else if (isInaugurationOrLater) {
+      setLabelText("Inauguration of the Colosseum");
+    } else if (isMidConstructionOrLater) {
+      setLabelText("Construction of the Colosseum");
+    } else if (currentTimePeriod === 'construction-begin') {
+      setLabelText("Construction Begins on the Colosseum");
+    } else {
+      setLabelText("Planning of the Colosseum");
+    }
+  }, [currentTimePeriod]);
+  
+  const { RiveComponent, rive } = useRive({
+    src: animationFile,
+    autoplay: isPlaying,
+  });
+  
+  const containerRef = useRef<HTMLDivElement>(null);
+  
+  useEffect(() => {
+    if (!isVisible || !containerRef.current) return;
+    
+    containerRef.current.style.display = 'block';
+    
+    // Add zoom transition class when first appearing
+    if (!hasTransitioned) {
+      containerRef.current.classList.add('zoom-transition');
+      
+      // Remove class after animation completes
+      setTimeout(() => {
+        if (containerRef.current) {
+          containerRef.current.classList.remove('zoom-transition');
+          setHasTransitioned(true);
+        }
+      }, 800);
+    }
+
+    // Find the cesium container parent and add the showing-colosseum-animation class
+    const cesiumContainer = document.querySelector('.cesium-container');
+    if (cesiumContainer) {
+      cesiumContainer.classList.add('showing-colosseum-animation');
+      
+      // Also add colosseum-animation-visible class to body for global selector effects
+      document.body.classList.add('colosseum-animation-visible');
+    }
+    
+    // Directly hide the Rome pin if it exists
+    if (window.Cesium && (window as any)._pyramidCesiumViewer) {
+      const viewer = (window as any)._pyramidCesiumViewer;
+      const romePin = viewer.entities.getById('location_pin_rome');
+      if (romePin) {
+        romePin.show = false;
+      }
+    }
+    
+    if (!window.Cesium) {
+      containerRef.current.style.left = '50%';
+      containerRef.current.style.top = '50%';
+      containerRef.current.style.transform = 'translate(-50%, -50%)';
+      return;
+    }
+    
+    const viewer = (window as any)._pyramidCesiumViewer;
+    if (!viewer) {
+      console.error("Cesium viewer not found");
+      containerRef.current.style.left = '50%';
+      containerRef.current.style.top = '50%';
+      containerRef.current.style.transform = 'translate(-50%, -50%)';
+      return;
+    }
+    
+    const colosseumPosition = window.Cesium.Cartesian3.fromDegrees(
+      12.4922, // Rome longitude
+      41.8902, // Rome latitude
+      10
+    );
+    
+    const scratchPosition = new window.Cesium.Cartesian2();
+    
+    const preRenderListener = viewer.scene.preRender.addEventListener(() => {
+      const position = window.Cesium.SceneTransforms.wgs84ToWindowCoordinates(
+        viewer.scene,
+        colosseumPosition,
+        scratchPosition
+      );
+      
+      if (position && containerRef.current) {
+        containerRef.current.style.left = `${position.x - 160}px`;
+        containerRef.current.style.top = `${position.y - 180}px`;
+        containerRef.current.style.display = 'block';
+        containerRef.current.style.transform = 'none';
+      } else if (containerRef.current) {
+        containerRef.current.style.left = '50%';
+        containerRef.current.style.top = '50%';
+        containerRef.current.style.transform = 'translate(-50%, -50%)';
+        containerRef.current.style.display = 'block';
+      }
+    });
+    
+    return () => {
+      preRenderListener();
+      
+      // Remove the showing-colosseum-animation class when component unmounts or becomes invisible
+      const cesiumContainer = document.querySelector('.cesium-container');
+      if (cesiumContainer) {
+        cesiumContainer.classList.remove('showing-colosseum-animation');
+      }
+      
+      // Remove the colosseum-animation-visible class from body
+      document.body.classList.remove('colosseum-animation-visible');
+    };
+  }, [isVisible, hasTransitioned]);
+
+  // When the component unmounts entirely or visibility changes to false, clean up classes
+  useEffect(() => {
+    if (!isVisible) {
+      const cesiumContainer = document.querySelector('.cesium-container');
+      if (cesiumContainer) {
+        cesiumContainer.classList.remove('showing-colosseum-animation');
+      }
+      document.body.classList.remove('colosseum-animation-visible');
+    }
+  }, [isVisible]);
+
+  // Add reset effect when visibility changes from false to true
+  useEffect(() => {
+    if (isVisible) {
+      // If animation becomes visible again, reset transition state
+      // so it will animate in again next time
+      if (!hasTransitioned) {
+        // Already false, nothing to do
+      } else {
+        setHasTransitioned(false);
+      }
+    }
+  }, [isVisible]);
+
+  // Log when the component renders with props
+  useEffect(() => {
+    console.log(`ColosseumAnimation rendered: visible=${isVisible}, playing=${isPlaying}, period=${currentTimePeriod}`);
+  }, [isVisible, isPlaying, currentTimePeriod]);
+  
+  // Force animation to play when file changes
+  useEffect(() => {
+    if (rive && isPlaying) {
+      console.log(`Animation file changed, trying to play: ${animationFile}`);
+      setTimeout(() => {
+        rive.play();
+      }, 100); // Small delay to ensure file is loaded
+    }
+  }, [animationFile, rive, isPlaying]);
+  
+  // Handle play/pause state changes
+  useEffect(() => {
+    if (rive) {
+      console.log(`isPlaying changed to: ${isPlaying}, updating animation state`);
+      if (isPlaying) {
+        rive.play();
+      } else {
+        rive.pause();
+      }
+    }
+  }, [isPlaying, rive]);
+  
+  const handleAnimationClick = () => {
+    setShowPopup(true);
+  };
+  
+  const handleClosePopup = () => {
+    setShowPopup(false);
+  };
+  
+  if (!isVisible) return null;
+  
+  return (
+    <>
+      <div
+        ref={containerRef}
+        className="colosseum-animation-container"
+        onClick={handleAnimationClick}
+      >
+        <div className="colosseum-animation-wrapper">
+          <RiveComponent key={animationFile} />
+          <div className="colosseum-label">
+            {labelText}
+          </div>
+        </div>
+      </div>
+      
+      {showPopup && (
+        <div className="colosseum-info-popup">
+          <div className="popup-content">
+            <button className="close-button" onClick={handleClosePopup}>×</button>
+            <h2>The Colosseum</h2>
+            <p>
+              The Colosseum is an oval amphitheatre in the center of Rome, Italy. It is the largest ancient 
+              amphitheatre ever built, and is still the largest standing amphitheatre in the world today.
+            </p>
+            <p>
+              Construction began under the emperor Vespasian in 72 CE, and was completed in 80 CE under his 
+              successor and heir, Titus. The Colosseum could hold an estimated 50,000-80,000 spectators, and 
+              was used for gladiatorial contests and public spectacles.
+            </p>
+          </div>
+        </div>
+      )}
+    </>
+  );
+} 

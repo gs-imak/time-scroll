@@ -9,6 +9,7 @@ import { GlobalTimeSlider } from './components/GlobalTimeSlider';
 import { HistoricalEventMarker } from './components/HistoricalEventMarker';
 import { EventDetailModal } from './components/EventDetailModal';
 import { PyramidAnimation } from './components/PyramidAnimation';
+import { ColosseumAnimation } from './components/ColosseumAnimation';
 import { DateWheelPicker } from './components/DateWheelPicker';
 import { GLOBAL_TIME_PERIODS, HISTORICAL_EVENTS } from './constants/historyData';
 
@@ -47,6 +48,15 @@ const LOCATIONS = {
     latitude: 29.9792,
     height: 1000000, // Lower height to get closer to the pyramids
     emoji: "🏛️",
+    category: 'ancient'
+  },
+  rome: {
+    id: 'rome',
+    name: "Colosseum of Rome",
+    longitude: 12.4922,
+    latitude: 41.8902,
+    height: 1000000, // Lower height to get closer to the colosseum
+    emoji: "🏟️",
     category: 'ancient'
   }
 };
@@ -113,6 +123,45 @@ const PYRAMID_TIME_PERIODS = [
     year: "Present Day",
     title: "Modern Era",
     description: "Today, the Great Pyramid stands without its smooth limestone casing, revealing the core masonry. It remains the oldest of the Seven Wonders of the Ancient World and the only one still intact.",
+    imageUrl: null
+  }
+];
+
+// Historical time periods for the Colosseum of Rome
+const COLOSSEUM_TIME_PERIODS = [
+  {
+    id: "planning-phase",
+    year: "70 CE",
+    title: "Planning Phase",
+    description: "Emperor Vespasian orders the construction of the Colosseum (originally called the Flavian Amphitheatre) after the Great Fire of Rome and the civil war. The project is funded with spoils from the Jewish Temple after the Siege of Jerusalem.",
+    imageUrl: null
+  },
+  {
+    id: "construction-begin",
+    year: "72 CE",
+    title: "Construction Begins",
+    description: "Construction begins on the Colosseum under Emperor Vespasian. The site chosen is the former location of Nero's Golden House (Domus Aurea) and artificial lake, symbolically returning the land to the Roman people.",
+    imageUrl: null
+  },
+  {
+    id: "construction-mid",
+    year: "75 CE",
+    title: "Mid-Construction",
+    description: "The first two tiers of the Colosseum are complete. Emperor Vespasian dies in 79 CE and his son Titus continues the construction. The innovative design includes 80 entrance arches, a complex system of corridors, and a sophisticated drainage system.",
+    imageUrl: null
+  },
+  {
+    id: "inauguration",
+    year: "80 CE",
+    title: "Inauguration",
+    description: "Emperor Titus inaugurates the Colosseum with 100 days of games, including gladiatorial combats and wild animal hunts. The opening ceremonies were among the most lavish in Roman history, with thousands of animals slaughtered in the arena.",
+    imageUrl: null
+  },
+  {
+    id: "modern-era",
+    year: "Present Day",
+    title: "Modern Era",
+    description: "Today, the Colosseum stands as one of Rome's most iconic landmarks, despite significant damage from earthquakes and stone-robbers over the centuries. It remains the largest amphitheatre ever built and symbolizes the engineering prowess of the ancient Romans.",
     imageUrl: null
   }
 ];
@@ -187,6 +236,11 @@ function App() {
 
   // State for the pyramid animation (only visibility, position is handled in the component)
   const [showPyramidAnimation, setShowPyramidAnimation] = useState(false);
+
+  // Add new state variables for Colosseum
+  const [currentColosseumPeriodIndex, setCurrentColosseumPeriodIndex] = useState(0);
+  const [selectedColosseumPeriod, setSelectedColosseumPeriod] = useState<typeof COLOSSEUM_TIME_PERIODS[0] | null>(null);
+  const [showColosseumAnimation, setShowColosseumAnimation] = useState(false);
 
   const mapboxToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
   const cesiumToken = import.meta.env.VITE_CESIUM_ACCESS_TOKEN;
@@ -974,6 +1028,36 @@ function App() {
         }
       }
     }
+    // Check if we're in Rome and need to update the animation visibility
+    else if (currentLocation === 'rome') {
+      // If switching to prehistory, hide the animation
+      if (period.id === 'prehistory') {
+        console.log("Switching to prehistory - hiding colosseum animation");
+        setShowColosseumAnimation(false);
+      } else if (period.id !== 'prehistory') {
+        // If we're switching out of prehistory back to a period where animation should be visible
+        console.log("Switching back from prehistory - potentially showing Rome UI");
+        
+        // Make sure we have the proper time period selected
+        if (!selectedColosseumPeriod) {
+          setCurrentColosseumPeriodIndex(0);
+          setSelectedColosseumPeriod(COLOSSEUM_TIME_PERIODS[0]);
+        }
+        
+        if (cesiumViewer.current) {
+          const cameraPosition = cesiumViewer.current.camera.position;
+          const ellipsoid = cesiumViewer.current.scene.globe.ellipsoid;
+          const cartographic = ellipsoid.cartesianToCartographic(cameraPosition);
+          const height = cartographic.height;
+          
+          // Only show animation if we're zoomed in close enough
+          if (height < 3000000) {
+            console.log("Switching from prehistory - showing colosseum animation");
+            setShowColosseumAnimation(true);
+          }
+        }
+      }
+    }
   };
 
   // Function to handle filtering events by time period
@@ -1270,6 +1354,38 @@ function App() {
           year: PYRAMID_TIME_PERIODS[4].year
         });
         setShowEraTransition(true);
+      } else if (locationId === 'rome' && !showEraTransition) {
+        // Force refresh the Rome timeline
+        setCurrentColosseumPeriodIndex(4); // Reset to modern era
+        setSelectedColosseumPeriod(COLOSSEUM_TIME_PERIODS[4]);
+        
+        if (cesiumViewer.current) {
+          // Preserve location pins while removing other entities
+          const entities = cesiumViewer.current.entities.values;
+          for (let i = entities.length - 1; i >= 0; i--) {
+            const entity = entities[i];
+            // Remove entities that are not location pins
+            if (!entity.id || !entity.id.startsWith('location_pin_')) {
+              cesiumViewer.current.entities.remove(entity);
+            }
+          }
+          
+          // Then ensure pins are visible
+          const hasPins = cesiumViewer.current.entities.values.some(e => e.id && e.id.startsWith('location_pin_'));
+          if (!hasPins) {
+            addLocationPins();
+          }
+          
+          // Add modern era visualization
+          addColosseumTimePeriodVisualization("modern-era");
+        }
+        
+        // Show the transition effect to make it clear something happened
+        setTransitionData({
+          location: LOCATIONS.rome.name,
+          year: COLOSSEUM_TIME_PERIODS[4].year
+        });
+        setShowEraTransition(true);
       }
       
       // Clear transition state after a short delay
@@ -1282,6 +1398,8 @@ function App() {
       flyToNewYork();
     } else if (locationId === 'egypt') {
       flyToEgypt();
+    } else if (locationId === 'rome') {
+      flyToRome();
     }
     
     // Clear transition state after location change animation completes
@@ -1431,7 +1549,7 @@ function App() {
       // Update zoom level state
       setCurrentZoomLevel(height);
       
-      // Check if we're close to Egypt's coordinates regardless of current location
+      // Get current longitude and latitude
       const longitude = cartographic.longitude * 180 / Math.PI; // Convert to degrees
       const latitude = cartographic.latitude * 180 / Math.PI;  // Convert to degrees
       
@@ -1440,8 +1558,13 @@ function App() {
         Math.abs(longitude - 31.1342) < 5 && 
         Math.abs(latitude - 29.9792) < 5;
       
-      // Debug log current height and Egypt proximity
-      console.log(`Camera height: ${Math.round(height)}, Near Egypt: ${isNearEgypt}, Current location: ${currentLocation}`);
+      // Check if camera is near Rome (within a reasonable radius)
+      const isNearRome = 
+        Math.abs(longitude - 12.4922) < 5 && 
+        Math.abs(latitude - 41.8902) < 5;
+      
+      // Debug log current height and location proximity
+      console.log(`Camera height: ${Math.round(height)}, Near Egypt: ${isNearEgypt}, Near Rome: ${isNearRome}, Current location: ${currentLocation}`);
       
       if (isNearEgypt) {
         // When we're near Egypt's coordinates
@@ -1515,6 +1638,74 @@ function App() {
             setCurrentLocation('egypt');
           }
         }
+      } else if (isNearRome) {
+        // When we're near Rome's coordinates
+        if (height < 3000000) {
+          // Check if we're in prehistory period - don't show animation in prehistory
+          if (currentGlobalPeriod && currentGlobalPeriod.id === 'prehistory') {
+            console.log("In prehistory period - not showing colosseum animation");
+            setShowColosseumAnimation(false);
+            return;
+          }
+          
+          // When close enough, set location to Rome and show the animation
+          if (currentLocation !== 'rome') {
+            console.log("Setting location to Rome");
+            setCurrentLocation('rome');
+            
+            // Set up initial time period for the Rome view
+            setCurrentColosseumPeriodIndex(0);
+            setSelectedColosseumPeriod(COLOSSEUM_TIME_PERIODS[0]);
+            
+            // Show the transition effect to make it clear something happened
+            setTransitionData({
+              location: LOCATIONS.rome.name,
+              year: COLOSSEUM_TIME_PERIODS[0].year
+            });
+            
+            // Show era transition UI
+            setTimeout(() => {
+              setShowEraTransition(true);
+            }, 300);
+          }
+          
+          // Check again for prehistory before showing animation
+          if (currentGlobalPeriod && currentGlobalPeriod.id === 'prehistory') {
+            console.log("In prehistory period - not showing colosseum animation");
+            setShowColosseumAnimation(false);
+          } else {
+            // When zoomed in close enough, always show the colosseum animation
+            console.log("Close enough to show colosseum animation, current showColosseumAnimation:", showColosseumAnimation);
+            
+            // Always force the animation to show when close enough
+            setShowColosseumAnimation(true);
+            
+            // Hide the Rome location pin when animation is shown
+            if (cesiumViewer.current) {
+              const romePin = cesiumViewer.current.entities.getById(`location_pin_rome`);
+              if (romePin) {
+                romePin.show = false;
+              }
+            }
+          }
+        } else if (height >= 3000000 && height < 20000000) {
+          // At medium zoom, show pin but hide animation
+          console.log("Medium zoom, hiding colosseum animation");
+          setShowColosseumAnimation(false);
+          
+          // Show the Rome location pin again
+          if (cesiumViewer.current) {
+            const romePin = cesiumViewer.current.entities.getById(`location_pin_rome`);
+            if (romePin) {
+              romePin.show = true;
+            }
+          }
+          
+          // If we're not already in Rome view and we're focusing on it, set the location
+          if (currentLocation !== 'rome' && isNearRome && height < 10000000) {
+            setCurrentLocation('rome');
+          }
+        }
       } else if (currentLocation === 'egypt') {
         // If we're in Egypt location but camera moved far away, reset the view
         if (height > 10000000 || !isNearEgypt) {
@@ -1535,13 +1726,32 @@ function App() {
             setCurrentLocation(null);
           }
         }
+      } else if (currentLocation === 'rome') {
+        // If we're in Rome location but camera moved far away, reset the view
+        if (height > 10000000 || !isNearRome) {
+          console.log("Far from Rome, hiding animation");
+          setShowColosseumAnimation(false);
+          
+          // Show the Rome location pin again
+          if (cesiumViewer.current) {
+            const romePin = cesiumViewer.current.entities.getById(`location_pin_rome`);
+            if (romePin) {
+              romePin.show = true;
+            }
+          }
+          
+          // Only reset location if we're really far away
+          if (height > 30000000 || (!isNearRome && height > 15000000)) {
+            setCurrentLocation(null);
+          }
+        }
       }
     });
     
     return () => {
       cameraChangedEvent();
     };
-  }, [cesiumLoaded, cesiumViewer.current, currentLocation, showPyramidAnimation]);
+  }, [cesiumLoaded, cesiumViewer.current, currentLocation, showPyramidAnimation, showColosseumAnimation, currentGlobalPeriod]);
 
   // Add cleanup when leaving Egypt view or unmounting
   useEffect(() => {
@@ -1551,6 +1761,17 @@ function App() {
     
     return () => {
       setShowPyramidAnimation(false);
+    };
+  }, [currentLocation]);
+
+  // Add cleanup when leaving Rome view or unmounting
+  useEffect(() => {
+    if (currentLocation !== 'rome') {
+      setShowColosseumAnimation(false);
+    }
+    
+    return () => {
+      setShowColosseumAnimation(false);
     };
   }, [currentLocation]);
 
@@ -1796,6 +2017,25 @@ function App() {
     }
   }, [currentGlobalPeriod]);
 
+  // Add useEffect to ensure the pyramid animation is not shown in prehistory
+  useEffect(() => {
+    // If we're in prehistory and the pyramid animation is showing, hide it
+    if (currentGlobalPeriod && currentGlobalPeriod.id === 'prehistory' && showPyramidAnimation) {
+      console.log("In prehistory - forcibly hiding pyramid animation");
+      setShowPyramidAnimation(false);
+      setIsPlaying(false);
+    }
+  }, [currentGlobalPeriod, showPyramidAnimation]);
+
+  // Add useEffect to ensure the Colosseum animation is not shown in prehistory
+  useEffect(() => {
+    // If we're in prehistory and the colosseum animation is showing, hide it
+    if (currentGlobalPeriod && currentGlobalPeriod.id === 'prehistory' && showColosseumAnimation) {
+      console.log("In prehistory - forcibly hiding colosseum animation");
+      setShowColosseumAnimation(false);
+    }
+  }, [currentGlobalPeriod, showColosseumAnimation]);
+
   // Helper: check if the current period is a pyramid period
   function isPyramidPeriod(periodId?: string) {
     return [
@@ -1806,16 +2046,274 @@ function App() {
       'modern-era'
     ].includes(periodId || '');
   }
+  
+  // Helper: check if the current period is a colosseum period
+  function isColosseumPeriod(periodId?: string) {
+    return [
+      'planning-phase',
+      'construction-begin',
+      'construction-mid',
+      'inauguration',
+      'modern-era'
+    ].includes(periodId || '');
+  }
 
-  // Add useEffect to ensure the pyramid animation is not shown in prehistory
-  useEffect(() => {
-    // If we're in prehistory and the pyramid animation is showing, hide it
-    if (currentGlobalPeriod && currentGlobalPeriod.id === 'prehistory' && showPyramidAnimation) {
-      console.log("In prehistory - forcibly hiding pyramid animation");
-      setShowPyramidAnimation(false);
-      setIsPlaying(false);
+  // Function to handle time period changes for the Colosseum
+  const handleColosseumTimePeriodChange = (periodIndex: number) => {
+    // Prevent redundant updates to improve performance
+    if (currentColosseumPeriodIndex === periodIndex) return;
+    
+    console.log(`Changing Colosseum time period to ${periodIndex}: ${COLOSSEUM_TIME_PERIODS[periodIndex].year}`);
+    
+    // Update the current period index
+    setCurrentColosseumPeriodIndex(periodIndex);
+    
+    // Update the selected period for animation settings
+    const newPeriod = COLOSSEUM_TIME_PERIODS[periodIndex];
+    setSelectedColosseumPeriod(newPeriod);
+    
+    // Check for prehistory before showing animation
+    if (currentGlobalPeriod && currentGlobalPeriod.id === 'prehistory') {
+      console.log("In prehistory period - not showing colosseum animation");
+      setShowColosseumAnimation(false);
+    } else {
+      // Make sure animation is visible
+      setShowColosseumAnimation(true);
     }
-  }, [currentGlobalPeriod, showPyramidAnimation]);
+    
+    // Show transition effect for era changes
+    setTransitionData({
+      location: "Colosseum of Rome",
+      year: newPeriod.year
+    });
+    
+    // If we're changing between major eras, show a transition effect
+    const isPreviousHistorical = currentColosseumPeriodIndex <= 3;
+    const isNewModern = periodIndex === 4;
+    const isPreviousModern = currentColosseumPeriodIndex === 4;
+    const isNewHistorical = periodIndex <= 3;
+    
+    // Only show the transition if we're crossing between historical and modern
+    if ((isPreviousHistorical && isNewModern) || (isPreviousModern && isNewHistorical)) {
+      setShowEraTransition(true);
+    }
+    
+    // Update the visualization for the new time period
+    if (cesiumViewer.current) {
+      addColosseumTimePeriodVisualization(newPeriod.id);
+      
+      // Always ensure the Rome pin is hidden when the animation is showing
+      if (showColosseumAnimation) {
+        const romePin = cesiumViewer.current.entities.getById('location_pin_rome');
+        if (romePin) {
+          romePin.show = false;
+        }
+      }
+    }
+    
+    // Refresh location pins to ensure correct label visibility with animation
+    if (showColosseumAnimation) {
+      // Small delay to ensure animation state is updated
+      setTimeout(() => {
+        // First remove any existing location pins
+        const entities = cesiumViewer.current.entities.values;
+        for (let i = entities.length - 1; i >= 0; i--) {
+          const entity = entities[i];
+          if (entity && entity.id && entity.id.toString().startsWith('location_pin_')) {
+            cesiumViewer.current.entities.remove(entity);
+          }
+        }
+        
+        // Add location pins with proper label visibility
+        addLocationPins();
+        
+        // Re-hide the Rome pin if animation is showing
+        const romePin = cesiumViewer.current.entities.getById('location_pin_rome');
+        if (romePin && showColosseumAnimation) {
+          romePin.show = false;
+        }
+      }, 50);
+    }
+  };
+  
+  // Function to add visualization for a specific Colosseum time period
+  const addColosseumTimePeriodVisualization = (periodId: string) => {
+    if (!cesiumViewer.current) return;
+    
+    const colosseumPosition = window.Cesium.Cartesian3.fromDegrees(
+      12.4922, // longitude
+      41.8902, // latitude
+      0 // height
+    );
+    
+    try {
+      // Check if this is the modern era - only in this case we show location pins
+      const isModernEra = periodId === "modern-era";
+      
+      // For historical time periods, we only show the historical visualization
+      // No location pins to avoid confusion with modern map features
+      
+      switch(periodId) {
+        case "planning-phase":
+          // Add planning phase visualization
+          const planningOverlay = cesiumViewer.current.entities.add({
+            position: window.Cesium.Cartesian3.fromDegrees(12.4922, 41.8902, 10),
+            ellipse: {
+              semiMajorAxis: 100,
+              semiMinorAxis: 100,
+              material: window.Cesium.Color.ROYALBLUE.withAlpha(0.5),
+              outline: true,
+              outlineColor: window.Cesium.Color.WHITE
+            }
+          });
+          
+          setActiveOverlay(planningOverlay);
+          break;
+          
+        case "construction-begin":
+          // Add early construction visualization
+          const foundationOverlay = cesiumViewer.current.entities.add({
+            position: window.Cesium.Cartesian3.fromDegrees(12.4922, 41.8902, 5),
+            ellipse: {
+              semiMajorAxis: 80,
+              semiMinorAxis: 65,
+              material: window.Cesium.Color.BURLYWOOD.withAlpha(0.7),
+              outline: true,
+              outlineColor: window.Cesium.Color.WHITE
+            }
+          });
+          
+          setActiveOverlay(foundationOverlay);
+          break;
+          
+        case "construction-mid":
+          // Add mid-construction visualization
+          const midConstructionOverlay = cesiumViewer.current.entities.add({
+            position: window.Cesium.Cartesian3.fromDegrees(12.4922, 41.8902, 25),
+            ellipsoid: {
+              radii: new window.Cesium.Cartesian3(80, 65, 25),
+              material: window.Cesium.Color.SANDYBROWN.withAlpha(0.8),
+              outline: true,
+              outlineColor: window.Cesium.Color.WHITE
+            }
+          });
+          
+          setActiveOverlay(midConstructionOverlay);
+          break;
+          
+        case "inauguration":
+          // Add completed Colosseum visualization
+          const completedOverlay = cesiumViewer.current.entities.add({
+            position: window.Cesium.Cartesian3.fromDegrees(12.4922, 41.8902, 30),
+            ellipsoid: {
+              radii: new window.Cesium.Cartesian3(80, 65, 30),
+              material: window.Cesium.Color.PERU.withAlpha(0.8),
+              outline: true,
+              outlineColor: window.Cesium.Color.WHITE
+            }
+          });
+          
+          setActiveOverlay(completedOverlay);
+          break;
+          
+        case "modern-era":
+          // Modern era - add location pins since we're showing the modern map
+          if (isModernEra && currentGlobalPeriod && currentGlobalPeriod.id !== 'prehistory') {
+            addLocationPins();
+          }
+          break;
+      }
+    } catch (error) {
+      console.error("Error adding time period visualization:", error);
+    }
+  };
+
+  // Function to fly to Rome location
+  const flyToRome = () => {
+    const location = LOCATIONS.rome;
+    
+    // Clean up any active listeners
+    cleanupActiveListeners();
+    
+    // Update current location state
+    setCurrentLocation("rome");
+    
+    // Hide colosseum animation initially
+    setShowColosseumAnimation(false);
+    
+    // First update the state
+    setShowTimeSlider(false);
+    
+    // Then fly to location
+    flyToLocation(location.longitude, location.latitude, location.height, location.name);
+    
+    // Clear any existing entities and prepare colosseum view after a short delay
+    setTimeout(() => {
+      if (cesiumViewer.current) {
+        console.log("Preparing Rome view");
+        
+        // Remove all location pins first
+        removeLocationPins();
+        
+        // Only add pins if not prehistory
+        if (currentGlobalPeriod && currentGlobalPeriod.id !== 'prehistory') {
+          addLocationPins();
+        }
+        
+        // Add filtered events for the current global period
+        handleEventsFiltered(HISTORICAL_EVENTS.filter(
+          event => event.locationId === 'rome' && 
+          (event.period === currentGlobalPeriod.id || currentGlobalPeriod.id === 'all')
+        ));
+      }
+    }, 800);
+    
+    // Set up for the Colosseum time periods
+    setTimeout(() => {
+      console.log("Setting up Rome time periods");
+      setCurrentColosseumPeriodIndex(0);
+      setSelectedColosseumPeriod(COLOSSEUM_TIME_PERIODS[0]);
+      
+      if (cesiumViewer.current) {
+        // Instead of removing all entities, we need to preserve the country borders
+        // Get all dataSources first
+        const dataSources = cesiumViewer.current.dataSources;
+        const countryDataSources: any[] = [];
+        
+        // Store references to country data sources
+        for (let i = 0; i < dataSources.length; i++) {
+          const dataSource = dataSources.get(i);
+          countryDataSources.push(dataSource);
+        }
+        
+        // Remove all entities (but not data sources)
+        const entities = cesiumViewer.current.entities.values;
+        for (let i = entities.length - 1; i >= 0; i--) {
+          const entity = entities[i];
+          // Only remove entities that are directly in the viewer's entity collection
+          if (entity && cesiumViewer.current.entities.contains(entity)) {
+            cesiumViewer.current.entities.remove(entity);
+          }
+        }
+        
+        // For modern era, add location pins (but we're starting with planning phase)
+        if (COLOSSEUM_TIME_PERIODS[0].id === "modern-era") {
+          addLocationPins();
+        }
+        
+        // Start with planning-phase visualization
+        addColosseumTimePeriodVisualization("planning-phase");
+      }
+      
+      setTimeout(() => {
+        setTransitionData({
+          location: location.name,
+          year: COLOSSEUM_TIME_PERIODS[0].year
+        });
+        setShowEraTransition(true);
+      }, 300);
+    }, 800);
+  };
 
   if (showLandingPage) {
     return (
@@ -1917,7 +2415,7 @@ function App() {
         
         <div 
           ref={viewerRef} 
-          className={`cesium-container ${showPyramidAnimation ? 'showing-pyramid-animation' : ''}`}
+          className={`cesium-container ${showPyramidAnimation ? 'showing-pyramid-animation' : ''} ${showColosseumAnimation ? 'showing-colosseum-animation' : ''}`}
           style={{ 
             width: "100%", 
             height: "100vh", 
@@ -1929,6 +2427,11 @@ function App() {
             isPlaying={isPlaying}
             currentTimePeriod={selectedPeriod?.id}
           />
+          <ColosseumAnimation
+            isVisible={showColosseumAnimation}
+            isPlaying={isPlaying}
+            currentTimePeriod={selectedColosseumPeriod?.id}
+          />
         </div>
         
         {showVisualEffect && (
@@ -1937,9 +2440,11 @@ function App() {
         
         {/* Global time slider for filtering events by time period - show when:
             1. Not viewing a specific location timeline, OR
-            2. In Egypt during prehistory period (where Egypt-specific UI is hidden) */}
+            2. In Egypt/Rome during prehistory period (where location-specific UI is hidden) */}
         {cesiumLoaded && !showLandingPage && (
-          (!currentLocation || (currentLocation === 'egypt' && currentGlobalPeriod?.id === 'prehistory')) && (
+          (!currentLocation || 
+           (currentLocation === 'egypt' && currentGlobalPeriod?.id === 'prehistory') ||
+           (currentLocation === 'rome' && currentGlobalPeriod?.id === 'prehistory')) && (
             <GlobalTimeSlider 
               timePeriods={GLOBAL_TIME_PERIODS}
               historicalEvents={HISTORICAL_EVENTS}
@@ -1997,6 +2502,65 @@ function App() {
             <DescriptionPanel 
               isVisible={showDescriptionPanel}
               period={selectedPeriod}
+              onClose={handleCloseDescription}
+            />
+          </>
+        )}
+        
+        {/* Only show the Rome-specific UI components when in Rome */}
+        {currentLocation === "rome" && !showLandingPage && currentGlobalPeriod.id !== 'prehistory' && (
+          <>
+            {/* Mini Timeline */}
+            <MiniTimeline 
+              periods={COLOSSEUM_TIME_PERIODS}
+              currentPeriodIndex={currentColosseumPeriodIndex}
+              onPeriodChange={handleColosseumTimePeriodChange}
+              onInfoClick={(period) => {
+                console.log("Showing description for:", period.title);
+                
+                // Toggle the description panel visibility if it's the same period
+                if (showDescriptionPanel && selectedColosseumPeriod && selectedColosseumPeriod.id === period.id) {
+                  setShowDescriptionPanel(false);
+                } else {
+                  // Show the panel with the selected period
+                  setSelectedColosseumPeriod(period);
+                  setShowDescriptionPanel(true);
+                }
+              }}
+            />
+            
+            {/* Time Dial */}
+            <TimeDial 
+              periods={COLOSSEUM_TIME_PERIODS}
+              currentPeriodIndex={currentColosseumPeriodIndex}
+              onPeriodChange={handleColosseumTimePeriodChange}
+            />
+            
+            {/* Era Transition Effect */}
+            <EraTransition
+              isVisible={showEraTransition}
+              location={transitionData.location}
+              year={transitionData.year}
+              onTransitionComplete={() => {
+                console.log("App received transition complete callback");
+                // Check if we need to refresh the view after transition
+                if (cesiumViewer.current && currentLocation === "rome") {
+                  // Force a render to refresh the scene
+                  cesiumViewer.current.scene.requestRender();
+                }
+                
+                // Introduce a small delay to ensure state updates properly
+                setTimeout(() => {
+                  setShowEraTransition(false);
+                  console.log("Era transition state reset");
+                }, 50);
+              }}
+            />
+            
+            {/* Description Panel */}
+            <DescriptionPanel 
+              isVisible={showDescriptionPanel}
+              period={selectedColosseumPeriod}
               onClose={handleCloseDescription}
             />
           </>

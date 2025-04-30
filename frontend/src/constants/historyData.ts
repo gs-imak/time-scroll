@@ -65,6 +65,25 @@ export const HISTORICAL_EVENTS = [
     description: 'Construction of the Great Pyramid of Giza, one of the Seven Wonders of the Ancient World. Built as a tomb for the Fourth Dynasty pharaoh Khufu.\n\nThe Great Pyramid stood at 146.5 meters tall, making it the tallest human-made structure in the world for more than 3,800 years.'
   },
   
+  // Rome events
+  {
+    id: 'colosseum-construction',
+    title: 'Colosseum Construction',
+    name: 'Colosseum Construction',
+    label: 'Construction of the Colosseum',
+    constructionPeriod: {
+      start: 72, 
+      end: 80
+    },
+    year: 80,
+    period: 'classical',
+    locationId: 'rome',
+    latitude: 41.8902,
+    longitude: 12.4922,
+    emoji: '🏟️',
+    description: 'Construction of the Colosseum, also known as the Flavian Amphitheatre, the largest amphitheatre ever built. It was commissioned by Emperor Vespasian in 72 CE and completed by his son Titus in 80 CE.\n\nThe Colosseum could hold an estimated 50,000-80,000 spectators and was used for gladiatorial contests, public spectacles, animal hunts, executions, and dramas.'
+  },
+  
   // New York events
   {
     id: 'manhattan-purchase',
