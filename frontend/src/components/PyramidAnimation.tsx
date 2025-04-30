@@ -42,7 +42,7 @@ export function PyramidAnimation({ isVisible, isPlaying, currentTimePeriod }: Py
   
   const { RiveComponent, rive } = useRive({
     src: animationFile,
-    autoplay: true,
+    autoplay: isPlaying,
   });
   
   const containerRef = useRef<HTMLDivElement>(null);
@@ -165,8 +165,25 @@ export function PyramidAnimation({ isVisible, isPlaying, currentTimePeriod }: Py
     }
   }, [isVisible]);
 
+  // Log when the component renders with props
+  useEffect(() => {
+    console.log(`PyramidAnimation rendered: visible=${isVisible}, playing=${isPlaying}, period=${currentTimePeriod}`);
+  }, [isVisible, isPlaying, currentTimePeriod]);
+  
+  // Force animation to play when file changes
+  useEffect(() => {
+    if (rive && isPlaying) {
+      console.log(`Animation file changed, trying to play: ${animationFile}`);
+      setTimeout(() => {
+        rive.play();
+      }, 100); // Small delay to ensure file is loaded
+    }
+  }, [animationFile, rive, isPlaying]);
+  
+  // Handle play/pause state changes
   useEffect(() => {
     if (rive) {
+      console.log(`isPlaying changed to: ${isPlaying}, updating animation state`);
       if (isPlaying) {
         rive.play();
       } else {

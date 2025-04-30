@@ -587,12 +587,19 @@ function App() {
     // Prevent redundant updates to improve performance
     if (currentTimePeriodIndex === periodIndex) return;
     
+    console.log(`Changing time period to ${periodIndex}: ${PYRAMID_TIME_PERIODS[periodIndex].year}`);
+    
     // Update the current period index
     setCurrentTimePeriodIndex(periodIndex);
     
     // Update the selected period for animation settings
     const newPeriod = PYRAMID_TIME_PERIODS[periodIndex];
     setSelectedPeriod(newPeriod);
+    
+    // Explicitly ensure the animation is playing when changing timeline
+    setIsPlaying(true);
+    // Make sure animation is visible
+    setShowPyramidAnimation(true);
     
     // Show transition effect for era changes
     setTransitionData({
@@ -1393,11 +1400,15 @@ function App() {
         Math.abs(longitude - 31.1342) < 5 && 
         Math.abs(latitude - 29.9792) < 5;
       
+      // Debug log current height and Egypt proximity
+      console.log(`Camera height: ${Math.round(height)}, Near Egypt: ${isNearEgypt}, Current location: ${currentLocation}`);
+      
       if (isNearEgypt) {
         // When we're near Egypt's coordinates
         if (height < 3000000) {
           // When close enough, set location to Egypt and show the animation
           if (currentLocation !== 'egypt') {
+            console.log("Setting location to Egypt");
             setCurrentLocation('egypt');
             
             // Set up initial time period for the Egypt view
@@ -1416,22 +1427,25 @@ function App() {
             }, 300);
           }
           
-          // When zoomed in close enough, show the pyramid animation
-          if (!showPyramidAnimation) {
-            setShowPyramidAnimation(true);
-            setIsPlaying(true);
-            
-            // Hide the Egypt location pin when animation is shown
-            if (cesiumViewer.current) {
-              const egyptPin = cesiumViewer.current.entities.getById(`location_pin_egypt`);
-              if (egyptPin) {
-                egyptPin.show = false;
-              }
+          // When zoomed in close enough, always show the pyramid animation
+          console.log("Close enough to show animation, current showPyramidAnimation:", showPyramidAnimation);
+          
+          // Always force the animation to show and play when close enough
+          setShowPyramidAnimation(true);
+          setIsPlaying(true);
+          
+          // Hide the Egypt location pin when animation is shown
+          if (cesiumViewer.current) {
+            const egyptPin = cesiumViewer.current.entities.getById(`location_pin_egypt`);
+            if (egyptPin) {
+              egyptPin.show = false;
             }
           }
         } else if (height >= 3000000 && height < 20000000) {
           // At medium zoom, show pin but hide animation
+          console.log("Medium zoom, hiding animation");
           setShowPyramidAnimation(false);
+          setIsPlaying(false);
           
           // Show the Egypt location pin again
           if (cesiumViewer.current) {
@@ -1449,7 +1463,9 @@ function App() {
       } else if (currentLocation === 'egypt') {
         // If we're in Egypt location but camera moved far away, reset the view
         if (height > 10000000 || !isNearEgypt) {
+          console.log("Far from Egypt, hiding animation");
           setShowPyramidAnimation(false);
+          setIsPlaying(false);
           
           // Show the Egypt location pin again
           if (cesiumViewer.current) {
@@ -1605,6 +1621,9 @@ function App() {
         egyptPin.show = false;
       }
       
+      // Ensure animation is playing when visible
+      setIsPlaying(true);
+      
       // Add a class to the document body to help with global CSS selectors
       document.body.classList.add('pyramid-animation-visible');
     } else {
@@ -1615,6 +1634,9 @@ function App() {
           egyptPin.show = true;
         }
       }
+      
+      // Stop animation when hidden
+      setIsPlaying(false);
       
       // Remove the class from body
       document.body.classList.remove('pyramid-animation-visible');
@@ -1838,8 +1860,8 @@ function App() {
           }} 
         >
           <PyramidAnimation
-            isVisible={currentLocation === 'egypt' && isPyramidPeriod(selectedPeriod?.id) && currentGlobalPeriod.id !== 'prehistory'}
-            isPlaying={currentLocation === 'egypt' && isPyramidPeriod(selectedPeriod?.id) && currentGlobalPeriod.id !== 'prehistory'}
+            isVisible={showPyramidAnimation}
+            isPlaying={isPlaying}
             currentTimePeriod={selectedPeriod?.id}
           />
         </div>
