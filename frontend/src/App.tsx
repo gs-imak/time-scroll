@@ -596,10 +596,17 @@ function App() {
     const newPeriod = PYRAMID_TIME_PERIODS[periodIndex];
     setSelectedPeriod(newPeriod);
     
-    // Explicitly ensure the animation is playing when changing timeline
-    setIsPlaying(true);
-    // Make sure animation is visible
-    setShowPyramidAnimation(true);
+    // Check for prehistory before showing animation
+    if (currentGlobalPeriod && currentGlobalPeriod.id === 'prehistory') {
+      console.log("In prehistory period - not showing pyramid animation");
+      setShowPyramidAnimation(false);
+      setIsPlaying(false);
+    } else {
+      // Explicitly ensure the animation is playing when changing timeline
+      setIsPlaying(true);
+      // Make sure animation is visible
+      setShowPyramidAnimation(true);
+    }
     
     // Show transition effect for era changes
     setTransitionData({
@@ -934,6 +941,39 @@ function App() {
     setCurrentGlobalYear(Math.floor((period.start + period.end) / 2));
     
     console.log(`Switched to period: ${period.label}, ${period.start} - ${period.end}`);
+    
+    // Check if we're in Egypt and need to update the animation visibility
+    if (currentLocation === 'egypt') {
+      // If switching to prehistory, hide the animation
+      if (period.id === 'prehistory') {
+        console.log("Switching to prehistory - hiding pyramid animation");
+        setShowPyramidAnimation(false);
+        setIsPlaying(false);
+      } else if (period.id !== 'prehistory') {
+        // If we're switching out of prehistory back to a period where animation should be visible
+        console.log("Switching back from prehistory - potentially showing Egypt UI");
+        
+        // Make sure we have the proper time period selected
+        if (!selectedPeriod) {
+          setCurrentTimePeriodIndex(0);
+          setSelectedPeriod(PYRAMID_TIME_PERIODS[0]);
+        }
+        
+        if (cesiumViewer.current) {
+          const cameraPosition = cesiumViewer.current.camera.position;
+          const ellipsoid = cesiumViewer.current.scene.globe.ellipsoid;
+          const cartographic = ellipsoid.cartesianToCartographic(cameraPosition);
+          const height = cartographic.height;
+          
+          // Only show animation if we're zoomed in close enough
+          if (height < 3000000) {
+            console.log("Switching from prehistory - showing pyramid animation");
+            setShowPyramidAnimation(true);
+            setIsPlaying(true);
+          }
+        }
+      }
+    }
   };
 
   // Function to handle filtering events by time period
@@ -1406,6 +1446,14 @@ function App() {
       if (isNearEgypt) {
         // When we're near Egypt's coordinates
         if (height < 3000000) {
+          // Check if we're in prehistory period - don't show animation in prehistory
+          if (currentGlobalPeriod && currentGlobalPeriod.id === 'prehistory') {
+            console.log("In prehistory period - not showing pyramid animation");
+            setShowPyramidAnimation(false);
+            setIsPlaying(false);
+            return;
+          }
+          
           // When close enough, set location to Egypt and show the animation
           if (currentLocation !== 'egypt') {
             console.log("Setting location to Egypt");
@@ -1427,18 +1475,25 @@ function App() {
             }, 300);
           }
           
-          // When zoomed in close enough, always show the pyramid animation
-          console.log("Close enough to show animation, current showPyramidAnimation:", showPyramidAnimation);
-          
-          // Always force the animation to show and play when close enough
-          setShowPyramidAnimation(true);
-          setIsPlaying(true);
-          
-          // Hide the Egypt location pin when animation is shown
-          if (cesiumViewer.current) {
-            const egyptPin = cesiumViewer.current.entities.getById(`location_pin_egypt`);
-            if (egyptPin) {
-              egyptPin.show = false;
+          // Check again for prehistory before showing animation
+          if (currentGlobalPeriod && currentGlobalPeriod.id === 'prehistory') {
+            console.log("In prehistory period - not showing pyramid animation");
+            setShowPyramidAnimation(false);
+            setIsPlaying(false);
+          } else {
+            // When zoomed in close enough, always show the pyramid animation
+            console.log("Close enough to show animation, current showPyramidAnimation:", showPyramidAnimation);
+            
+            // Always force the animation to show and play when close enough
+            setShowPyramidAnimation(true);
+            setIsPlaying(true);
+            
+            // Hide the Egypt location pin when animation is shown
+            if (cesiumViewer.current) {
+              const egyptPin = cesiumViewer.current.entities.getById(`location_pin_egypt`);
+              if (egyptPin) {
+                egyptPin.show = false;
+              }
             }
           }
         } else if (height >= 3000000 && height < 20000000) {
@@ -1752,6 +1807,16 @@ function App() {
     ].includes(periodId || '');
   }
 
+  // Add useEffect to ensure the pyramid animation is not shown in prehistory
+  useEffect(() => {
+    // If we're in prehistory and the pyramid animation is showing, hide it
+    if (currentGlobalPeriod && currentGlobalPeriod.id === 'prehistory' && showPyramidAnimation) {
+      console.log("In prehistory - forcibly hiding pyramid animation");
+      setShowPyramidAnimation(false);
+      setIsPlaying(false);
+    }
+  }, [currentGlobalPeriod, showPyramidAnimation]);
+
   if (showLandingPage) {
     return (
       <>
@@ -1870,14 +1935,18 @@ function App() {
           <div className="time-travel-effect"></div>
         )}
         
-        {/* Global time slider for filtering events by time period - only show when not viewing a specific location timeline */}
-        {cesiumLoaded && !showLandingPage && !currentLocation && (
-          <GlobalTimeSlider 
-            timePeriods={GLOBAL_TIME_PERIODS}
-            historicalEvents={HISTORICAL_EVENTS}
-            onEventsFiltered={handleEventsFiltered}
-            onTimePeriodChange={handleGlobalTimePeriodChange}
-          />
+        {/* Global time slider for filtering events by time period - show when:
+            1. Not viewing a specific location timeline, OR
+            2. In Egypt during prehistory period (where Egypt-specific UI is hidden) */}
+        {cesiumLoaded && !showLandingPage && (
+          (!currentLocation || (currentLocation === 'egypt' && currentGlobalPeriod?.id === 'prehistory')) && (
+            <GlobalTimeSlider 
+              timePeriods={GLOBAL_TIME_PERIODS}
+              historicalEvents={HISTORICAL_EVENTS}
+              onEventsFiltered={handleEventsFiltered}
+              onTimePeriodChange={handleGlobalTimePeriodChange}
+            />
+          )
         )}
         
         {/* Only show the Egypt-specific UI components when in Egypt */}
