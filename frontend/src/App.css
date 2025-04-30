@@ -461,17 +461,26 @@ body, html, #root, .App {
   }
   
   @media (max-width: 768px) {
-    .pyramid-animation-container,
-    .colosseum-animation-container {
+    .pyramid-animation-container {
       width: 260px;
       height: 300px;
       transform-origin: center bottom;
     }
     
-    .pyramid-animation-wrapper,
-    .colosseum-animation-wrapper {
+    .colosseum-animation-container {
+      width: 260px;
+      height: 340px; /* Adjusted height for mobile */
+      transform-origin: center bottom;
+    }
+    
+    .pyramid-animation-wrapper {
       width: 240px;
       height: 240px;
+    }
+    
+    .colosseum-animation-wrapper {
+      width: 240px;
+      height: 270px; /* Adjusted height for mobile */
     }
     
     .pyramid-label,
@@ -501,16 +510,24 @@ body, html, #root, .App {
   }
   
   @media (max-width: 480px) {
-    .pyramid-animation-container,
-    .colosseum-animation-container {
+    .pyramid-animation-container {
       width: 220px;
       height: 260px;
     }
     
-    .pyramid-animation-wrapper,
-    .colosseum-animation-wrapper {
+    .colosseum-animation-container {
+      width: 220px;
+      height: 300px; /* Adjusted height for small mobile */
+    }
+    
+    .pyramid-animation-wrapper {
       width: 200px;
       height: 200px;
+    }
+    
+    .colosseum-animation-wrapper {
+      width: 200px;
+      height: 230px; /* Adjusted height for small mobile */
     }
     
     .location-pin {
@@ -729,7 +746,7 @@ body, html, #root, .App {
   .colosseum-animation-container {
     position: absolute;
     width: 320px;
-    height: 360px;
+    height: 400px;
     pointer-events: auto;
     z-index: 1000;
     display: block;
@@ -741,7 +758,7 @@ body, html, #root, .App {
   .colosseum-animation-wrapper {
     position: relative;
     width: 300px;
-    height: 300px;
+    height: 330px;
     margin: 0 auto;
   }
   

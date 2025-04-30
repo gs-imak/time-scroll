@@ -9,7 +9,7 @@ interface ColosseumAnimationProps {
 
 export function ColosseumAnimation({ isVisible, isPlaying, currentTimePeriod }: ColosseumAnimationProps) {
   const [showPopup, setShowPopup] = useState<boolean>(false);
-  const [animationFile, setAnimationFile] = useState<string>('/assets/rive/colosseum_planning.riv');
+  const [animationFile, setAnimationFile] = useState<string>('/assets/rive/colosseum.riv');
   const [labelText, setLabelText] = useState<string>("Planning of the Colosseum");
   const [hasTransitioned, setHasTransitioned] = useState<boolean>(false);
   
@@ -21,21 +21,6 @@ export function ColosseumAnimation({ isVisible, isPlaying, currentTimePeriod }: 
                                    currentTimePeriod === 'modern-era';
     
     console.log(`Current Colosseum time period: ${currentTimePeriod}, isInaugurationOrLater: ${isInaugurationOrLater}`);
-    
-    // Set the animation file based on the time period
-    if (isInaugurationOrLater) {
-      console.log('Switching to colosseum_complete animation');
-      setAnimationFile('/assets/rive/colosseum_complete.riv');
-    } else if (isMidConstructionOrLater) {
-      console.log('Switching to colosseum_mid_construction animation');
-      setAnimationFile('/assets/rive/colosseum_mid_construction.riv');
-    } else if (currentTimePeriod === 'construction-begin') {
-      console.log('Switching to colosseum_early_construction animation');
-      setAnimationFile('/assets/rive/colosseum_early_construction.riv');
-    } else {
-      console.log('Switching to colosseum_planning animation');
-      setAnimationFile('/assets/rive/colosseum_planning.riv');
-    }
     
     // Set the label text based on the construction phase
     if (isPresentDay) {
@@ -54,7 +39,54 @@ export function ColosseumAnimation({ isVisible, isPlaying, currentTimePeriod }: 
   const { RiveComponent, rive } = useRive({
     src: animationFile,
     autoplay: isPlaying,
+    stateMachines: "Timeline",
   });
+  
+  // Update the Rive animation state based on the time period
+  useEffect(() => {
+    if (!rive || !currentTimePeriod) return;
+    
+    // Give the Rive instance time to initialize
+    setTimeout(() => {
+      try {
+        if (rive.stateMachineInputs) {
+          // Get the state machine and find the input
+          const inputs = rive.stateMachineInputs("Timeline");
+          const timelineInput = inputs && inputs.find((input: any) => input.name === "TimelineTrigger");
+          
+          if (timelineInput) {
+            // Map the time period to a numeric value for the state machine
+            let timelineValue;
+            
+            switch(currentTimePeriod) {
+              case 'planning-phase':
+                timelineValue = 0;
+                break;
+              case 'construction-begin':
+                timelineValue = 1;
+                break;
+              case 'construction-mid':
+                timelineValue = 2;
+                break;
+              case 'inauguration':
+                timelineValue = 3;
+                break;
+              case 'modern-era':
+                timelineValue = 4;
+                break;
+              default:
+                timelineValue = 0;
+            }
+            
+            console.log(`Setting Colosseum timeline to ${timelineValue} for period ${currentTimePeriod}`);
+            timelineInput.value = timelineValue;
+          }
+        }
+      } catch (error) {
+        console.error("Error setting Colosseum timeline:", error);
+      }
+    }, 100);
+  }, [rive, currentTimePeriod]);
   
   const containerRef = useRef<HTMLDivElement>(null);
   
