@@ -254,9 +254,9 @@ export function ColosseumAnimation({ isVisible, isPlaying, currentTimePeriod }: 
       >
         <div className="colosseum-animation-wrapper">
           <RiveComponent key={animationFile} />
-          <div className="colosseum-label">
-            {labelText}
-          </div>
+        </div>
+        <div className="colosseum-label">
+          {labelText}
         </div>
       </div>
       
