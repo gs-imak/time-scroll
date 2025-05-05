@@ -5,7 +5,7 @@ import './styles/date-picker.css';
 import './styles/DateWheelPicker.css';
 import { MiniTimeline, TimeDial, EraTransition, DescriptionPanel } from './components/time-ui';
 import { LocationsPanel } from './features/locations';
-import { GlobalTimeSlider } from './components/GlobalTimeSlider';
+import { GlobalTimeSlider } from './features/time-slider/GlobalTimeSlider';
 import { HistoricalEventMarker } from './components/HistoricalEventMarker';
 import { EventDetailModal } from './components/EventDetailModal';
 import { PyramidAnimation } from './components/PyramidAnimation';
