@@ -3,7 +3,7 @@ import './App.css';
 import './styles/cesium.css';
 import './styles/date-picker.css';
 import './styles/DateWheelPicker.css';
-import { MiniTimeline, TimeDial, EraTransition, DescriptionPanel } from './components/time-ui';
+import { MiniTimeline, TimeDial, EraTransition, DescriptionPanel } from './features/time-ui';
 import { LocationsPanel } from './features/locations';
 import { GlobalTimeSlider } from './features/time-slider/GlobalTimeSlider';
 import { HistoricalEventMarker } from './components/HistoricalEventMarker';
