@@ -8,8 +8,7 @@ import { LocationsPanel } from './features/locations';
 import { GlobalTimeSlider } from './features/time-slider/GlobalTimeSlider';
 import { HistoricalEventMarker } from './components/HistoricalEventMarker';
 import { EventDetailModal } from './components/EventDetailModal';
-import { PyramidAnimation } from './components/PyramidAnimation';
-import { ColosseumAnimation } from './components/ColosseumAnimation';
+import { PyramidAnimation, ColosseumAnimation } from './features/animations';
 import { DateWheelPicker } from './components/DateWheelPicker';
 import { GLOBAL_TIME_PERIODS, HISTORICAL_EVENTS } from './constants/historyData';
 
