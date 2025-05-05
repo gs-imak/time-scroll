@@ -7,7 +7,7 @@ import { MiniTimeline, TimeDial, EraTransition, DescriptionPanel } from './compo
 import { LocationsPanel } from './features/locations';
 import { GlobalTimeSlider } from './features/time-slider/GlobalTimeSlider';
 import { HistoricalEventMarker } from './components/HistoricalEventMarker';
-import { EventDetailModal } from './components/EventDetailModal';
+import { EventDetailModal } from './features/event-detail';
 import { PyramidAnimation, ColosseumAnimation } from './features/animations';
 import { DateWheelPicker } from './components/DateWheelPicker';
 import { GLOBAL_TIME_PERIODS, HISTORICAL_EVENTS } from './constants/historyData';

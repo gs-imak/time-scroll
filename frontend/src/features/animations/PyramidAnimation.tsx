@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useRive } from '@rive-app/react-canvas';
-import { PyramidInfoPopup } from '../../components/PyramidInfoPopup';
+import { PyramidInfoPopup } from './PyramidInfoPopup';
 
 interface PyramidAnimationProps {
   isVisible: boolean;
