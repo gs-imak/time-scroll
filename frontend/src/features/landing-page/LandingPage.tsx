@@ -206,14 +206,14 @@ export function LandingPage({
           {/* Time Indicators - matching button style exactly */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10 w-[90%] max-w-[480px] mx-auto">
             <div className="bg-primary border-2 border-[#2196F3] rounded-2xl py-3 px-4 text-center cursor-pointer shadow-[0_8px_0_rgb(25,102,139),0_15px_20px_rgba(0,0,0,0.3)] transition-all duration-200 hover:translate-y-[-4px] hover:shadow-[0_10px_0_rgb(25,102,139),0_18px_20px_rgba(0,0,0,0.3)]">
-              <span className="text-white text-[0.8rem] uppercase mb-1 tracking-[1.5px] block w-full text-center font-extrabold">ERA</span>
+              <span className="text-[#7df2ff] text-[0.8rem] uppercase mb-1 tracking-[1.5px] block w-full text-center font-extrabold">ERA</span>
               <span className="text-white text-[1.1rem] font-bold block w-full text-center">
                 {selectedEra ? availableEras.find(era => era.id === selectedEra)?.name : "Not Selected"}
               </span>
             </div>
 
             <div className="bg-primary border-2 border-[#2196F3] rounded-2xl py-3 px-4 text-center cursor-pointer shadow-[0_8px_0_rgb(25,102,139),0_15px_20px_rgba(0,0,0,0.3)] transition-all duration-200 hover:translate-y-[-4px] hover:shadow-[0_10px_0_rgb(25,102,139),0_18px_20px_rgba(0,0,0,0.3)]">
-              <span className="text-white text-[0.8rem] uppercase mb-1 tracking-[1.5px] block w-full text-center font-extrabold">DATE</span>
+              <span className="text-[#7df2ff] text-[0.8rem] uppercase mb-1 tracking-[1.5px] block w-full text-center font-extrabold">DATE</span>
               <span className="text-white text-[1.1rem] font-bold block w-full text-center">
                 {selectedEra
                   ? `${new Date(2000, selectedMonth - 1, 1).toLocaleString('default', { month: 'long' })} ${selectedDay}, ${selectedYear < 0 ? Math.abs(selectedYear) + ' BCE' : selectedYear + ' CE'}`
@@ -226,7 +226,7 @@ export function LandingPage({
                 ? 'bg-primary border-[#2196F3] shadow-[0_8px_0_rgb(25,102,139),0_15px_20px_rgba(0,0,0,0.3)] hover:shadow-[0_10px_0_rgb(25,102,139),0_18px_20px_rgba(0,0,0,0.3)]' 
                 : 'bg-gray-400 border-gray-500 shadow-[0_8px_0_rgb(100,100,100),0_15px_20px_rgba(0,0,0,0.2)] hover:shadow-[0_10px_0_rgb(100,100,100),0_18px_20px_rgba(0,0,0,0.2)]'
               }`}>
-              <span className="text-white text-[0.8rem] uppercase mb-1 tracking-[1.5px] block w-full text-center font-extrabold">SYSTEM</span>
+              <span className="text-[#7df2ff] text-[0.8rem] uppercase mb-1 tracking-[1.5px] block w-full text-center font-extrabold">SYSTEM</span>
               <span className="text-white text-[1.1rem] font-bold block w-full text-center">
                 {isSystemReady ? "Ready" : "Not Ready"}
               </span>
