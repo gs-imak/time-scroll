@@ -62,13 +62,13 @@ export function LandingPage({
       {renderPortalEffect()}
       {renderTransitionOverlay()}
       
-      {/* Landing Page - with darker background gradient */}
-      <div className={`fixed inset-0 flex justify-center items-center bg-gradient-to-br from-[#000000] via-[#00152b] to-[#000000] bg-[length:400%_400%] animate-gradient perspective-1000 overflow-hidden z-40 transition-all duration-1500 ease-out ${
+      {/* Landing Page - with static background */}
+      <div className={`fixed inset-0 flex justify-center items-center bg-gradient-to-br from-[#000000] via-[#00152b] to-[#000000] perspective-1000 overflow-hidden z-40 transition-all duration-1500 ease-out ${
         transitioning ? 'opacity-0 scale-[1.5] rotate-3d-y-15' : 'opacity-100 scale-100'
       }`}>
         
         {/* Stars Background - Keep the new stars background */}
-        <div className="absolute inset-0 stars-bg opacity-70 animate-stars-parallax"></div>
+        <div className="absolute inset-0 stars-bg opacity-70"></div>
         
         {/* Main Content Card - Matching the style of other containers */}
         <div className={`relative text-center p-14 rounded-2xl bg-[rgba(0,40,80,0.5)] w-[85%] max-w-[800px] mx-auto shadow-[0_20px_50px_rgba(0,0,0,0.7),0_0_40px_rgba(0,174,255,0.3),inset_0_0_20px_rgba(0,136,255,0.2)] border border-[rgba(0,174,255,0.3)] backdrop-blur-lg overflow-hidden z-10 transition-all duration-1000 ease-out ${
