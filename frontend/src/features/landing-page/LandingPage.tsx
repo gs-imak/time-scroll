@@ -1,5 +1,6 @@
 import React from 'react';
 import { DateWheelPicker } from '../../components/DateWheelPicker';
+import './styles.css'; // Keep this import for the stars background
 
 interface LandingPageProps {
   onStartJourney: () => void;
@@ -66,30 +67,13 @@ export function LandingPage({
         transitioning ? 'opacity-0 scale-[1.5] rotate-3d-y-15' : 'opacity-100 scale-100'
       }`}>
         
-        {/* Stars Background - Matching .landing-page::before */}
-        <div className="absolute inset-0 w-[200%] h-[200%] stars-bg -z-10 animate-stars-parallax"></div>
-
-        {/* Floating Elements - Matching .floating-elements and .floating-element classes */}
-        <div className="absolute inset-0 pointer-events-none">
-          {/* f1 */}
-          <div className="absolute w-[150px] h-[150px] rounded-full opacity-60 blur-md bg-radial-gradient from-primary/60 to-secondary/10 shadow-[0_0_30px_rgba(0,136,255,0.5)] top-[15%] left-[15%] animate-float-delay-5"></div>
-          {/* f2 */}
-          <div className="absolute w-[200px] h-[200px] rounded-full opacity-60 blur-md bg-radial-gradient from-primary/60 to-secondary/10 shadow-[0_0_30px_rgba(0,136,255,0.5)] top-[60%] left-[10%] animate-float-delay-10"></div>
-          {/* f3 */}
-          <div className="absolute w-[120px] h-[120px] rounded-full opacity-60 blur-md bg-radial-gradient from-primary/60 to-secondary/10 shadow-[0_0_30px_rgba(0,136,255,0.5)] top-[25%] right-[20%] animate-float-delay-7"></div>
-          {/* f4 */}
-          <div className="absolute w-[180px] h-[180px] rounded-full opacity-60 blur-md bg-radial-gradient from-primary/60 to-secondary/10 shadow-[0_0_30px_rgba(0,136,255,0.5)] bottom-[15%] right-[15%] animate-float-delay-3"></div>
-          {/* f5 */}
-          <div className="absolute w-[100px] h-[100px] rounded-full opacity-60 blur-md bg-radial-gradient from-primary/60 to-secondary/10 shadow-[0_0_30px_rgba(0,136,255,0.5)] top-1/2 left-1/2 animate-float-delay-12"></div>
-        </div>
+        {/* Stars Background - Keep the new stars background */}
+        <div className="absolute inset-0 stars-bg opacity-70 animate-stars-parallax"></div>
         
         {/* Main Content Card - Matching .landing-content */}
         <div className={`relative text-center p-14 rounded-2xl bg-gradient-to-br from-[rgba(2,0,36,0.75)] via-[rgba(9,9,121,0.75)] to-[rgba(0,30,60,0.75)] w-[85%] max-w-[800px] mx-auto shadow-[0_20px_50px_rgba(0,0,0,0.7),0_0_40px_rgba(0,174,255,0.3),inset_0_0_20px_rgba(0,136,255,0.2)] border border-[rgba(0,174,255,0.3)] backdrop-blur-lg overflow-hidden z-10 transition-all duration-1000 ease-out ${
           transitioning ? 'opacity-0 translate-y-[-80px] scale-[0.7]' : 'opacity-100 translate-y-0 scale-100'
-        }`}>
-          {/* Time-related decoration - Matching .landing-content::before */}
-          <div className="absolute -inset-[50px] bg-[conic-gradient(transparent_0deg,transparent_340deg,rgba(0,136,255,0.1)_360deg)] rounded-full animate-rotate -z-10"></div>
-          
+        }`}>          
           {/* Title - Matching .landing-page h1 */}
           <h1 className="text-[3.5rem] mb-6 text-white bg-transparent font-['Arial',sans-serif] font-extrabold tracking-wide drop-shadow-[0_0_10px_rgba(0,149,255,0.8),0_0_30px_rgba(0,149,255,0.5)] bg-gradient-to-r from-white via-primary to-white bg-clip-text text-transparent bg-[length:200%_auto] animate-title-shimmer">
             Time Machine
