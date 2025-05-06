@@ -62,16 +62,16 @@ export function LandingPage({
       {renderPortalEffect()}
       {renderTransitionOverlay()}
       
-      {/* Landing Page - Matching original .landing-page class */}
-      <div className={`fixed inset-0 flex justify-center items-center bg-gradient-to-br from-[#000428] via-[#004e92] to-[#000428] bg-[length:400%_400%] animate-gradient perspective-1000 overflow-hidden z-40 transition-all duration-1500 ease-out ${
+      {/* Landing Page - with darker background gradient */}
+      <div className={`fixed inset-0 flex justify-center items-center bg-gradient-to-br from-[#000000] via-[#00152b] to-[#000000] bg-[length:400%_400%] animate-gradient perspective-1000 overflow-hidden z-40 transition-all duration-1500 ease-out ${
         transitioning ? 'opacity-0 scale-[1.5] rotate-3d-y-15' : 'opacity-100 scale-100'
       }`}>
         
         {/* Stars Background - Keep the new stars background */}
         <div className="absolute inset-0 stars-bg opacity-70 animate-stars-parallax"></div>
         
-        {/* Main Content Card - Matching .landing-content */}
-        <div className={`relative text-center p-14 rounded-2xl bg-gradient-to-br from-[rgba(2,0,36,0.75)] via-[rgba(9,9,121,0.75)] to-[rgba(0,30,60,0.75)] w-[85%] max-w-[800px] mx-auto shadow-[0_20px_50px_rgba(0,0,0,0.7),0_0_40px_rgba(0,174,255,0.3),inset_0_0_20px_rgba(0,136,255,0.2)] border border-[rgba(0,174,255,0.3)] backdrop-blur-lg overflow-hidden z-10 transition-all duration-1000 ease-out ${
+        {/* Main Content Card - Matching the style of other containers */}
+        <div className={`relative text-center p-14 rounded-2xl bg-[rgba(0,40,80,0.5)] w-[85%] max-w-[800px] mx-auto shadow-[0_20px_50px_rgba(0,0,0,0.7),0_0_40px_rgba(0,174,255,0.3),inset_0_0_20px_rgba(0,136,255,0.2)] border border-[rgba(0,174,255,0.3)] backdrop-blur-lg overflow-hidden z-10 transition-all duration-1000 ease-out ${
           transitioning ? 'opacity-0 translate-y-[-80px] scale-[0.7]' : 'opacity-100 translate-y-0 scale-100'
         }`}>          
           {/* Title - Matching .landing-page h1 */}
