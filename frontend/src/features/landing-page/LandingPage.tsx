@@ -86,7 +86,7 @@ export function LandingPage({
           
           {/* Select Era - Using dropdown instead of pills */}
           <div className="mb-8">
-            <div className="bg-[rgba(0,40,80,0.5)] border border-[rgba(0,174,255,0.3)] rounded-lg py-[15px] px-[20px] max-w-[280px] mx-auto text-center transition-all duration-300">
+            <div className="bg-[rgba(0,40,80,0.5)] border border-[rgba(0,174,255,0.3)] rounded-lg py-[15px] px-[20px] max-w-[480px] mx-auto text-center transition-all duration-300">
               <span className="text-white/70 text-[0.8rem] uppercase mb-2 tracking-[1.5px] block w-full text-center font-medium">SELECT ERA</span>
               <select 
                 className="bg-[rgba(0,30,60,0.8)] text-[#60efff] text-[1.25rem] font-semibold border border-[rgba(0,174,255,0.3)] rounded-md py-2 px-4 w-full outline-none focus:border-[rgba(0,174,255,0.6)] focus:ring-2 focus:ring-[rgba(0,174,255,0.3)]"

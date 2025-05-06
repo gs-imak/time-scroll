@@ -7,9 +7,9 @@
   border-radius: 12px;
   box-shadow:0 4px 10px rgba(0, 0, 0, 0.3), 0 0 15px rgba(0, 136, 255, 0.2);
   border: 1px solid rgba(0, 174, 255, 0.3);
-  gap: 16px;
+  gap: 24px;
   width: 100%;
-  max-width: 340px;
+  max-width: 480px;
   margin: 0 auto;
   flex-direction: row; /* Ensure horizontal layout */
   backdrop-filter: blur(8px);
@@ -17,12 +17,12 @@
 }
 
 .wheel-container {
-  height: 192px;
-  width: 96px;
+  height: 116px; /* Reduced height to account for removed top spacing */
+  width: 120px;
   overflow-y: auto;
   overflow-x: hidden;
   scroll-snap-type: y mandatory;
-  scroll-padding: 76px 0;
+  scroll-padding: 0 0 76px 0; /* Adjusted padding to account for removed top spacing */
   text-align: center;
   color: white;
   font-family: monospace;
@@ -36,10 +36,16 @@
 }
 
 /* Add pseudo-elements to create space at top and bottom for centering */
-.wheel-container::before,
+.wheel-container::before {
+  content: '';
+  height: 0; /* Remove the top spacing */
+  display: block;
+  flex-shrink: 0;
+}
+
 .wheel-container::after {
   content: '';
-  height: 76px; /* Calculate: (container height - item height) / 2 */
+  height: 76px; /* Keep the bottom spacing */
   display: block;
   flex-shrink: 0;
 }
