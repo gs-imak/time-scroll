@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { DateWheelPicker } from '../../components/DateWheelPicker';
 import './styles.css'; // Keep this import for the stars background
 
@@ -41,6 +41,59 @@ export function LandingPage({
   handleDayChange,
   currentGlobalPeriod
 }: LandingPageProps) {
+  // State for custom dropdown
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Handle click outside to close dropdown
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  // Add CSS for custom scrollbar
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 10px;
+      }
+      
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: #0074b0;
+        border-radius: 0 0 5px 0;
+      }
+      
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #2196F3;
+        border-radius: 5px;
+        border: 2px solid #0074b0;
+      }
+      
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #3aa8ff;
+      }
+    `;
+    document.head.appendChild(style);
+    
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
+
+  // Handle selection
+  const handleSelect = (eraId: string) => {
+    handleEraSelection(eraId);
+    setIsDropdownOpen(false);
+  };
+
   function renderPreloader() {
     if (!showPreloader) return null;
     return <div className="fixed inset-0 z-50 bg-[#000428]"></div>;
@@ -84,21 +137,52 @@ export function LandingPage({
             Begin your journey through space and time
           </p>
           
-          {/* Select Era - matching button style exactly */}
+          {/* Custom Select Era Dropdown */}
           <div className="mb-8 grid place-items-center w-full">
             <div className="bg-primary border-2 border-[#2196F3] rounded-2xl py-4 px-6 w-[90%] max-w-[480px] shadow-[0_8px_0_rgb(25,102,139),0_15px_20px_rgba(0,0,0,0.3)]">
               <span className="text-white text-[0.9rem] uppercase mb-3 tracking-[1.5px] block w-full text-center font-extrabold">SELECT ERA</span>
-              <select 
-                className="bg-[#25a2b9] text-white text-[1.25rem] font-bold border-2 border-[#2196F3] rounded-xl py-3 px-4 w-full outline-none focus:border-white hover:border-white transition-all duration-200"
-                value={selectedEra || ""}
-                onChange={(e) => handleEraSelection(e.target.value)}
-                disabled={transitioning}
-              >
-                <option value="" disabled>Select an era</option>
-                {availableEras.map(era => (
-                  <option key={era.id} value={era.id}>{era.name}</option>
-                ))}
-              </select>
+              
+              {/* Custom dropdown */}
+              <div className="relative" ref={dropdownRef}>
+                {/* Dropdown trigger button */}
+                <button
+                  className="text-left appearance-none bg-primary text-white text-[1.25rem] font-bold border-2 border-[#2196F3] rounded-xl py-3 px-4 w-full outline-none focus:ring-2 focus:ring-white transition-all duration-200 cursor-pointer shadow-[inset_0_2px_5px_rgba(0,0,0,0.2)]"
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  disabled={transitioning}
+                >
+                  {selectedEra ? availableEras.find(era => era.id === selectedEra)?.name : "Select an era"}
+                  
+                  {/* Arrow icon */}
+                  <div className="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none">
+                    <svg className={`w-5 h-5 text-white transition-transform duration-200 ${isDropdownOpen ? 'transform rotate-180' : ''}`} 
+                      fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                  </div>
+                  
+                  {/* Highlighting effect */}
+                  <div className="absolute top-0 left-[5%] right-[5%] h-[1px] bg-white/30"></div>
+                </button>
+                
+                {/* Dropdown menu */}
+                {isDropdownOpen && (
+                  <div className="absolute z-10 w-full mt-2 bg-[#00628f] border-2 border-[#2196F3] rounded-b-xl shadow-[0_5px_15px_rgba(0,0,0,0.5)] max-h-60 overflow-auto custom-scrollbar">
+                    {availableEras.map((era, index) => (
+                      <div 
+                        key={era.id} 
+                        className={`px-4 py-3 cursor-pointer text-white font-bold transition-colors duration-150 ${
+                          selectedEra === era.id ? 'bg-[#004e73]' : ''
+                        } ${
+                          index === availableEras.length - 1 ? 'rounded-b-lg' : ''
+                        }`}
+                        onClick={() => handleSelect(era.id)}
+                      >
+                        {era.name}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
