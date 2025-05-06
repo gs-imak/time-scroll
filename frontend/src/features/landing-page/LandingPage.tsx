@@ -240,7 +240,7 @@ export function LandingPage({
                 ? 'bg-primary border-[#2196F3] shadow-[0_8px_0_rgb(25,102,139),0_15px_20px_rgba(0,0,0,0.3)]' 
                 : 'bg-gray-400 border-gray-500 shadow-[0_8px_0_rgb(100,100,100),0_15px_20px_rgba(0,0,0,0.2)]'
               }`}>
-              <div className={`w-3 h-3 rounded-full ${isPortalStabilized ? 'bg-white' : 'bg-[#ff9966]'} animate-pulse`}></div>
+              <div className={`w-3 h-3 rounded-full ${isPortalStabilized ? 'bg-[#7CFF7C]' : 'bg-[#ff9966]'} animate-pulse`}></div>
               <span className="text-white text-[0.9rem] font-bold tracking-wider">
                 {isPortalStabilized ? "Time Portal Stabilized" : "Stabilizing Time Portal..."}
               </span>
