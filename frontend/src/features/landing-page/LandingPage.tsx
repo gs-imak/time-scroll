@@ -165,18 +165,20 @@ export function LandingPage({
             </span>
           </div>
 
-          {/* CTA Button - Matching .journey-button */}
-          <button
-            className={`px-[42px] py-[16px] text-[1.4rem] font-semibold rounded-full text-white shadow-lg transition-all duration-400 relative overflow-hidden drop-shadow-[0_1px_3px_rgba(0,0,0,0.3)] tracking-wider ${
-              isSystemReady 
-                ? 'bg-gradient-to-r from-secondary to-primary shadow-[0_8px_25px_rgba(0,121,255,0.5),0_0_20px_rgba(0,183,255,0.6)] hover:bg-gradient-to-r hover:from-[#0052d6] hover:to-[#00c3ff] hover:translate-y-[-5px] hover:scale-105 hover:shadow-[0_12px_30px_rgba(0,136,255,0.6),0_0_30px_rgba(0,195,255,0.7)] active:translate-y-[-2px] active:scale-[1.02] active:shadow-[0_6px_20px_rgba(0,136,255,0.4)]' 
-                : 'bg-gradient-to-r from-gray-600 to-gray-400 cursor-not-allowed'
-            }`}
-            onClick={onStartJourney}
-            disabled={transitioning || !isSystemReady}
-          >
-            Initialize Time Portal
-          </button>
+          {/* CTA Button - Simple grid based centering for perfect responsiveness */}
+          <div className="grid place-items-center w-full mb-10">
+            <button
+              className={`px-6 sm:px-14 py-4 text-[1.4rem] font-extrabold rounded-2xl text-white transition-all duration-200 w-[90%] max-w-[480px]
+                ${isSystemReady 
+                  ? 'bg-primary hover:bg-[#7df2ff] active:bg-[#00daff] hover:translate-y-[-4px] active:translate-y-[-2px] shadow-[0_8px_0_rgb(25,102,139),0_15px_20px_rgba(0,0,0,0.3)] active:shadow-[0_4px_0_rgb(0,121,178),0_5px_10px_rgba(0,0,0,0.2)]' 
+                  : 'bg-gray-400 cursor-not-allowed shadow-[0_8px_0_rgb(100,100,100),0_15px_20px_rgba(0,0,0,0.2)]'
+                }`}
+              onClick={onStartJourney}
+              disabled={transitioning || !isSystemReady}
+            >
+              {isSystemReady ? 'START JOURNEY' : 'NOT READY'}
+            </button>
+          </div>
           
           {/* Version info */}
           <div className="mt-8 text-white/50 text-xs tracking-wider drop-shadow-[0_0_5px_rgba(0,136,255,0.3)]">v1.0 Time Machine</div>

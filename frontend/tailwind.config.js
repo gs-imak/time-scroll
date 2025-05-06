@@ -29,6 +29,7 @@ module.exports = {
         'float-delay-3': 'float 28s infinite ease-in-out -3s',
         'float-delay-12': 'float 20s infinite ease-in-out -12s',
         'pulse': 'pulse 1.5s infinite ease-in-out',
+        'pulse-slow': 'pulse 3s infinite ease-in-out',
         'pulse-warning': 'pulse-warning 1.5s infinite ease-in-out',
         'float-particle-1': 'float-particle 20s infinite ease-in-out',
         'float-particle-2': 'float-particle 26s infinite ease-in-out -5s',
