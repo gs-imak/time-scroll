@@ -41,6 +41,7 @@ interface DateWheelPickerProps {
   onMonthChange: (month: number) => void;
   onDayChange: (day: number) => void;
   availableYearRange: { min: number; max: number };
+  className?: string;
 }
 
 export function DateWheelPicker({
@@ -50,7 +51,8 @@ export function DateWheelPicker({
   onYearChange,
   onMonthChange,
   onDayChange,
-  availableYearRange
+  availableYearRange,
+  className = ''
 }: DateWheelPickerProps) {
   const months = [
     "January", "February", "March", "April", "May", "June",
@@ -74,7 +76,7 @@ export function DateWheelPicker({
   };
 
   return (
-    <div className="picker-container">
+    <div className={`picker-container ${className}`}>
       <Wheel
         options={range(1, 31)}
         selected={selectedDay}

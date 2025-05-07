@@ -124,45 +124,38 @@ export function LandingPage({
         <div className="absolute inset-0 stars-bg opacity-70"></div>
         
         {/* Main Content Card - Matching the style of other containers */}
-        <div className={`relative text-center p-14 rounded-2xl bg-[rgba(0,40,80,0.5)] w-[85%] max-w-[800px] mx-auto shadow-[0_20px_50px_rgba(0,0,0,0.7),0_0_40px_rgba(0,174,255,0.3),inset_0_0_20px_rgba(0,136,255,0.2)] border border-[rgba(0,174,255,0.3)] backdrop-blur-lg overflow-hidden z-10 transition-all duration-1000 ease-out ${
+        <div className={`relative text-center p-14 rounded-2xl bg-[rgba(0,40,80,0.5)] w-[85%] max-w-[800px] mx-auto shadow-[0_20px_50px_rgba(0,0,0,0.7),0_0_40px_rgba(0,174,255,0.3),inset_0_0_20px_rgba(0,136,255,0.2)] border border-[rgba(0,174,255,0.3)] backdrop-blur-lg overflow-hidden z-10 transition-all duration-1000 ease-out space-y-10 ${
           transitioning ? 'opacity-0 translate-y-[-80px] scale-[0.7]' : 'opacity-100 translate-y-0 scale-100'
         }`}>          
           {/* Title - Matching .landing-page h1 */}
-          <h1 className="text-[3.5rem] mb-6 text-white bg-transparent font-['Arial',sans-serif] font-extrabold tracking-wide drop-shadow-[0_0_10px_rgba(0,149,255,0.8),0_0_30px_rgba(0,149,255,0.5)] bg-gradient-to-r from-white via-primary to-white bg-clip-text text-transparent bg-[length:200%_auto] animate-title-shimmer">
+          <h1 className="text-[3.5rem] text-white bg-transparent font-['Arial',sans-serif] font-extrabold tracking-wide drop-shadow-[0_0_10px_rgba(0,149,255,0.8),0_0_30px_rgba(0,149,255,0.5)] bg-gradient-to-r from-white via-primary to-white bg-clip-text text-transparent bg-[length:200%_auto] animate-title-shimmer">
             Time Machine
           </h1>
           
           {/* Subtitle - Matching .landing-subtitle */}
-          <p className="text-white/90 text-[1.4rem] mb-12 max-w-[85%] mx-auto leading-relaxed font-light drop-shadow-[0_0_8px_rgba(0,136,255,0.4)]">
+          <p className="text-white/90 text-[1.4rem] max-w-[85%] mx-auto leading-relaxed font-light drop-shadow-[0_0_8px_rgba(0,136,255,0.4)]">
             Begin your journey through space and time
           </p>
 
           {/* Date Selection - only show when era is selected */}
           {selectedEra && (
-            <div className="mb-10 grid place-items-center w-full">
-              <div className="bg-primary border-2 border-[#2196F3] rounded-2xl py-4 px-2 w-[90%] max-w-[480px] shadow-[0_8px_0_rgb(25,102,139),0_15px_20px_rgba(0,0,0,0.3)]">
-                <DateWheelPicker
-                  selectedYear={selectedYear}
-                  selectedMonth={selectedMonth}
-                  selectedDay={selectedDay}
-                  onYearChange={handleYearChange}
-                  onMonthChange={handleMonthChange}
-                  onDayChange={handleDayChange}
-                  availableYearRange={{ min: currentGlobalPeriod.start, max: currentGlobalPeriod.end }}
-                />
-              </div>
+            <div className="mb-10">
+              <DateWheelPicker
+                selectedYear={selectedYear}
+                selectedMonth={selectedMonth}
+                selectedDay={selectedDay}
+                onYearChange={handleYearChange}
+                onMonthChange={handleMonthChange}
+                onDayChange={handleDayChange}
+                availableYearRange={{ min: currentGlobalPeriod.start, max: currentGlobalPeriod.end }}
+                className="bg-primary border-2 border-[#2196F3] rounded-2xl py-4 px-2 w-[90%] max-w-[480px] shadow-[0_8px_0_rgb(25,102,139),0_15px_20px_rgba(0,0,0,0.3)] mx-auto"
+              />
             </div>
           )}
 
           {/* Time Indicators - matching button style exactly */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10 w-[90%] max-w-[480px] mx-auto">
-            <div className="bg-primary border-2 border-[#2196F3] rounded-2xl py-3 px-4 text-center cursor-pointer shadow-[0_8px_0_rgb(25,102,139),0_15px_20px_rgba(0,0,0,0.3)] transition-all duration-200 hover:translate-y-[-4px] hover:shadow-[0_10px_0_rgb(25,102,139),0_18px_20px_rgba(0,0,0,0.3)]">
-              <span className="text-[#7df2ff] text-[0.8rem] uppercase mb-1 tracking-[1.5px] block w-full text-center font-extrabold">ERA</span>
-              <span className="text-white text-[1.1rem] font-bold block w-full text-center">
-                {selectedEra ? availableEras.find(era => era.id === selectedEra)?.name : "Not Selected"}
-              </span>
-            </div>
-
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-[90%] max-w-[480px] mx-auto">
+            {/* DATE Indicator */}
             <div className="bg-primary border-2 border-[#2196F3] rounded-2xl py-3 px-4 text-center cursor-pointer shadow-[0_8px_0_rgb(25,102,139),0_15px_20px_rgba(0,0,0,0.3)] transition-all duration-200 hover:translate-y-[-4px] hover:shadow-[0_10px_0_rgb(25,102,139),0_18px_20px_rgba(0,0,0,0.3)]">
               <span className="text-[#7df2ff] text-[0.8rem] uppercase mb-1 tracking-[1.5px] block w-full text-center font-extrabold">DATE</span>
               <span className="text-white text-[1.1rem] font-bold block w-full text-center">
@@ -172,6 +165,7 @@ export function LandingPage({
               </span>
             </div>
 
+            {/* SYSTEM Indicator */}
             <div className={`rounded-2xl py-3 px-4 text-center cursor-pointer transition-all duration-200 hover:translate-y-[-4px] border-2 
               ${isSystemReady 
                 ? 'bg-primary border-[#2196F3] shadow-[0_8px_0_rgb(25,102,139),0_15px_20px_rgba(0,0,0,0.3)] hover:shadow-[0_10px_0_rgb(25,102,139),0_18px_20px_rgba(0,0,0,0.3)]' 
