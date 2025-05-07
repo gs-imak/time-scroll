@@ -51,6 +51,7 @@ export const GlobalTimeSlider: React.FC<GlobalTimeSliderProps> = ({
   const tooltipRef = useRef<HTMLDivElement>(null);
   const periodYearsRef = useRef<HTMLDivElement>(null);
   const periodLabelRef = useRef<HTMLDivElement>(null);
+  const eventsBadgeRef = useRef<HTMLDivElement>(null);
   
   // Format year with BCE/CE notation
   const formatYear = (year: number): string => {
@@ -280,6 +281,28 @@ export const GlobalTimeSlider: React.FC<GlobalTimeSliderProps> = ({
 
   const filteredEvents = getVisibleEvents();
 
+  // Add animation for events badge when filtered events change
+  useEffect(() => {
+    if (eventsBadgeRef.current) {
+      // Use GSAP to animate the badge
+      gsap.fromTo(
+        eventsBadgeRef.current,
+        { 
+          scale: 0.98,
+          opacity: 0.8,
+          y: 3
+        },
+        { 
+          scale: 1,
+          opacity: 1,
+          y: 0,
+          duration: 0.4,
+          ease: "back.out(1.2)"
+        }
+      );
+    }
+  }, [filteredEvents]);
+
   return (
     <div 
       className={`global-time-slider win11-style ${isAnimating ? 'animating' : ''}`}
@@ -340,8 +363,19 @@ export const GlobalTimeSlider: React.FC<GlobalTimeSliderProps> = ({
           </div>
         </div>
 
-        <div className="visible-events-info">
-          Showing <span className="event-count"><span>{filteredEvents.length}</span></span> historical events in {timePeriods[selectedPeriodIndex].label}
+        <div className="events-status">
+          {filteredEvents.length > 0 ? (
+            <div className="events-badge" ref={eventsBadgeRef}>
+              <span className="events-badge-icon">📜</span>
+              <span className="events-badge-count">{filteredEvents.length}</span>
+              <span className="events-badge-text">{filteredEvents.length === 1 ? 'historical event' : 'historical events'}</span>
+            </div>
+          ) : (
+            <div className="events-badge events-badge-empty" ref={eventsBadgeRef}>
+              <span className="events-badge-icon">🔍</span>
+              <span className="events-badge-text">No historical events in this period</span>
+            </div>
+          )}
         </div>
       </div>
     </div>

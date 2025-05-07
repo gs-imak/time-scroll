@@ -898,46 +898,41 @@
 }
 
 .visible-events-info {
-  text-align: center;
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 0.9rem;
-  padding: 10px 14px;
-  margin-top: 12px;
-  border-radius: 12px;
-  background: rgba(0, 20, 40, 0.5);
-  border: 1px solid rgba(56, 189, 248, 0.2);
-  font-weight: 500;
-  transition: all 0.3s ease;
-}
-
-.visible-events-info:hover {
-  background: rgba(0, 30, 60, 0.5);
-  border-color: rgba(56, 189, 248, 0.3);
-  box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
+  display: none;
 }
 
 .event-count {
   display: inline-block;
-  background: rgba(56, 189, 248, 0.15);
-  border: 1px solid rgba(56, 189, 248, 0.3);
-  border-radius: 8px;
-  padding: 2px 8px;
-  margin: 0 4px;
-  box-shadow: 0 0 8px rgba(56, 189, 248, 0.2);
-  transition: all 0.2s ease;
-  position: relative;
-}
-
-.event-count:hover {
-  background: rgba(56, 189, 248, 0.25);
-  border-color: rgba(96, 239, 255, 0.5);
-  box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
-}
-
-.event-count span {
+  background: rgba(56, 189, 248, 0.2);
+  border-radius: 4px;
+  padding: 1px 6px;
+  margin: 0 2px;
   color: #7df2ff;
   font-weight: 600;
-  text-shadow: 0 0 4px rgba(0, 174, 255, 0.6);
+  min-width: 18px;
+}
+
+.info-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: rgba(0, 30, 60, 0.6);
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  border-radius: 50%;
+  font-size: 14px;
+  color: #7df2ff;
+  text-shadow: 0 0 5px rgba(0, 174, 255, 0.4);
+  margin-right: 3px;
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.15);
+  transition: all 0.2s ease;
+}
+
+.info-icon:hover {
+  background: rgba(0, 40, 80, 0.7);
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.3);
+  transform: scale(1.05);
 }
 
 /* Fix compatibility with the title-shimmer animation */
@@ -2110,4 +2105,114 @@
     left: 50%;
     top: 50%;
   }
+}
+
+/* Events Badge Styling */
+.events-status {
+  display: flex;
+  justify-content: center;
+  margin-top: 12px;
+}
+
+.events-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, rgba(0, 40, 80, 0.6), rgba(0, 60, 100, 0.8));
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: 40px;
+  padding: 6px 14px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+  max-width: fit-content;
+  margin: 0 auto;
+  position: relative;
+  overflow: hidden;
+}
+
+.events-badge:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
+  transition: 0.5s;
+}
+
+.events-badge:hover:before {
+  left: 100%;
+}
+
+.events-badge:hover {
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), 0 0 10px rgba(56, 189, 248, 0.2);
+  border-color: rgba(56, 189, 248, 0.5);
+  transform: translateY(-1px) scale(1.02);
+}
+
+.events-badge-count {
+  background: rgba(56, 189, 248, 0.25);
+  color: #7df2ff;
+  font-weight: 600;
+  border-radius: 16px;
+  padding: 1px 8px;
+  font-size: 0.9rem;
+  min-width: 26px;
+  text-align: center;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  animation: soft-pulse 2s infinite;
+  display: inline-block;
+}
+
+.events-badge-text {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.25px;
+}
+
+/* Replace with new empty badge styling */
+.events-badge.events-badge-empty {
+  background: linear-gradient(135deg, rgba(30, 30, 50, 0.6), rgba(40, 40, 60, 0.7));
+  border-color: rgba(100, 100, 150, 0.2);
+  padding: 6px 14px 6px 12px;
+  opacity: 0.9;
+}
+
+.events-badge.events-badge-empty .events-badge-text {
+  color: rgba(255, 255, 255, 0.7);
+  font-style: italic;
+  font-weight: 400;
+}
+
+.events-badge.events-badge-empty .events-badge-icon {
+  margin-right: 2px;
+  opacity: 0.9;
+}
+
+/* Pulse animation for event count */
+@keyframes soft-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(56, 189, 248, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(56, 189, 248, 0);
+  }
+}
+
+.events-badge-icon {
+  font-size: 14px;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.3));
 } 
