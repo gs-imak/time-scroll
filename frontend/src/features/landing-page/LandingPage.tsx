@@ -195,7 +195,7 @@ export function LandingPage({
           {/* CTA Button - Simple grid based centering */}
           <div className="grid place-items-center w-full mb-10">
             <button
-              className={`px-6 sm:px-14 py-4 text-[1.4rem] font-extrabold rounded-2xl text-white transition-all duration-200 w-[90%] max-w-[480px] border-2 border-[#2196F3]
+              className={`px-6 sm:px-14 py-4 text-[1.4rem] font-extrabold rounded-2xl text-white transition-all duration-200 w-[90%] max-w-[350px] border-2 border-[#2196F3]
                 ${isSystemReady 
                   ? 'bg-primary hover:bg-[#7df2ff] active:bg-[#00daff] hover:translate-y-[-4px] active:translate-y-[-2px] shadow-[0_8px_0_rgb(25,102,139),0_15px_20px_rgba(0,0,0,0.3)] active:shadow-[0_4px_0_rgb(0,121,178),0_5px_10px_rgba(0,0,0,0.2)]' 
                   : 'bg-gray-400 cursor-not-allowed shadow-[0_8px_0_rgb(100,100,100),0_15px_20px_rgba(0,0,0,0.2)]'
