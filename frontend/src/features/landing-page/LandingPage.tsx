@@ -128,7 +128,7 @@ export function LandingPage({
           transitioning ? 'opacity-0 translate-y-[-80px] scale-[0.7]' : 'opacity-100 translate-y-0 scale-100'
         }`}>          
           {/* Title - Matching .landing-page h1 */}
-          <h1 className="text-[3.5rem] text-white bg-transparent font-['Arial',sans-serif] font-extrabold tracking-wide drop-shadow-[0_0_10px_rgba(0,149,255,0.8),0_0_30px_rgba(0,149,255,0.5)] bg-gradient-to-r from-white via-primary to-white bg-clip-text text-transparent bg-[length:200%_auto] animate-title-shimmer">
+          <h1 className="text-[3.5rem] text-white bg-transparent font-['Arial',sans-serif] font-extrabold tracking-wide bg-gradient-to-r from-white via-primary to-white bg-clip-text text-transparent bg-[length:200%_auto] animate-title-shimmer">
             Time Machine
           </h1>
           
