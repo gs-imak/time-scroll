@@ -30,14 +30,14 @@ export interface HistoricalEvent {
 
 // Helper to generate a teardrop SVG data URL for event pins
 export function getTeardropPinSVG(color: string = '#38bdf8', border: string = '#fff'): string {
-  const svg = `<svg width='28' height='40' viewBox='0 0 28 40' fill='none' xmlns='http://www.w3.org/2000/svg'>
+  const svg = `<svg width='22' height='32' viewBox='0 0 22 32' fill='none' xmlns='http://www.w3.org/2000/svg'>
     <defs>
-      <filter id='shadow' x='-7' y='0' width='42' height='50'>
+      <filter id='shadow' x='-5' y='0' width='32' height='40'>
         <feDropShadow dx='0' dy='2' stdDeviation='2' flood-color='#000' flood-opacity='0.25'/>
       </filter>
     </defs>
-    <path d='M14 3C7.7 3 2 9 2 15.5C2 24 14 39 14 39C14 39 26 24 26 15.5C26 9 20.3 3 14 3Z' fill='${color}' stroke='${border}' stroke-width='2' filter='url(#shadow)'/>
-    <circle cx='14' cy='16' r='5' fill='#fff' />
+    <path d='M11 2C6.05 2 2 6.6 2 11.5C2 18.5 11 30 11 30C11 30 20 18.5 20 11.5C20 6.6 15.95 2 11 2Z' fill='${color}' stroke='${border}' stroke-width='1.5' filter='url(#shadow)'/>
+    <circle cx='11' cy='13' r='4' fill='#fff' />
   </svg>`;
   return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
 }
