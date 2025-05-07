@@ -124,7 +124,7 @@ export function LandingPage({
         <div className="stars-bg"></div>
         
         {/* Main Content Card */}
-        <div className={`main-content relative text-center p-6 sm:p-14 rounded-2xl bg-[rgba(0,40,80,0.5)] w-[95%] sm:w-[85%] max-w-[800px] mx-auto shadow-[0_20px_50px_rgba(0,0,0,0.7),0_0_40px_rgba(0,174,255,0.3),inset_0_0_20px_rgba(0,136,255,0.2)] border border-[rgba(0,174,255,0.3)] backdrop-blur-lg overflow-hidden z-10 transition-all duration-1000 ease-out space-y-6 sm:space-y-10 ${
+        <div className={`main-content relative text-center p-6 sm:p-14 rounded-2xl bg-[rgba(0,40,80,0.5)] w-[95%] sm:w-[85%] max-w-[800px] mx-auto shadow-[0_20px_50px_rgba(0,0,0,0.7)] border border-[rgba(0,174,255,0.3)] backdrop-blur-lg overflow-hidden z-10 transition-all duration-1000 ease-out space-y-6 sm:space-y-10 hover:shadow-[0_20px_50px_rgba(0,0,0,0.7),0_0_40px_rgba(0,174,255,0.3),inset_0_0_20px_rgba(0,136,255,0.2)] ${
           transitioning ? 'opacity-0 translate-y-[-80px] scale-[0.7]' : 'opacity-100 translate-y-0 scale-100'
         }`}>          
           {/* Title */}
