@@ -341,7 +341,7 @@ export const GlobalTimeSlider: React.FC<GlobalTimeSliderProps> = ({
         </div>
 
         <div className="visible-events-info">
-          Showing <span className="event-count"><span>{filteredEvents.length}</span></span> historical events from this time period
+          Showing <span className="event-count"><span>{filteredEvents.length}</span></span> historical events in {timePeriods[selectedPeriodIndex].label}
         </div>
       </div>
     </div>
