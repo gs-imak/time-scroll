@@ -1,5 +1,15 @@
 import { buildCssStyledPin } from './map-helpers';
 
+// Add Cesium to the Window type for TypeScript
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+declare global {
+  interface Window {
+    Cesium: any;
+  }
+}
+
+const Cesium = window.Cesium;
+
 export interface HistoricalEvent {
   id: string;
   title: string;
@@ -18,6 +28,20 @@ export interface HistoricalEvent {
   };
 }
 
+// Helper to generate a teardrop SVG data URL for event pins
+export function getTeardropPinSVG(color: string = '#38bdf8', border: string = '#fff'): string {
+  const svg = `<svg width='28' height='40' viewBox='0 0 28 40' fill='none' xmlns='http://www.w3.org/2000/svg'>
+    <defs>
+      <filter id='shadow' x='-7' y='0' width='42' height='50'>
+        <feDropShadow dx='0' dy='2' stdDeviation='2' flood-color='#000' flood-opacity='0.25'/>
+      </filter>
+    </defs>
+    <path d='M14 3C7.7 3 2 9 2 15.5C2 24 14 39 14 39C14 39 26 24 26 15.5C26 9 20.3 3 14 3Z' fill='${color}' stroke='${border}' stroke-width='2' filter='url(#shadow)'/>
+    <circle cx='14' cy='16' r='5' fill='#fff' />
+  </svg>`;
+  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+}
+
 export function addEventMarker(
   cesiumViewer: any,
   event: HistoricalEvent,
@@ -27,7 +51,6 @@ export function addEventMarker(
 
   const name = event.name || event.title;
   const description = event.description || '';
-  const emoji = event.emoji || '📍';
 
   // Determine the appropriate label for the Pyramids of Giza based on timeline
   let displayLabel = name;
@@ -44,34 +67,36 @@ export function addEventMarker(
 
   // Add a small offset to event markers to prevent overlap with location pins
   const offsetLatitude = event.latitude + 0.02;
-  const pinCanvas = buildCssStyledPin(emoji);
+  // Use teardrop SVG for event pins
+  const pinImage = getTeardropPinSVG();
 
   const entity = cesiumViewer.entities.add({
     id: `event_${event.id}`,
     name: displayLabel,
-    position: window.Cesium.Cartesian3.fromDegrees(event.longitude, offsetLatitude, 0),
+    position: Cesium.Cartesian3.fromDegrees(event.longitude, offsetLatitude, 0),
     billboard: {
-      image: pinCanvas.toDataURL(),
+      image: pinImage,
       scale: 0,
-      horizontalOrigin: window.Cesium.HorizontalOrigin.CENTER,
-      verticalOrigin: window.Cesium.VerticalOrigin.BOTTOM,
-      heightReference: window.Cesium.HeightReference.CLAMP_TO_GROUND,
+      horizontalOrigin: Cesium.HorizontalOrigin.CENTER,
+      verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+      heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
       disableDepthTestDistance: 0,
-      color: window.Cesium.Color.WHITE.withAlpha(0)
+      color: Cesium.Color.WHITE.withAlpha(0)
     },
     label: {
       text: displayLabel,
       font: '16px Helvetica, Arial, sans-serif',
-      fillColor: window.Cesium.Color.fromCssColorString('#60efff'),
-      outlineColor: window.Cesium.Color.BLACK,
+      fillColor: Cesium.Color.fromCssColorString('#60efff'),
+      outlineColor: Cesium.Color.BLACK,
       outlineWidth: 4,
-      style: window.Cesium.LabelStyle.FILL_AND_OUTLINE,
-      verticalOrigin: window.Cesium.VerticalOrigin.TOP,
-      pixelOffset: new window.Cesium.Cartesian2(0, 0),
+      style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+      verticalOrigin: Cesium.VerticalOrigin.TOP,
+      pixelOffset: new Cesium.Cartesian2(0, 0),
       showBackground: true,
-      backgroundColor: window.Cesium.Color.fromCssColorString('rgba(0, 30, 60, 0.7)'),
-      backgroundPadding: new window.Cesium.Cartesian2(8, 4),
-      horizontalOrigin: window.Cesium.HorizontalOrigin.CENTER
+      backgroundColor: Cesium.Color.fromCssColorString('rgba(0, 30, 60, 0.85)'),
+      backgroundPadding: new Cesium.Cartesian2(8, 4),
+      horizontalOrigin: Cesium.HorizontalOrigin.CENTER,
+      show: false // Hide label by default; will be shown on hover/click
     },
     description: description,
     properties: {
@@ -89,17 +114,17 @@ export function addEventMarker(
     const t = Math.min(elapsed / duration, 1);
     const ease = 1 - Math.pow(1 - t, 3);
     entity.billboard.scale = ease;
-    entity.billboard.color = window.Cesium.Color.WHITE.withAlpha(ease);
+    entity.billboard.color = Cesium.Color.WHITE.withAlpha(ease);
     if (entity.label && entity.label.fillColor) {
-      entity.label.fillColor = window.Cesium.Color.fromCssColorString('#60efff').withAlpha(ease);
+      entity.label.fillColor = Cesium.Color.fromCssColorString('#60efff').withAlpha(ease);
     }
     if (t < 1) {
       requestAnimationFrame(animatePin);
     } else {
       entity.billboard.scale = 1;
-      entity.billboard.color = window.Cesium.Color.WHITE.withAlpha(1);
+      entity.billboard.color = Cesium.Color.WHITE.withAlpha(1);
       if (entity.label && entity.label.fillColor) {
-        entity.label.fillColor = window.Cesium.Color.fromCssColorString('#60efff').withAlpha(1);
+        entity.label.fillColor = Cesium.Color.fromCssColorString('#60efff').withAlpha(1);
       }
     }
   }

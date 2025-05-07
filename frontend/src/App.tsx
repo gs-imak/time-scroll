@@ -12,6 +12,7 @@ import { PyramidAnimation, ColosseumAnimation } from './features/animations';
 import { DateWheelPicker } from './components/DateWheelPicker';
 import { GLOBAL_TIME_PERIODS, HISTORICAL_EVENTS } from './constants/historyData';
 import { addEventMarker } from './features/map/event-marker-helpers';
+import { getTeardropPinSVG } from './features/map/event-marker-helpers';
 
 // Get the interfaces from the GlobalTimeSlider component
 import type { TimePeriod, HistoricalEvent } from './components/GlobalTimeSlider';
@@ -531,15 +532,15 @@ function App() {
     if (currentGlobalPeriod && currentGlobalPeriod.id === 'prehistory') return;
     console.log("Adding location pins for:", Object.keys(LOCATIONS));
     Object.values(LOCATIONS).forEach(location => {
-      // Create the pin canvas with CSS styling
-      const pinCanvas = buildCssStyledPin(location.emoji);
+      // Use teardrop SVG for all pins (no emoji)
+      const pinImage = getTeardropPinSVG();
       // Create billboard entity with initial scale/opacity 0
       const entity = cesiumViewer.current.entities.add({
         id: `location_pin_${location.id}`,
         name: location.name,
         position: window.Cesium.Cartesian3.fromDegrees(location.longitude, location.latitude, 0),
         billboard: {
-          image: pinCanvas.toDataURL(),
+          image: pinImage,
           scale: 0,
           horizontalOrigin: window.Cesium.HorizontalOrigin.CENTER,
           verticalOrigin: window.Cesium.VerticalOrigin.BOTTOM,
@@ -554,12 +555,13 @@ function App() {
           outlineColor: window.Cesium.Color.BLACK,
           outlineWidth: 4,
           style: window.Cesium.LabelStyle.FILL_AND_OUTLINE,
-          verticalOrigin: window.Cesium.VerticalOrigin.TOP,
-          pixelOffset: new window.Cesium.Cartesian2(0, 0),
+          verticalOrigin: window.Cesium.VerticalOrigin.BOTTOM, // Show below the pin
+          pixelOffset: new window.Cesium.Cartesian2(0, 26), // 28px below
           showBackground: true,
           backgroundColor: window.Cesium.Color.fromCssColorString('rgba(0, 30, 60, 0.7)'),
           backgroundPadding: new window.Cesium.Cartesian2(8, 4),
-          horizontalOrigin: window.Cesium.HorizontalOrigin.CENTER
+          horizontalOrigin: window.Cesium.HorizontalOrigin.CENTER,
+          show: false // Hide label by default; will be shown on hover/click
         }
       });
       // Animate scale and opacity
@@ -1751,36 +1753,61 @@ function App() {
   // Add useEffect to set up entity click handling
   useEffect(() => {
     if (!cesiumViewer.current || !cesiumLoaded) return;
-    
-    // Set up click handler for both location pins and event markers
-    const handler = new window.Cesium.ScreenSpaceEventHandler(cesiumViewer.current.scene.canvas);
-    
+    const Cesium = window.Cesium;
+    // Set up click and hover handler for both location pins and event markers
+    const handler = new Cesium.ScreenSpaceEventHandler(cesiumViewer.current.scene.canvas);
+
+    // Hover: show label as tooltip
+    handler.setInputAction((movement: any) => {
+      const picked = cesiumViewer.current.scene.pick(movement.endPosition);
+      // Hide all event and location labels
+      cesiumViewer.current.entities.values.forEach(entity => {
+        if (entity.label && (entity.properties?.type === 'event' || (entity.id && entity.id.toString().startsWith('location_pin_')))) entity.label.show = false;
+      });
+      // Show label for hovered event or location pin
+      if (Cesium.defined(picked) && picked.id) {
+        if (picked.id.properties?.type === 'event' || (picked.id.id && picked.id.id.toString().startsWith('location_pin_'))) {
+          picked.id.label.show = true;
+        }
+      }
+    }, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
+
+    // Click: persist label for clicked event or location pin
     handler.setInputAction((click: any) => {
       const pickedObject = cesiumViewer.current.scene.pick(click.position);
-      
-      if (window.Cesium.defined(pickedObject) && pickedObject.id) {
+      // Hide all event and location labels
+      cesiumViewer.current.entities.values.forEach(entity => {
+        if (entity.label && (entity.properties?.type === 'event' || (entity.id && entity.id.toString().startsWith('location_pin_')))) entity.label.show = false;
+      });
+      if (Cesium.defined(pickedObject) && pickedObject.id) {
         const entity = pickedObject.id;
-        
         // Check if we clicked on a location pin
         const clickedLocation = Object.values(LOCATIONS).find(loc => loc.name === entity.name);
         if (clickedLocation) {
-          console.log(`Clicked on location: ${clickedLocation.name}`);
+          entity.label.show = true; // Persist label on click
           handleLocationSelect(clickedLocation.id);
           return;
         }
-        
         // Check if we clicked on an event marker
         if (entity.id && entity.properties && entity.properties.type === 'event') {
-          console.log(`Clicked on event: ${entity.name}`);
+          entity.label.show = true; // Persist label on click
           handleEventClick(entity.id);
           return;
         }
       }
-    }, window.Cesium.ScreenSpaceEventType.LEFT_CLICK);
-    
+    }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+
+    // Hide all event and location labels when mouse leaves the canvas
+    cesiumViewer.current.scene.canvas.addEventListener('mouseleave', () => {
+      cesiumViewer.current.entities.values.forEach(entity => {
+        if (entity.label && (entity.properties?.type === 'event' || (entity.id && entity.id.toString().startsWith('location_pin_')))) entity.label.show = false;
+      });
+    });
+
     // Return cleanup function
     return () => {
       handler.destroy();
+      cesiumViewer.current.scene.canvas.removeEventListener('mouseleave', () => {});
     };
   }, [cesiumViewer.current, cesiumLoaded]);
 
