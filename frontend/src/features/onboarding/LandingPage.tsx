@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, Compass } from 'lucide-react';
@@ -182,7 +182,6 @@ export default function LandingPage() {
   const navigate = useNavigate();
   const [selectedEra, setSelectedEra] = useState<string | null>(null);
   const [exiting, setExiting] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
 
   const selectedEraData = ERAS.find((e) => e.id === selectedEra);
   const accentColor = selectedEra ? ERA_COLORS[selectedEra] ?? '#00d4ff' : '#00d4ff';
@@ -221,7 +220,7 @@ export default function LandingPage() {
           />
 
           <motion.div
-            className="relative z-10 flex flex-col items-center w-full max-w-3xl px-6 md:px-8 py-16 sm:py-12 md:py-0 my-auto min-h-0"
+            className="relative z-10 flex flex-col items-center w-full max-w-4xl px-6 md:px-10 py-16 sm:py-12 md:py-0 my-auto min-h-0"
             variants={stagger.container}
             initial="initial"
             animate="animate"
@@ -264,7 +263,7 @@ export default function LandingPage() {
             </motion.h1>
 
             <motion.p
-              className="mt-6 text-center text-lg md:text-xl leading-relaxed max-w-lg"
+              className="mt-8 text-center text-lg md:text-xl leading-relaxed max-w-lg"
               style={{
                 color: 'var(--color-text-secondary)',
                 fontFamily: "'Inter', sans-serif",
@@ -276,9 +275,9 @@ export default function LandingPage() {
               From the first cities to the modern world.
             </motion.p>
 
-            <motion.div className="w-full mt-8 md:mt-12" variants={stagger.item}>
+            <motion.div className="w-full mt-12 md:mt-16" variants={stagger.item}>
               <p
-                className="text-center text-[11px] uppercase tracking-[0.2em] font-medium mb-5"
+                className="text-center text-[11px] uppercase tracking-[0.2em] font-medium mb-6"
                 style={{
                   color: 'var(--color-text-muted)',
                   fontFamily: "'JetBrains Mono', monospace",
@@ -287,14 +286,7 @@ export default function LandingPage() {
                 Choose your starting era
               </p>
 
-              <div
-                ref={scrollRef}
-                className="flex gap-3 overflow-x-auto pb-4 px-1 snap-x snap-mandatory scrollbar-none"
-                style={{
-                  scrollbarWidth: 'none',
-                  msOverflowStyle: 'none',
-                }}
-              >
+              <div className="flex flex-wrap justify-center gap-3 px-2">
                 {ERAS.map((era, i) => {
                   const isSelected = selectedEra === era.id;
                   const color = ERA_COLORS[era.id] ?? '#00d4ff';
@@ -305,7 +297,8 @@ export default function LandingPage() {
                       {...stagger.card(i)}
                       onClick={() => setSelectedEra(era.id === selectedEra ? null : era.id)}
                       className={cn(
-                        'group relative flex-shrink-0 snap-center flex flex-col items-start text-left rounded-xl px-4 py-3.5 sm:px-5 sm:py-5 min-w-[150px] sm:min-w-[190px] cursor-pointer transition-all duration-300',
+                        'group relative flex flex-col items-start text-left rounded-xl cursor-pointer transition-all duration-300',
+                        'px-5 py-4',
                         'border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-cyan/50',
                         isSelected
                           ? 'border-transparent'
@@ -326,7 +319,7 @@ export default function LandingPage() {
                       aria-label={`${era.name}, ${formatYear(era.startYear)} to ${formatYear(era.endYear)}`}
                     >
                       <div
-                        className="w-10 h-[3px] rounded-full mb-3 transition-all duration-300"
+                        className="w-8 h-[3px] rounded-full mb-2.5 transition-all duration-300"
                         style={{
                           background: isSelected ? color : `${color}60`,
                           boxShadow: isSelected ? `0 0 10px ${color}80` : 'none',
@@ -361,7 +354,7 @@ export default function LandingPage() {
                 {selectedEraData && (
                   <motion.p
                     key={selectedEraData.id}
-                    className="text-sm leading-relaxed text-center max-w-md mx-auto mt-4"
+                    className="text-sm leading-relaxed text-center max-w-md mx-auto mt-5"
                     style={{ color: 'var(--color-text-secondary)' }}
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -374,7 +367,7 @@ export default function LandingPage() {
               </AnimatePresence>
             </motion.div>
 
-            <motion.div className="mt-8 md:mt-10 flex flex-col items-center" variants={stagger.item}>
+            <motion.div className="mt-12 md:mt-14 flex flex-col items-center" variants={stagger.item}>
               <div className="relative">
                 <motion.div
                   className="absolute -inset-3 rounded-2xl"

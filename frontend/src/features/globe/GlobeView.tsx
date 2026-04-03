@@ -16,6 +16,17 @@ interface GlobeContextValue {
 const GlobeContext = createContext<GlobeContextValue>({ globeRef: null, getScreenCoords: () => null });
 export const useGlobe = () => useContext(GlobeContext);
 
+// === Era hex colors (WebGL needs real hex, not CSS variables) ===
+const ERA_HEX_COLORS: Record<string, string> = {
+  prehistory: '#8d7b68',
+  ancient: '#f5a623',
+  classical: '#ef4444',
+  medieval: '#9b59b6',
+  renaissance: '#3b82f6',
+  industrial: '#84cc16',
+  modern: '#00d4ff',
+};
+
 // === Category config ===
 const CATEGORY_COLORS: Record<string, string> = {
   war: '#ff4444', discovery: '#00e5ff', cultural: '#ffca28',
@@ -224,11 +235,17 @@ export function GlobeView({ children }: GlobeViewProps) {
             // Historical boundaries (polygons)
             polygonsData={polygonsData}
             polygonGeoJsonGeometry={(d: any) => d.geometry}
-            polygonCapColor={() => `${currentEra.accentColor}18`}
-            polygonSideColor={() => `${currentEra.accentColor}10`}
-            polygonStrokeColor={() => `${currentEra.accentColor}80`}
-            polygonAltitude={0.006}
-            polygonsTransitionDuration={800}
+            polygonCapColor={() => {
+              const hex = ERA_HEX_COLORS[currentEra.id] ?? '#ffffff';
+              return `${hex}20`;
+            }}
+            polygonSideColor={() => 'rgba(0,0,0,0)'}
+            polygonStrokeColor={() => {
+              const hex = ERA_HEX_COLORS[currentEra.id] ?? '#ffffff';
+              return `${hex}90`;
+            }}
+            polygonAltitude={0.001}
+            polygonsTransitionDuration={600}
 
             // Event markers (HTML elements in 3D space)
             htmlElementsData={events}
