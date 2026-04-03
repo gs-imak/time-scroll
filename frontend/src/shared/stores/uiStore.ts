@@ -13,7 +13,7 @@ interface UIStore {
 
 export const useUIStore = create<UIStore>((set, get) => ({
   activePanel: 'none',
-  isMobile: false,
+  isMobile: typeof window !== 'undefined' ? window.innerWidth <= 768 : false,
 
   setActivePanel: (panel) => set({ activePanel: panel }),
   togglePanel: (panel) => {

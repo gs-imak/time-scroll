@@ -39,8 +39,8 @@ export function ExplorationPanel() {
         <motion.div
           className={
             isMobile
-              ? 'fixed bottom-28 left-3 right-3 z-30 glass-strong rounded-[var(--radius-xl)] max-h-[45vh] overflow-y-auto'
-              : 'fixed top-5 left-[76px] z-30 w-80 glass-strong rounded-xl max-h-[70vh] overflow-y-auto shadow-xl'
+              ? 'fixed bottom-44 left-3 right-3 z-30 glass-strong rounded-xl max-h-[40vh] overflow-y-auto shadow-xl'
+              : 'fixed top-5 left-[88px] z-30 w-72 lg:w-80 glass-strong rounded-xl max-h-[70vh] overflow-y-auto shadow-xl'
           }
           initial={isMobile ? { y: 60, opacity: 0 } : { x: -40, opacity: 0 }}
           animate={isMobile ? { y: 0, opacity: 1 } : { x: 0, opacity: 1 }}
@@ -55,7 +55,7 @@ export function ExplorationPanel() {
                 <h3 className="font-semibold text-sm">
                   {isEvents ? 'Historical Events' : 'Notable Locations'}
                 </h3>
-                <span className="text-[10px] text-text-muted font-mono bg-elevated/60 px-1.5 py-0.5 rounded-full">
+                <span className="text-[10px] text-text-muted font-mono bg-elevated/60 min-w-[18px] text-center px-1 py-0.5 rounded-full">
                   {isEvents ? visibleEvents.length : LOCATIONS.filter(l => l.availableEras.includes(currentEra.id)).length}
                 </span>
               </div>

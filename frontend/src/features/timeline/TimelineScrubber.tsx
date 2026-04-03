@@ -108,7 +108,7 @@ export function TimelineScrubber() {
         }}
       >
         {/* === Top row: era info / year / controls === */}
-        <div className="flex items-center justify-between gap-4 px-6 pt-5 pb-4 sm:px-7 sm:pt-5 sm:pb-4 md:px-10 md:pt-6 md:pb-5">
+        <div className="flex items-center justify-between gap-4 px-6 pt-5 pb-4 sm:px-8 sm:pt-5 sm:pb-3 md:px-8 md:pt-6 md:pb-3">
           {/* LEFT column: era name + description */}
           <div className="hidden min-w-0 flex-1 sm:block">
             <div className="flex items-center gap-2.5">
@@ -205,7 +205,7 @@ export function TimelineScrubber() {
 
         {/* === Bottom row: era segment track + scrubber === */}
         <div
-          className="mt-4 px-6 pb-5 sm:px-7 sm:pb-5 md:px-10 md:pb-6"
+          className="mt-2 px-6 pb-5 sm:px-8 sm:pb-5 md:px-8 md:pb-6"
         >
           {/* Track wrapper: ref + pointer events live here so % maps 1:1 to track */}
           <div
@@ -269,10 +269,9 @@ export function TimelineScrubber() {
 
             {/* Thumb — left % maps directly to track since wrapper has no padding */}
             <div
-              className="pointer-events-none absolute -translate-x-1/2"
+              className="pointer-events-none absolute top-1/2 -translate-x-1/2 -translate-y-1/2"
               style={{
                 left: `${currentPercent}%`,
-                top: '-3px',
               }}
             >
               <div

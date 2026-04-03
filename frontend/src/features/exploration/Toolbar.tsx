@@ -82,7 +82,7 @@ export function Toolbar() {
           active={activePanel === 'events'}
           onClick={() => togglePanel('events')}
         />
-        <div className="h-px bg-border-subtle mx-2 my-0.5" />
+        <div className="h-px bg-border-subtle mx-1.5 my-0.5" />
         <ToolButton
           icon={Compass}
           label="Reset view"

@@ -43,8 +43,8 @@ export function EventDetailSheet() {
         <motion.div
           className={
             isMobile
-              ? 'fixed bottom-24 left-3 right-3 z-40 glass-strong rounded-[var(--radius-xl)] max-h-[55vh] overflow-y-auto'
-              : 'fixed top-4 right-4 z-40 w-[380px] glass-strong rounded-[var(--radius-xl)] max-h-[85vh] overflow-y-auto'
+              ? 'fixed bottom-44 left-3 right-3 z-40 glass-strong rounded-xl max-h-[calc(100vh-200px)] overflow-y-auto shadow-xl'
+              : 'fixed top-5 right-5 z-40 w-[380px] glass-strong rounded-xl max-h-[85vh] overflow-y-auto shadow-xl'
           }
           initial={isMobile ? { y: 120, opacity: 0 } : { x: 120, opacity: 0 }}
           animate={isMobile ? { y: 0, opacity: 1 } : { x: 0, opacity: 1 }}
@@ -72,7 +72,7 @@ export function EventDetailSheet() {
                     {cat.label}
                   </span>
                   <div className="flex items-center gap-1 text-[10px] text-text-muted">
-                    <Calendar size={9} />
+                    <Calendar size={12} />
                     {formatYear(event.year)}
                     {era && <span> &middot; {era.name}</span>}
                   </div>
@@ -118,7 +118,7 @@ export function EventDetailSheet() {
                 {nextEvent && (
                   <button
                     onClick={() => selectEvent(nextEvent.id)}
-                    className="flex-1 text-right px-3 py-2 rounded-[var(--radius-md)] bg-elevated/40 hover:bg-elevated/70 transition-colors text-xs cursor-pointer"
+                    className="flex-1 text-left px-3 py-2 rounded-[var(--radius-md)] bg-elevated/40 hover:bg-elevated/70 transition-colors text-xs cursor-pointer"
                   >
                     <span className="text-text-muted block text-[10px]">Next</span>
                     <span className="text-text-secondary truncate block">{nextEvent.title}</span>

@@ -220,7 +220,7 @@ export default function LandingPage() {
           />
 
           <motion.div
-            className="relative z-10 flex flex-col items-center w-full max-w-5xl px-6 md:px-10 py-16 sm:py-12 md:py-0 my-auto min-h-0"
+            className="relative z-10 flex flex-col items-center w-full max-w-5xl px-6 md:px-10 py-16 sm:py-12 md:py-8 my-auto min-h-0"
             variants={stagger.container}
             initial="initial"
             animate="animate"
@@ -290,7 +290,7 @@ export default function LandingPage() {
                 Choose your starting era
               </p>
 
-              <div className="flex flex-wrap justify-center gap-3 px-2">
+              <div className="flex flex-wrap justify-center gap-3">
                 {ERAS.map((era, i) => {
                   const isSelected = selectedEra === era.id;
                   const color = ERA_COLORS[era.id] ?? '#00d4ff';
@@ -380,7 +380,7 @@ export default function LandingPage() {
             <motion.div className="mt-12 flex flex-col items-center" variants={stagger.item}>
               <div className="relative">
                 <motion.div
-                  className="absolute -inset-4 rounded-2xl"
+                  className="absolute -inset-4 rounded-xl"
                   style={{ borderBottom: '1px solid rgba(0, 212, 255, 0.15)' }}
                   animate={{
                     boxShadow: [
