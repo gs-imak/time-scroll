@@ -224,9 +224,9 @@ export function GlobeView({ children }: GlobeViewProps) {
             height={dimensions.height}
             onGlobeReady={onGlobeReady}
 
-            // Globe appearance
-            globeImageUrl="/assets/images/earth-texture.png"
-            bumpImageUrl="/assets/images/earth-bump.png"
+            // Globe appearance — dark earth for dark UI theme
+            globeImageUrl="//unpkg.com/three-globe/example/img/earth-dark.jpg"
+            bumpImageUrl="//unpkg.com/three-globe/example/img/earth-topology.png"
             backgroundImageUrl="//unpkg.com/three-globe/example/img/night-sky.png"
             atmosphereColor="#4da6ff"
             atmosphereAltitude={0.18}
