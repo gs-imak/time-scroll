@@ -91,6 +91,23 @@ export function GlobeView({ children }: GlobeViewProps) {
         controls.enableDamping = true;
         controls.dampingFactor = 0.1;
       }
+
+      // Enhance globe material for a polished look
+      const scene = globeRef.current.scene();
+      if (scene) {
+        scene.traverse((obj: { isMesh?: boolean; material?: any }) => {
+          if (obj.isMesh && obj.material && 'shininess' in obj.material && obj.material.map) {
+            const mat = obj.material;
+            mat.shininess = 15;
+            mat.bumpScale = 0.8;
+            // Set a dark blue specular to avoid harsh white ocean reflections
+            if (mat.specular && typeof mat.specular.setHex === 'function') {
+              mat.specular.setHex(0x1a2a4a);
+            }
+            mat.needsUpdate = true;
+          }
+        });
+      }
     }
   }, [setMapReady]);
 
@@ -224,12 +241,12 @@ export function GlobeView({ children }: GlobeViewProps) {
             height={dimensions.height}
             onGlobeReady={onGlobeReady}
 
-            // Globe appearance — blue marble with visible geography
-            globeImageUrl="//unpkg.com/three-globe/example/img/earth-blue-marble.jpg"
+            // Globe appearance — NASA day texture with topology bump
+            globeImageUrl="//unpkg.com/three-globe/example/img/earth-day.jpg"
             bumpImageUrl="//unpkg.com/three-globe/example/img/earth-topology.png"
             backgroundImageUrl="//unpkg.com/three-globe/example/img/night-sky.png"
-            atmosphereColor="#4da6ff"
-            atmosphereAltitude={0.18}
+            atmosphereColor="#6db3f2"
+            atmosphereAltitude={0.2}
             showAtmosphere={true}
 
             // Historical boundaries (polygons)
