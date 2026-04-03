@@ -104,9 +104,9 @@ export function TimelineScrubber() {
     >
       <div
         className={cn(
-          'glass-strong mx-3 mb-3 md:mx-5 md:mb-4',
+          'glass-strong mx-3 mb-5 md:mx-5 md:mb-6',
           'rounded-[var(--radius-xl)]',
-          'px-4 py-4 md:px-6 md:py-5'
+          'px-4 py-4 pb-6 md:px-6 md:py-5 md:pb-7'
         )}
       >
         {/* ========== ROW 1: Era info / Year / Controls ========== */}
@@ -348,7 +348,7 @@ export function TimelineScrubber() {
                 background: `linear-gradient(180deg, ${currentEra.accentColor}, ${currentEra.accentColor}bb)`,
                 border: '2.5px solid rgba(238,242,247,0.9)',
                 boxShadow: `0 0 20px ${currentEra.accentColor}80, 0 0 48px ${currentEra.accentColor}30, 0 2px 8px rgba(0,0,0,0.5)`,
-                marginBottom: -12,
+                marginBottom: 0,
               }}
             >
               <div className="h-3.5 w-1 rounded-full bg-white/50" />
