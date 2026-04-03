@@ -21,12 +21,34 @@ export default function GlobeExplorer() {
 
   return (
     <div className="relative h-full w-full overflow-hidden bg-void">
+      {/* 3D Globe — fills entire viewport */}
       <GlobeView>
         <BoundaryLayer />
         <EventMarkers />
         <LandmarkOverlay />
       </GlobeView>
 
+      {/* Top cinematic gradient — gives toolbar and top UI contrast against the globe */}
+      <div
+        className="pointer-events-none absolute inset-x-0 top-0 z-10 h-[140px]"
+        style={{
+          background:
+            'linear-gradient(180deg, rgba(5,10,24,0.7) 0%, rgba(5,10,24,0.3) 50%, transparent 100%)',
+        }}
+        aria-hidden="true"
+      />
+
+      {/* Bottom cinematic gradient — cushion above the timeline scrubber */}
+      <div
+        className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-[200px]"
+        style={{
+          background:
+            'linear-gradient(0deg, rgba(5,10,24,0.85) 0%, rgba(5,10,24,0.4) 40%, transparent 100%)',
+        }}
+        aria-hidden="true"
+      />
+
+      {/* UI Overlays */}
       <EraIndicator />
       <Toolbar />
       <ExplorationPanel />

@@ -1,27 +1,139 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight } from 'lucide-react';
-import { Button } from '@/shared/components';
+import { ArrowRight, Compass } from 'lucide-react';
 import { ERAS } from '@/shared/utils/constants';
 import { cn } from '@/shared/utils/cn';
 
-function StarField() {
-  const stars = useMemo(() =>
-    Array.from({ length: 120 }, (_, i) => ({
-      id: i,
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      size: Math.random() < 0.1 ? 2 : 1,
-      opacity: 0.15 + Math.random() * 0.5,
-      delay: Math.random() * 5,
-      duration: 3 + Math.random() * 4,
-    })),
-  []);
+const ERA_COLORS: Record<string, string> = {
+  prehistory: '#8d7b68',
+  ancient: '#f5a623',
+  classical: '#ef4444',
+  medieval: '#9b59b6',
+  renaissance: '#3b82f6',
+  industrial: '#84cc16',
+  modern: '#00d4ff',
+};
+
+function formatYear(year: number): string {
+  if (year < 0) return `${Math.abs(year)} BCE`;
+  return `${year} CE`;
+}
+
+function OrbitalBackground({ accentColor }: { accentColor: string }) {
+  const particles = useMemo(
+    () =>
+      Array.from({ length: 32 }, (_, i) => ({
+        id: i,
+        angle: (i / 32) * 360,
+        radius: 200 + Math.random() * 340,
+        size: 1.5 + Math.random() * 2.5,
+        duration: 25 + Math.random() * 50,
+        delay: Math.random() * -30,
+        opacity: 0.15 + Math.random() * 0.5,
+      })),
+    [],
+  );
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {stars.map(s => (
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-0 h-0">
+        {[620, 440, 260].map((diameter, i) => (
+          <motion.div
+            key={`ring-${i}`}
+            className="absolute rounded-full border"
+            initial={{ opacity: 0, scale: 0.6 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 1.8, delay: 0.2 + i * 0.25, ease: [0.16, 1, 0.3, 1] }}
+            style={{
+              width: `${diameter}px`,
+              height: `${diameter}px`,
+              top: `${-diameter / 2}px`,
+              left: `${-diameter / 2}px`,
+              borderColor: `rgba(255, 255, 255, ${0.04 + i * 0.02})`,
+              animation: `spin ${60 - i * 15}s linear infinite ${i % 2 === 0 ? '' : 'reverse'}`,
+            }}
+          />
+        ))}
+
+        {particles.map((p) => (
+          <div
+            key={p.id}
+            className="absolute rounded-full"
+            style={{
+              width: `${p.size}px`,
+              height: `${p.size}px`,
+              top: `-${p.size / 2}px`,
+              left: `-${p.size / 2}px`,
+              background: accentColor,
+              opacity: p.opacity,
+              animation: `orbit-${p.id} ${p.duration}s linear ${p.delay}s infinite`,
+            }}
+          />
+        ))}
+      </div>
+
+      <motion.div
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 2, delay: 0.5 }}
+        style={{
+          width: '900px',
+          height: '900px',
+          background: `radial-gradient(circle, ${accentColor}18 0%, ${accentColor}08 40%, transparent 70%)`,
+          transition: 'background 1s ease',
+        }}
+      />
+
+      <motion.div
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 0.6 }}
+        transition={{ duration: 2, delay: 0.8 }}
+        style={{
+          width: '4px',
+          height: '4px',
+          background: accentColor,
+          boxShadow: `0 0 20px 6px ${accentColor}60, 0 0 60px 20px ${accentColor}20`,
+          transition: 'all 1s ease',
+        }}
+      />
+
+      <style>{`
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        ${particles.map((p) => `
+          @keyframes orbit-${p.id} {
+            from { transform: rotate(${p.angle}deg) translateX(${p.radius}px) rotate(-${p.angle}deg); }
+            to { transform: rotate(${p.angle + 360}deg) translateX(${p.radius}px) rotate(-${p.angle + 360}deg); }
+          }
+        `).join('')}
+      `}</style>
+    </div>
+  );
+}
+
+function StarField() {
+  const stars = useMemo(
+    () =>
+      Array.from({ length: 80 }, (_, i) => ({
+        id: i,
+        x: Math.random() * 100,
+        y: Math.random() * 100,
+        size: Math.random() < 0.08 ? 2 : 1,
+        opacity: 0.08 + Math.random() * 0.32,
+        twinkle: 4 + Math.random() * 6,
+        delay: Math.random() * 5,
+      })),
+    [],
+  );
+
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {stars.map((s) => (
         <div
           key={s.id}
           className="absolute rounded-full bg-white"
@@ -31,127 +143,229 @@ function StarField() {
             width: s.size,
             height: s.size,
             opacity: s.opacity,
-            animation: `float-subtle ${s.duration}s ease-in-out ${s.delay}s infinite`,
+            animation: `twinkle ${s.twinkle}s ease-in-out ${s.delay}s infinite`,
           }}
         />
       ))}
+      <style>{`
+        @keyframes twinkle {
+          0%, 100% { opacity: var(--tw-opacity, 0.15); }
+          50% { opacity: 0.02; }
+        }
+      `}</style>
     </div>
   );
 }
+
+const EASE_OUT_EXPO: [number, number, number, number] = [0.16, 1, 0.3, 1];
+
+const stagger = {
+  container: {
+    animate: { transition: { staggerChildren: 0.12, delayChildren: 0.3 } },
+  },
+  item: {
+    initial: { opacity: 0, y: 28 },
+    animate: { opacity: 1, y: 0, transition: { duration: 0.8, ease: EASE_OUT_EXPO } },
+  },
+  card: (i: number) => ({
+    initial: { opacity: 0, y: 20, scale: 0.95 },
+    animate: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: { duration: 0.6, delay: 1.0 + i * 0.08, ease: EASE_OUT_EXPO },
+    },
+  }),
+};
 
 export default function LandingPage() {
   const navigate = useNavigate();
   const [selectedEra, setSelectedEra] = useState<string | null>(null);
   const [exiting, setExiting] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
-  const selectedEraData = ERAS.find(e => e.id === selectedEra);
+  const selectedEraData = ERAS.find((e) => e.id === selectedEra);
+  const accentColor = selectedEra ? ERA_COLORS[selectedEra] ?? '#00d4ff' : '#00d4ff';
 
   const handleExplore = () => {
     setExiting(true);
     const year = selectedEraData ? selectedEraData.startYear : -3000;
-    setTimeout(() => navigate(`/explore/${year}`), 700);
+    setTimeout(() => navigate(`/explore/${year}`), 900);
   };
 
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="wait">
       {!exiting ? (
         <motion.div
-          className="fixed inset-0 z-50 flex flex-col items-center justify-center overflow-hidden"
-          style={{ background: 'radial-gradient(ellipse at 50% 40%, #0c1e3a 0%, #050a18 60%, #020510 100%)' }}
-          exit={{ opacity: 0, scale: 1.05 }}
-          transition={{ duration: 0.7 }}
+          key="landing"
+          className="fixed inset-0 z-50 flex flex-col items-center justify-center overflow-y-auto overflow-x-hidden"
+          style={{
+            background:
+              'radial-gradient(ellipse 80% 60% at 50% 45%, #0c1e3a 0%, #070e20 40%, #050a18 70%, #030510 100%)',
+          }}
+          exit={{
+            scale: 1.15,
+            opacity: 0,
+            filter: 'blur(20px)',
+          }}
+          transition={{ duration: 0.9, ease: [0.4, 0, 0.2, 1] }}
         >
           <StarField />
+          <OrbitalBackground accentColor={accentColor} />
 
-          {/* Radial glow behind content */}
           <div
-            className="absolute w-[600px] h-[600px] rounded-full pointer-events-none opacity-20"
+            className="absolute inset-x-0 bottom-0 h-48 pointer-events-none"
             style={{
-              background: `radial-gradient(circle, ${selectedEraData?.accentColor ?? '#00d4ff'}40 0%, transparent 70%)`,
-              transition: 'background 0.8s ease',
+              background: 'linear-gradient(to top, #050a18 0%, transparent 100%)',
             }}
           />
 
-          {/* Content */}
           <motion.div
-            className="relative z-10 text-center max-w-xl px-6"
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            className="relative z-10 flex flex-col items-center w-full max-w-3xl px-6 md:px-8 py-16 sm:py-12 md:py-0 my-auto min-h-0"
+            variants={stagger.container}
+            initial="initial"
+            animate="animate"
           >
-            {/* Title */}
+            <motion.div className="mb-2" variants={stagger.item}>
+              <motion.div
+                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs tracking-[0.15em] uppercase font-medium"
+                style={{
+                  background: 'rgba(0, 212, 255, 0.06)',
+                  border: '1px solid rgba(0, 212, 255, 0.15)',
+                  color: '#00d4ff',
+                  fontFamily: "'JetBrains Mono', monospace",
+                }}
+              >
+                <Compass size={12} strokeWidth={2.5} />
+                Interactive Historical Atlas
+              </motion.div>
+            </motion.div>
+
             <motion.h1
-              className="text-6xl md:text-8xl font-bold tracking-tight mb-4"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.4 }}
+              className="mt-6 text-center leading-[0.9] tracking-[-0.03em]"
+              style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+              variants={stagger.item}
             >
-              <span className="text-text-primary">Time</span>
-              {' '}
               <span
-                className="bg-clip-text text-transparent"
-                style={{ backgroundImage: 'linear-gradient(135deg, #00d4ff, #3b82f6, #9b59b6)' }}
+                className="block text-7xl sm:text-8xl md:text-9xl font-bold text-text-primary"
+                style={{ fontWeight: 700 }}
+              >
+                Time
+              </span>
+              <span
+                className="block text-7xl sm:text-8xl md:text-9xl font-bold bg-clip-text text-transparent"
+                style={{
+                  backgroundImage: 'linear-gradient(135deg, #00d4ff 0%, #3b82f6 50%, #9b59b6 100%)',
+                  fontWeight: 700,
+                }}
               >
                 Scroll
               </span>
             </motion.h1>
 
             <motion.p
-              className="text-text-secondary text-lg md:text-xl mb-12 leading-relaxed max-w-md mx-auto"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.7, duration: 0.8 }}
+              className="mt-6 text-center text-lg md:text-xl leading-relaxed max-w-lg"
+              style={{
+                color: 'var(--color-text-secondary)',
+                fontFamily: "'Inter', sans-serif",
+                fontWeight: 300,
+              }}
+              variants={stagger.item}
             >
-              Explore 12,000 years of world history on an interactive 3D globe
+              Journey through 12,000 years of civilization on an interactive 3D globe.
+              From the first cities to the modern world.
             </motion.p>
 
-            {/* Era selector */}
-            <motion.div
-              className="mb-10"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.9, duration: 0.6 }}
-            >
-              <p className="text-[10px] text-text-muted uppercase tracking-[0.2em] mb-4 font-medium">
+            <motion.div className="w-full mt-8 md:mt-12" variants={stagger.item}>
+              <p
+                className="text-center text-[11px] uppercase tracking-[0.2em] font-medium mb-5"
+                style={{
+                  color: 'var(--color-text-muted)',
+                  fontFamily: "'JetBrains Mono', monospace",
+                }}
+              >
                 Choose your starting era
               </p>
-              <div className="flex flex-wrap justify-center gap-2">
-                {ERAS.map(era => {
+
+              <div
+                ref={scrollRef}
+                className="flex gap-3 overflow-x-auto pb-4 px-1 snap-x snap-mandatory scrollbar-none"
+                style={{
+                  scrollbarWidth: 'none',
+                  msOverflowStyle: 'none',
+                }}
+              >
+                {ERAS.map((era, i) => {
                   const isSelected = selectedEra === era.id;
+                  const color = ERA_COLORS[era.id] ?? '#00d4ff';
+
                   return (
-                    <button
+                    <motion.button
                       key={era.id}
+                      {...stagger.card(i)}
                       onClick={() => setSelectedEra(era.id === selectedEra ? null : era.id)}
                       className={cn(
-                        'px-4 py-2 rounded-full text-xs font-medium transition-all duration-300 cursor-pointer',
+                        'group relative flex-shrink-0 snap-center flex flex-col items-start text-left rounded-xl px-4 py-3.5 sm:px-5 sm:py-5 min-w-[150px] sm:min-w-[190px] cursor-pointer transition-all duration-300',
+                        'border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-cyan/50',
                         isSelected
-                          ? 'text-void border border-transparent shadow-lg'
-                          : 'text-text-secondary border border-border-subtle hover:border-border-active hover:text-text-primary bg-elevated/30'
+                          ? 'border-transparent'
+                          : 'glass-light border-border-subtle hover:border-border-active',
                       )}
                       style={
                         isSelected
                           ? {
-                              background: era.accentColor,
-                              boxShadow: `0 0 24px ${era.accentColor}50`,
+                              background: `linear-gradient(135deg, ${color}18, ${color}08)`,
+                              borderColor: `${color}60`,
+                              boxShadow: `0 0 30px ${color}25, 0 0 60px ${color}10, inset 0 1px 0 rgba(255,255,255,0.06)`,
+                              transform: 'scale(1.03)',
                             }
                           : undefined
                       }
+                      whileHover={!isSelected ? { y: -2 } : undefined}
+                      aria-pressed={isSelected}
+                      aria-label={`${era.name}, ${formatYear(era.startYear)} to ${formatYear(era.endYear)}`}
                     >
-                      {era.name}
-                    </button>
+                      <div
+                        className="w-10 h-[3px] rounded-full mb-3 transition-all duration-300"
+                        style={{
+                          background: isSelected ? color : `${color}60`,
+                          boxShadow: isSelected ? `0 0 10px ${color}80` : 'none',
+                        }}
+                      />
+
+                      <span
+                        className={cn(
+                          'text-sm font-medium transition-colors duration-300',
+                          isSelected ? 'text-text-primary' : 'text-text-secondary group-hover:text-text-primary',
+                        )}
+                        style={isSelected ? { color } : undefined}
+                      >
+                        {era.name}
+                      </span>
+
+                      <span
+                        className="text-[10px] mt-1 font-mono tracking-wider"
+                        style={{
+                          color: isSelected ? `${color}cc` : 'var(--color-text-muted)',
+                          fontFamily: "'JetBrains Mono', monospace",
+                        }}
+                      >
+                        {formatYear(era.startYear)} — {formatYear(era.endYear)}
+                      </span>
+                    </motion.button>
                   );
                 })}
               </div>
 
-              {/* Era description */}
               <AnimatePresence mode="wait">
                 {selectedEraData && (
                   <motion.p
                     key={selectedEraData.id}
-                    className="text-sm text-text-secondary mt-4 max-w-sm mx-auto leading-relaxed"
-                    initial={{ opacity: 0, y: 6 }}
+                    className="text-sm leading-relaxed text-center max-w-md mx-auto mt-4"
+                    style={{ color: 'var(--color-text-secondary)' }}
+                    initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -6 }}
+                    exit={{ opacity: 0, y: -8 }}
                     transition={{ duration: 0.3 }}
                   >
                     {selectedEraData.description}
@@ -160,25 +374,60 @@ export default function LandingPage() {
               </AnimatePresence>
             </motion.div>
 
-            {/* CTA */}
-            <motion.div
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1.1, duration: 0.6 }}
-            >
-              <Button
-                size="lg"
-                variant="primary"
-                onClick={handleExplore}
-                className="!px-8 !h-13 !text-base glow-cyan"
+            <motion.div className="mt-8 md:mt-10 flex flex-col items-center" variants={stagger.item}>
+              <div className="relative">
+                <motion.div
+                  className="absolute -inset-3 rounded-2xl"
+                  animate={{
+                    boxShadow: [
+                      '0 0 20px rgba(0, 212, 255, 0.15), 0 0 60px rgba(0, 212, 255, 0.05)',
+                      '0 0 30px rgba(0, 212, 255, 0.3), 0 0 80px rgba(0, 212, 255, 0.1)',
+                      '0 0 20px rgba(0, 212, 255, 0.15), 0 0 60px rgba(0, 212, 255, 0.05)',
+                    ],
+                  }}
+                  transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+                />
+                <motion.button
+                  onClick={handleExplore}
+                  className={cn(
+                    'relative inline-flex items-center justify-center gap-3',
+                    'h-14 px-10 rounded-xl text-base font-semibold',
+                    'bg-accent-cyan text-void cursor-pointer',
+                    'transition-all duration-200',
+                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-cyan/50 focus-visible:ring-offset-2 focus-visible:ring-offset-void',
+                  )}
+                  whileHover={{ scale: 1.04, boxShadow: '0 0 40px rgba(0, 212, 255, 0.4)' }}
+                  whileTap={{ scale: 0.97 }}
+                >
+                  Begin Exploration
+                  <ArrowRight size={18} strokeWidth={2.5} />
+                </motion.button>
+              </div>
+
+              <p
+                className="mt-5 text-[10px] uppercase tracking-[0.25em]"
+                style={{
+                  color: 'var(--color-text-muted)',
+                  fontFamily: "'JetBrains Mono', monospace",
+                }}
               >
-                Begin Exploration
-                <ArrowRight size={18} />
-              </Button>
+                {selectedEraData
+                  ? `Starting from ${formatYear(selectedEraData.startYear)}`
+                  : 'Starting from 3000 BCE'}
+              </p>
             </motion.div>
           </motion.div>
         </motion.div>
-      ) : null}
+      ) : (
+        <motion.div
+          key="exit-void"
+          className="fixed inset-0 z-50"
+          style={{ background: '#050a18' }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+        />
+      )}
     </AnimatePresence>
   );
 }
