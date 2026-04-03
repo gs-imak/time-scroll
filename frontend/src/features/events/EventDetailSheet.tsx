@@ -1,11 +1,20 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { X, Calendar, MapPin, Tag } from 'lucide-react';
+import { X, Calendar, Navigation } from 'lucide-react';
 import { useEventsStore } from '@/shared/stores/eventsStore';
 import { useUIStore } from '@/shared/stores/uiStore';
 import { formatYear } from '@/shared/utils/format';
 import { IconButton } from '@/shared/components';
 import { useGlobeCamera } from '@/features/globe/useGlobeCamera';
 import { ERAS } from '@/shared/utils/constants';
+
+const CATEGORY_CONFIG: Record<string, { color: string; icon: string; label: string }> = {
+  war:          { color: '#ff4444', icon: '⚔',  label: 'War & Conflict' },
+  discovery:    { color: '#00e5ff', icon: '🔭', label: 'Discovery' },
+  cultural:     { color: '#ffca28', icon: '🎭', label: 'Cultural' },
+  political:    { color: '#b388ff', icon: '👑', label: 'Political' },
+  construction: { color: '#69f0ae', icon: '🏛', label: 'Construction' },
+  natural:      { color: '#ff8a65', icon: '🌋', label: 'Natural Event' },
+};
 
 export function EventDetailSheet() {
   const selectedEventId = useEventsStore(s => s.selectedEventId);
@@ -16,59 +25,107 @@ export function EventDetailSheet() {
 
   const event = events.find(e => e.id === selectedEventId);
   const era = event ? ERAS.find(e => e.id === event.eraId) : null;
+  const cat = event ? CATEGORY_CONFIG[event.category] : null;
+
+  // Find adjacent events for navigation
+  const currentIdx = event ? events.findIndex(e => e.id === event.id) : -1;
+  const prevEvent = currentIdx > 0 ? events[currentIdx - 1] : null;
+  const nextEvent = currentIdx < events.length - 1 ? events[currentIdx + 1] : null;
 
   const onClose = () => selectEvent(null);
-
   const onFlyTo = () => {
     if (event) flyTo(event.longitude, event.latitude, 8);
   };
 
   return (
     <AnimatePresence>
-      {event && (
+      {event && cat && (
         <motion.div
           className={
             isMobile
-              ? 'fixed bottom-24 left-4 right-4 z-40 glass-strong rounded-[var(--radius-xl)] max-h-[50vh] overflow-y-auto'
-              : 'fixed top-4 right-4 z-40 w-96 glass-strong rounded-[var(--radius-xl)] max-h-[80vh] overflow-y-auto'
+              ? 'fixed bottom-24 left-3 right-3 z-40 glass-strong rounded-[var(--radius-xl)] max-h-[55vh] overflow-y-auto'
+              : 'fixed top-4 right-4 z-40 w-[380px] glass-strong rounded-[var(--radius-xl)] max-h-[85vh] overflow-y-auto'
           }
-          initial={isMobile ? { y: 100, opacity: 0 } : { x: 100, opacity: 0 }}
+          initial={isMobile ? { y: 120, opacity: 0 } : { x: 120, opacity: 0 }}
           animate={isMobile ? { y: 0, opacity: 1 } : { x: 0, opacity: 1 }}
-          exit={isMobile ? { y: 100, opacity: 0 } : { x: 100, opacity: 0 }}
-          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+          exit={isMobile ? { y: 120, opacity: 0 } : { x: 120, opacity: 0 }}
+          transition={{ type: 'spring', stiffness: 260, damping: 28 }}
         >
+          {/* Category header strip */}
+          <div
+            className="h-1 rounded-t-[var(--radius-xl)]"
+            style={{ background: `linear-gradient(90deg, ${cat.color}, ${cat.color}60)` }}
+          />
+
           <div className="p-5">
-            <div className="flex items-start justify-between mb-3">
-              <h2 className="text-xl font-bold leading-tight pr-2">{event.title}</h2>
+            {/* Top: category + close */}
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <span
+                  className="w-8 h-8 rounded-lg flex items-center justify-center text-sm"
+                  style={{ background: cat.color + '20', boxShadow: `0 0 12px ${cat.color}20` }}
+                >
+                  {cat.icon}
+                </span>
+                <div>
+                  <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: cat.color }}>
+                    {cat.label}
+                  </span>
+                  <div className="flex items-center gap-1 text-[10px] text-text-muted">
+                    <Calendar size={9} />
+                    {formatYear(event.year)}
+                    {era && <span> &middot; {era.name}</span>}
+                  </div>
+                </div>
+              </div>
               <IconButton icon={X} onClick={onClose} />
             </div>
 
-            <div className="flex flex-wrap gap-2 mb-4">
-              <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full bg-elevated text-text-secondary">
-                <Calendar size={12} />
-                {formatYear(event.year)}
-              </span>
-              {era && (
-                <span
-                  className="inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full"
-                  style={{ background: era.accentColor + '20', color: era.accentColor }}
-                >
-                  <Tag size={12} />
-                  {era.name}
-                </span>
-              )}
-              <button
-                onClick={onFlyTo}
-                className="inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full bg-accent-cyan/10 text-accent-cyan hover:bg-accent-cyan/20 transition-colors cursor-pointer"
-              >
-                <MapPin size={12} />
-                Fly to location
-              </button>
-            </div>
+            {/* Title */}
+            <h2 className="text-lg font-bold leading-snug mb-3">{event.title}</h2>
 
-            <p className="text-sm text-text-secondary leading-relaxed whitespace-pre-line">
+            {/* Description */}
+            <p className="text-sm text-text-secondary leading-relaxed whitespace-pre-line mb-4">
               {event.description}
             </p>
+
+            {/* Actions */}
+            <button
+              onClick={onFlyTo}
+              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-[var(--radius-md)] text-sm font-medium transition-all cursor-pointer"
+              style={{
+                background: cat.color + '15',
+                color: cat.color,
+                border: `1px solid ${cat.color}30`,
+              }}
+            >
+              <Navigation size={14} />
+              Fly to location
+            </button>
+
+            {/* Navigation between events */}
+            {(prevEvent || nextEvent) && (
+              <div className="flex gap-2 mt-3">
+                {prevEvent && (
+                  <button
+                    onClick={() => selectEvent(prevEvent.id)}
+                    className="flex-1 text-left px-3 py-2 rounded-[var(--radius-md)] bg-elevated/40 hover:bg-elevated/70 transition-colors text-xs cursor-pointer"
+                  >
+                    <span className="text-text-muted block text-[10px]">Previous</span>
+                    <span className="text-text-secondary truncate block">{prevEvent.title}</span>
+                  </button>
+                )}
+                {nextEvent && (
+                  <button
+                    onClick={() => selectEvent(nextEvent.id)}
+                    className="flex-1 text-right px-3 py-2 rounded-[var(--radius-md)] bg-elevated/40 hover:bg-elevated/70 transition-colors text-xs cursor-pointer"
+                  >
+                    <span className="text-text-muted block text-[10px]">Next</span>
+                    <span className="text-text-secondary truncate block">{nextEvent.title}</span>
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </motion.div>
       )}

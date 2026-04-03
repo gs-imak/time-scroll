@@ -1,34 +1,57 @@
 @theme {
-  --color-void: #030712;
-  --color-surface: #0f1729;
-  --color-elevated: #1a2742;
-  --color-overlay: rgba(3, 7, 18, 0.85);
+  /* === Backgrounds === */
+  --color-void: #050a18;
+  --color-surface: #0c1425;
+  --color-elevated: #162036;
+  --color-overlay: rgba(5, 10, 24, 0.9);
 
-  --color-border-subtle: rgba(255, 255, 255, 0.06);
-  --color-border-active: rgba(255, 255, 255, 0.12);
+  /* === Borders (visible this time) === */
+  --color-border-subtle: rgba(255, 255, 255, 0.1);
+  --color-border-active: rgba(255, 255, 255, 0.2);
+  --color-border-bright: rgba(255, 255, 255, 0.35);
 
-  --color-text-primary: #f1f5f9;
-  --color-text-secondary: #94a3b8;
-  --color-text-muted: #64748b;
+  /* === Text === */
+  --color-text-primary: #eef2f7;
+  --color-text-secondary: #8b9dc3;
+  --color-text-muted: #5a6d8a;
 
-  --color-accent-gold: #f59e0b;
-  --color-accent-cyan: #06b6d4;
-  --color-accent-rose: #f43f5e;
+  /* === Accents === */
+  --color-accent-gold: #f5a623;
+  --color-accent-cyan: #00d4ff;
+  --color-accent-rose: #ff4d6a;
 
-  --color-era-prehistory: #78716c;
-  --color-era-ancient: #d97706;
-  --color-era-classical: #dc2626;
-  --color-era-medieval: #7c3aed;
-  --color-era-renaissance: #2563eb;
-  --color-era-industrial: #65a30d;
-  --color-era-modern: #06b6d4;
+  /* === Category colors (bright & saturated for dark backgrounds) === */
+  --color-cat-war: #ff4444;
+  --color-cat-discovery: #00e5ff;
+  --color-cat-cultural: #ffca28;
+  --color-cat-political: #b388ff;
+  --color-cat-construction: #69f0ae;
+  --color-cat-natural: #ff8a65;
 
+  /* === Era colors (bolder) === */
+  --color-era-prehistory: #8d7b68;
+  --color-era-ancient: #f5a623;
+  --color-era-classical: #ef4444;
+  --color-era-medieval: #9b59b6;
+  --color-era-renaissance: #3b82f6;
+  --color-era-industrial: #84cc16;
+  --color-era-modern: #00d4ff;
+
+  /* === Fonts === */
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 
+  /* === Radii === */
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 16px;
   --radius-xl: 24px;
   --radius-full: 9999px;
+
+  /* === Animation === */
+  --duration-fast: 150ms;
+  --duration-normal: 250ms;
+  --duration-slow: 400ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
