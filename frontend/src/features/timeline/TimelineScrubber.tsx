@@ -108,26 +108,26 @@ export function TimelineScrubber() {
         }}
       >
         {/* === Top row: era info / year / controls === */}
-        <div className="flex items-center justify-between gap-4 px-5 pt-5 pb-4 sm:px-6 sm:pt-5 sm:pb-4 md:px-8">
+        <div className="flex items-center justify-between gap-4 px-6 pt-5 pb-4 sm:px-7 sm:pt-5 sm:pb-4 md:px-10 md:pt-6 md:pb-5">
           {/* LEFT column: era name + description */}
           <div className="hidden min-w-0 flex-1 sm:block">
             <div className="flex items-center gap-2.5">
               <span
-                className="inline-block h-2.5 w-2.5 shrink-0 rounded-full"
+                className="inline-block h-3 w-3 shrink-0 rounded-full"
                 style={{
                   backgroundColor: eraHex,
                   boxShadow: `0 0 10px ${eraHex}90, 0 0 4px ${eraHex}`,
                 }}
               />
               <span
-                className="text-sm font-semibold leading-tight tracking-wide md:text-base"
+                className="text-base font-semibold leading-tight tracking-wide md:text-lg"
                 style={{ color: eraHex }}
               >
                 {currentEra.name}
               </span>
             </div>
             <p
-              className="mt-1.5 line-clamp-2 max-w-[340px] text-xs leading-relaxed text-text-muted md:text-[13px]"
+              className="mt-1.5 line-clamp-2 max-w-[340px] text-[13px] leading-relaxed text-text-muted md:text-sm"
               title={currentEra.description}
             >
               {currentEra.description}
@@ -137,7 +137,7 @@ export function TimelineScrubber() {
           {/* CENTER column: year display */}
           <div className="flex shrink-0 flex-col items-center">
             <span
-              className="font-mono text-2xl font-bold tracking-widest tabular-nums sm:text-3xl md:text-4xl"
+              className="font-mono text-3xl font-bold tracking-widest tabular-nums sm:text-4xl md:text-5xl"
               style={{
                 color: '#eef2f7',
                 textShadow: `0 0 24px ${eraHex}40`,
@@ -158,17 +158,17 @@ export function TimelineScrubber() {
           <div className="flex flex-1 items-center justify-end gap-2 sm:gap-3">
             <button
               onClick={prevEra}
-              className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border border-border-subtle bg-elevated/50 text-text-secondary transition-all hover:scale-105 hover:border-border-active hover:bg-elevated hover:text-text-primary active:scale-95"
+              className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full border border-border-subtle bg-elevated/50 text-text-secondary transition-all hover:scale-105 hover:border-border-active hover:bg-elevated hover:text-text-primary active:scale-95"
               aria-label="Previous era"
             >
-              <SkipBack size={16} />
+              <SkipBack size={18} />
             </button>
 
             <button
               onClick={togglePlay}
               className={cn(
                 'flex shrink-0 cursor-pointer items-center justify-center rounded-full transition-all hover:scale-105 active:scale-95',
-                'h-12 w-12 sm:h-[52px] sm:w-[52px]',
+                'h-12 w-12 sm:h-[52px] sm:w-[52px] md:h-14 md:w-14',
                 isPlaying
                   ? 'text-void'
                   : 'border border-white/20 text-white hover:border-white/30',
@@ -187,25 +187,25 @@ export function TimelineScrubber() {
               aria-label={isPlaying ? 'Pause' : 'Play'}
             >
               {isPlaying ? (
-                <Pause size={20} strokeWidth={2.5} />
+                <Pause size={22} strokeWidth={2.5} />
               ) : (
-                <Play size={20} strokeWidth={2.5} className="ml-0.5" />
+                <Play size={22} strokeWidth={2.5} className="ml-0.5" />
               )}
             </button>
 
             <button
               onClick={nextEra}
-              className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border border-border-subtle bg-elevated/50 text-text-secondary transition-all hover:scale-105 hover:border-border-active hover:bg-elevated hover:text-text-primary active:scale-95"
+              className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full border border-border-subtle bg-elevated/50 text-text-secondary transition-all hover:scale-105 hover:border-border-active hover:bg-elevated hover:text-text-primary active:scale-95"
               aria-label="Next era"
             >
-              <SkipForward size={16} />
+              <SkipForward size={18} />
             </button>
           </div>
         </div>
 
         {/* === Bottom row: era segment track + scrubber === */}
         <div
-          className="px-5 pb-5 sm:px-6 sm:pb-5 md:px-8 md:pb-6"
+          className="mt-4 px-6 pb-5 sm:px-7 sm:pb-5 md:px-10 md:pb-6"
         >
           {/* Track wrapper: ref + pointer events live here so % maps 1:1 to track */}
           <div
@@ -248,7 +248,7 @@ export function TimelineScrubber() {
 
             {/* Track background well */}
             <div className="rounded-full bg-white/[0.04] p-[2px]">
-              <div className="flex h-[10px] overflow-hidden rounded-full">
+              <div className="flex h-3 overflow-hidden rounded-full">
                 {eraSegments.map((era, i) => (
                   <div
                     key={era.id}
@@ -272,7 +272,7 @@ export function TimelineScrubber() {
               className="pointer-events-none absolute -translate-x-1/2"
               style={{
                 left: `${currentPercent}%`,
-                top: '-2px',
+                top: '-3px',
               }}
             >
               <div
@@ -284,7 +284,7 @@ export function TimelineScrubber() {
                 }}
               />
               <div
-                className="relative h-[18px] w-[14px] rounded-full border-[2.5px]"
+                className="relative h-[22px] w-4 rounded-full border-[2.5px]"
                 style={{
                   backgroundColor: eraHex,
                   borderColor: 'rgba(238,242,247,0.9)',

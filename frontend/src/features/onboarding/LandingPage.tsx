@@ -220,7 +220,7 @@ export default function LandingPage() {
           />
 
           <motion.div
-            className="relative z-10 flex flex-col items-center w-full max-w-4xl px-6 md:px-10 py-16 sm:py-12 md:py-0 my-auto min-h-0"
+            className="relative z-10 flex flex-col items-center w-full max-w-5xl px-6 md:px-10 py-16 sm:py-12 md:py-0 my-auto min-h-0"
             variants={stagger.container}
             initial="initial"
             animate="animate"
@@ -278,12 +278,12 @@ export default function LandingPage() {
               From the first cities to the modern world.
             </motion.p>
 
-            <motion.div className="w-full mt-10 md:mt-12" variants={stagger.item}>
+            <motion.div className="w-full mt-12" variants={stagger.item}>
               <p
                 className="text-center uppercase tracking-[0.2em] font-medium mb-6"
                 style={{
-                  fontSize: '12px',
-                  color: 'rgba(255, 255, 255, 0.45)',
+                  fontSize: '13px',
+                  color: 'rgba(255, 255, 255, 0.5)',
                   fontFamily: "'JetBrains Mono', monospace",
                 }}
               >
@@ -306,24 +306,25 @@ export default function LandingPage() {
                         'border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-cyan/50',
                         isSelected
                           ? 'border-transparent'
-                          : 'glass-light border-border-subtle hover:border-border-active',
+                          : 'glass-light border-white/[0.08] hover:border-white/[0.15]',
                       )}
-                      style={
-                        isSelected
+                      style={{
+                        minWidth: '140px',
+                        ...(isSelected
                           ? {
                               background: `linear-gradient(135deg, ${color}20, ${color}0a)`,
                               borderColor: `${color}70`,
                               boxShadow: `0 0 30px ${color}30, 0 0 60px ${color}15, inset 0 1px 0 rgba(255,255,255,0.08)`,
                               transform: 'scale(1.04)',
                             }
-                          : undefined
-                      }
+                          : {}),
+                      }}
                       whileHover={!isSelected ? { y: -2 } : undefined}
                       aria-pressed={isSelected}
                       aria-label={`${era.name}, ${formatYear(era.startYear)} to ${formatYear(era.endYear)}`}
                     >
                       <div
-                        className="w-8 h-[3px] rounded-full mb-2.5 transition-all duration-300"
+                        className="w-10 h-1 rounded-full mb-2.5 transition-all duration-300"
                         style={{
                           background: isSelected ? color : `${color}60`,
                           boxShadow: isSelected ? `0 0 12px ${color}90` : 'none',
@@ -332,11 +333,12 @@ export default function LandingPage() {
 
                       <span
                         className={cn(
-                          'font-medium transition-colors duration-300',
+                          'transition-colors duration-300',
                           isSelected ? 'text-text-primary' : 'text-text-secondary group-hover:text-text-primary',
                         )}
                         style={{
                           fontSize: '15px',
+                          fontWeight: 500,
                           ...(isSelected ? { color } : {}),
                         }}
                       >
@@ -346,7 +348,7 @@ export default function LandingPage() {
                       <span
                         className="mt-1.5 font-mono tracking-wider"
                         style={{
-                          fontSize: '11px',
+                          fontSize: '12px',
                           color: isSelected ? `${color}cc` : 'rgba(255, 255, 255, 0.4)',
                           fontFamily: "'JetBrains Mono', monospace",
                         }}
@@ -375,10 +377,11 @@ export default function LandingPage() {
               </AnimatePresence>
             </motion.div>
 
-            <motion.div className="mt-10 md:mt-12 flex flex-col items-center" variants={stagger.item}>
+            <motion.div className="mt-12 flex flex-col items-center" variants={stagger.item}>
               <div className="relative">
                 <motion.div
                   className="absolute -inset-4 rounded-2xl"
+                  style={{ borderBottom: '1px solid rgba(0, 212, 255, 0.15)' }}
                   animate={{
                     boxShadow: [
                       '0 0 24px rgba(0, 212, 255, 0.18), 0 0 60px rgba(0, 212, 255, 0.06)',
