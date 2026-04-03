@@ -235,15 +235,9 @@ export function GlobeView({ children }: GlobeViewProps) {
             // Historical boundaries (polygons)
             polygonsData={polygonsData}
             polygonGeoJsonGeometry={(d: any) => d.geometry}
-            polygonCapColor={() => {
-              const hex = ERA_HEX_COLORS[currentEra.id] ?? '#ffffff';
-              return `${hex}20`;
-            }}
-            polygonSideColor={() => 'rgba(0,0,0,0)'}
-            polygonStrokeColor={() => {
-              const hex = ERA_HEX_COLORS[currentEra.id] ?? '#ffffff';
-              return `${hex}90`;
-            }}
+            polygonCapColor={() => 'rgba(0, 0, 0, 0)'}
+            polygonSideColor={() => 'rgba(0, 0, 0, 0)'}
+            polygonStrokeColor={() => ERA_HEX_COLORS[currentEra.id] ?? '#ffffff'}
             polygonAltitude={0.001}
             polygonsTransitionDuration={600}
 
