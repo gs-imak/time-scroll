@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useRive } from '@rive-app/react-webgl2';
-import { useMap } from '@/features/globe/GlobeView';
+import { useGlobe } from '@/features/globe/GlobeView';
 import { useTimeStore } from '@/shared/stores/timeStore';
 import { useLandmarkStore } from '@/shared/stores/landmarkStore';
 import { useMapStore } from '@/shared/stores/mapStore';
@@ -13,7 +13,7 @@ interface LandmarkInstanceProps {
 }
 
 function LandmarkInstance({ latitude, longitude, period }: LandmarkInstanceProps) {
-  const { map } = useMap();
+  const { getScreenCoords } = useGlobe();
   const containerRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number>(0);
 
@@ -22,33 +22,30 @@ function LandmarkInstance({ latitude, longitude, period }: LandmarkInstanceProps
     autoplay: true,
   });
 
+  // Position tracking via rAF using globe's getScreenCoords
   useEffect(() => {
-    if (!map || !containerRef.current) return;
+    if (!containerRef.current) return;
     let active = true;
 
     const update = () => {
-      if (!active || !containerRef.current || !map) return;
+      if (!active || !containerRef.current) return;
 
-      try {
-        const coords: [number, number] = [longitude, latitude];
-        const bounds = map.getBounds();
-        if (!bounds?.contains(coords)) {
-          containerRef.current.style.opacity = '0';
-          rafRef.current = requestAnimationFrame(update);
-          return;
-        }
+      const coords = getScreenCoords(latitude, longitude);
+      if (!coords) {
+        containerRef.current.style.opacity = '0';
+        rafRef.current = requestAnimationFrame(update);
+        return;
+      }
 
-        const { x, y } = map.project(coords);
-        const canvas = map.getCanvas();
+      const { x, y } = coords;
+      const w = window.innerWidth;
+      const h = window.innerHeight;
 
-        if (x < -200 || y < -200 || x > canvas.width + 200 || y > canvas.height + 200) {
-          containerRef.current.style.opacity = '0';
-        } else {
-          containerRef.current.style.transform = `translate(${x - 160}px, ${y - 180}px)`;
-          containerRef.current.style.opacity = '1';
-        }
-      } catch {
-        // Map may not be ready
+      if (x < -200 || y < -200 || x > w + 200 || y > h + 200) {
+        containerRef.current.style.opacity = '0';
+      } else {
+        containerRef.current.style.transform = `translate(${x - 160}px, ${y - 200}px)`;
+        containerRef.current.style.opacity = '1';
       }
 
       rafRef.current = requestAnimationFrame(update);
@@ -59,7 +56,7 @@ function LandmarkInstance({ latitude, longitude, period }: LandmarkInstanceProps
       active = false;
       cancelAnimationFrame(rafRef.current);
     };
-  }, [map, latitude, longitude]);
+  }, [getScreenCoords, latitude, longitude]);
 
   return (
     <div

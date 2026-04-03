@@ -1,10 +1,8 @@
 import { useEffect } from 'react';
 import { useParams } from 'react-router';
 import { GlobeView } from './GlobeView';
-import { BoundaryLayer } from './BoundaryLayer';
 import { TimelineScrubber } from '@/features/timeline/TimelineScrubber';
 import { EraIndicator } from '@/features/timeline/EraIndicator';
-import { EventMarkers } from '@/features/events/EventMarkers';
 import { EventDetailSheet } from '@/features/events/EventDetailSheet';
 import { LandmarkOverlay } from '@/features/landmarks/LandmarkOverlay';
 import { ExplorationPanel } from '@/features/exploration/ExplorationPanel';
@@ -21,14 +19,12 @@ export default function GlobeExplorer() {
 
   return (
     <div className="relative h-full w-full overflow-hidden bg-void">
-      {/* 3D Globe — fills entire viewport */}
+      {/* 3D Globe — react-globe.gl with Three.js rendering */}
       <GlobeView>
-        <BoundaryLayer />
-        <EventMarkers />
         <LandmarkOverlay />
       </GlobeView>
 
-      {/* Top cinematic gradient — gives toolbar and top UI contrast against the globe */}
+      {/* Top cinematic gradient */}
       <div
         className="pointer-events-none absolute inset-x-0 top-0 z-10 h-[140px]"
         style={{
@@ -38,7 +34,7 @@ export default function GlobeExplorer() {
         aria-hidden="true"
       />
 
-      {/* Bottom cinematic gradient — cushion above the timeline scrubber */}
+      {/* Bottom cinematic gradient */}
       <div
         className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-[200px]"
         style={{

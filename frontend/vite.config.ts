@@ -14,7 +14,8 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          mapbox: ['mapbox-gl'],
+          three: ['three'],
+          globe: ['react-globe.gl'],
           rive: ['@rive-app/react-webgl2'],
           vendor: ['react', 'react-dom', 'react-router', 'zustand', 'framer-motion'],
         },
