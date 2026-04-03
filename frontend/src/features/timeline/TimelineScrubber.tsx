@@ -1,11 +1,31 @@
 import { useCallback, useRef, useState, useMemo } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Play, Pause, SkipBack, SkipForward } from 'lucide-react';
 import { useTimeStore } from '@/shared/stores/timeStore';
 import { ERAS, MIN_YEAR, MAX_YEAR } from '@/shared/utils/constants';
 import { formatYear } from '@/shared/utils/format';
 import { usePlayback } from './usePlayback';
 import { cn } from '@/shared/utils/cn';
+
+const ERA_HEX: Record<string, string> = {
+  prehistory: '#8d7b68',
+  ancient: '#f5a623',
+  classical: '#ef4444',
+  medieval: '#9b59b6',
+  renaissance: '#3b82f6',
+  industrial: '#84cc16',
+  modern: '#00d4ff',
+};
+
+const TOTAL_RANGE = MAX_YEAR - MIN_YEAR;
+
+function yearToPercent(year: number) {
+  return ((year - MIN_YEAR) / TOTAL_RANGE) * 100;
+}
+
+function percentToYear(pct: number) {
+  return Math.round(MIN_YEAR + (pct / 100) * TOTAL_RANGE);
+}
 
 export function TimelineScrubber() {
   usePlayback();
@@ -21,19 +41,9 @@ export function TimelineScrubber() {
   const trackRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
   const [hoverYear, setHoverYear] = useState<number | null>(null);
-  const [hoverX, setHoverX] = useState(0);
+  const [hoverPct, setHoverPct] = useState(0);
 
-  const totalRange = MAX_YEAR - MIN_YEAR;
-
-  const yearToPercent = useCallback(
-    (year: number) => ((year - MIN_YEAR) / totalRange) * 100,
-    [totalRange]
-  );
-
-  const percentToYear = useCallback(
-    (pct: number) => Math.round(MIN_YEAR + (pct / 100) * totalRange),
-    [totalRange]
-  );
+  const eraHex = ERA_HEX[currentEra.id] ?? '#ffffff';
 
   const getPercentFromPointer = useCallback((clientX: number) => {
     if (!trackRef.current) return 0;
@@ -48,160 +58,240 @@ export function TimelineScrubber() {
       const pct = getPercentFromPointer(e.clientX);
       setYear(percentToYear(pct));
     },
-    [setYear, getPercentFromPointer, percentToYear]
+    [setYear, getPercentFromPointer],
   );
 
   const onPointerMove = useCallback(
     (e: React.PointerEvent) => {
-      if (!trackRef.current) return;
-      const rect = trackRef.current.getBoundingClientRect();
       const pct = getPercentFromPointer(e.clientX);
       setHoverYear(percentToYear(pct));
-      setHoverX(e.clientX - rect.left);
+      setHoverPct(pct);
       if (isDragging.current) setYear(percentToYear(pct));
     },
-    [setYear, getPercentFromPointer, percentToYear]
+    [setYear, getPercentFromPointer],
   );
 
-  const onPointerUp = useCallback(() => { isDragging.current = false; }, []);
-  const onPointerLeave = useCallback(() => { setHoverYear(null); isDragging.current = false; }, []);
+  const onPointerUp = useCallback(() => {
+    isDragging.current = false;
+  }, []);
+
+  const onPointerLeave = useCallback(() => {
+    setHoverYear(null);
+    isDragging.current = false;
+  }, []);
 
   const currentPercent = yearToPercent(currentYear);
 
   const eraSegments = useMemo(
-    () => ERAS.map(era => ({
-      ...era,
-      widthPercent: yearToPercent(era.endYear) - yearToPercent(era.startYear),
-      isActive: era.id === currentEra.id,
-    })),
-    [currentEra.id, yearToPercent]
+    () =>
+      ERAS.map(era => ({
+        ...era,
+        startPct: yearToPercent(era.startYear),
+        widthPct: yearToPercent(era.endYear) - yearToPercent(era.startYear),
+        hex: ERA_HEX[era.id] ?? '#ffffff',
+        isActive: era.id === currentEra.id,
+      })),
+    [currentEra.id],
   );
-
-  // Get hex color for current era (CSS vars don't work here)
-  const ERA_HEX: Record<string, string> = {
-    prehistory: '#8d7b68', ancient: '#f5a623', classical: '#ef4444',
-    medieval: '#9b59b6', renaissance: '#3b82f6', industrial: '#84cc16', modern: '#00d4ff',
-  };
-  const eraHex = ERA_HEX[currentEra.id] ?? '#ffffff';
 
   return (
     <motion.div
-      className="absolute inset-x-0 bottom-0 z-40 px-4 pb-4 md:px-6 md:pb-5"
-      initial={{ y: 120 }}
+      className="absolute inset-x-0 bottom-0 z-40 px-3 pb-3 sm:px-4 sm:pb-4 md:px-6 md:pb-5"
+      initial={{ y: 140 }}
       animate={{ y: 0 }}
-      transition={{ delay: 0.3, type: 'spring', stiffness: 160, damping: 22 }}
+      transition={{ delay: 0.3, type: 'spring', stiffness: 140, damping: 22 }}
     >
-      <div className="glass-strong rounded-2xl overflow-hidden">
-        {/* === ROW 1: Era info + Year + Controls === */}
-        <div className="flex items-center justify-between px-5 pt-4 pb-3 md:px-6 md:pt-5 md:pb-4">
-          {/* Left: prev era + era name */}
-          <div className="flex items-center gap-3 min-w-0 flex-1">
-            <button
-              onClick={prevEra}
-              className="shrink-0 w-9 h-9 rounded-full border border-border-subtle bg-elevated/40 flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-elevated transition-colors cursor-pointer"
-              aria-label="Previous era"
-            >
-              <SkipBack size={14} />
-            </button>
-            <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <div className="w-2.5 h-2.5 shrink-0 rounded-full" style={{ backgroundColor: eraHex, boxShadow: `0 0 8px ${eraHex}` }} />
-                <span className="text-sm font-semibold truncate md:text-base" style={{ color: eraHex }}>{currentEra.name}</span>
-              </div>
-              <p className="hidden md:block mt-0.5 text-xs text-text-muted truncate max-w-[300px]">{currentEra.description}</p>
+      <div
+        className="glass-strong rounded-2xl"
+        style={{
+          boxShadow: `0 -1px 40px ${eraHex}10, 0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06)`,
+        }}
+      >
+        {/* === Top row: era info / year / controls === */}
+        <div className="flex items-center justify-between gap-4 px-5 pt-5 pb-4 sm:px-6 sm:pt-5 sm:pb-4 md:px-8">
+          {/* LEFT column: era name + description */}
+          <div className="hidden min-w-0 flex-1 sm:block">
+            <div className="flex items-center gap-2.5">
+              <span
+                className="inline-block h-2.5 w-2.5 shrink-0 rounded-full"
+                style={{
+                  backgroundColor: eraHex,
+                  boxShadow: `0 0 10px ${eraHex}90, 0 0 4px ${eraHex}`,
+                }}
+              />
+              <span
+                className="text-sm font-semibold leading-tight tracking-wide md:text-base"
+                style={{ color: eraHex }}
+              >
+                {currentEra.name}
+              </span>
             </div>
+            <p
+              className="mt-1.5 line-clamp-2 max-w-[340px] text-xs leading-relaxed text-text-muted md:text-[13px]"
+              title={currentEra.description}
+            >
+              {currentEra.description}
+            </p>
           </div>
 
-          {/* Center: Year */}
-          <div className="shrink-0 px-4">
-            <span className="font-mono text-2xl md:text-3xl font-bold tracking-wider text-text-primary tabular-nums">
+          {/* CENTER column: year display */}
+          <div className="flex shrink-0 flex-col items-center">
+            <span
+              className="font-mono text-2xl font-bold tracking-widest tabular-nums sm:text-3xl md:text-4xl"
+              style={{
+                color: '#eef2f7',
+                textShadow: `0 0 24px ${eraHex}40`,
+              }}
+            >
               {formatYear(currentYear)}
+            </span>
+            {/* Era name shown on mobile only (since left column is hidden) */}
+            <span
+              className="mt-1 text-xs font-medium tracking-wide sm:hidden"
+              style={{ color: eraHex }}
+            >
+              {currentEra.name}
             </span>
           </div>
 
-          {/* Right: Play + next era */}
-          <div className="flex items-center gap-3 flex-1 justify-end">
+          {/* RIGHT column: playback controls */}
+          <div className="flex flex-1 items-center justify-end gap-2 sm:gap-3">
+            <button
+              onClick={prevEra}
+              className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border border-border-subtle bg-elevated/50 text-text-secondary transition-all hover:scale-105 hover:border-border-active hover:bg-elevated hover:text-text-primary active:scale-95"
+              aria-label="Previous era"
+            >
+              <SkipBack size={16} />
+            </button>
+
             <button
               onClick={togglePlay}
               className={cn(
-                'shrink-0 w-12 h-12 rounded-full flex items-center justify-center transition-all cursor-pointer',
+                'flex shrink-0 cursor-pointer items-center justify-center rounded-full transition-all hover:scale-105 active:scale-95',
+                'h-12 w-12 sm:h-[52px] sm:w-[52px]',
                 isPlaying
-                  ? 'bg-accent-cyan text-void'
-                  : 'border border-accent-cyan/40 bg-accent-cyan/10 text-accent-cyan hover:bg-accent-cyan/20'
+                  ? 'text-void'
+                  : 'border border-white/20 text-white hover:border-white/30',
               )}
-              style={isPlaying ? { boxShadow: '0 0 20px rgba(0,212,255,0.4)' } : undefined}
+              style={
+                isPlaying
+                  ? {
+                      backgroundColor: eraHex,
+                      boxShadow: `0 0 24px ${eraHex}60, 0 0 8px ${eraHex}40`,
+                    }
+                  : {
+                      backgroundColor: `${eraHex}18`,
+                      boxShadow: `inset 0 0 20px ${eraHex}10`,
+                    }
+              }
               aria-label={isPlaying ? 'Pause' : 'Play'}
             >
-              {isPlaying ? <Pause size={18} /> : <Play size={18} className="ml-0.5" />}
+              {isPlaying ? (
+                <Pause size={20} strokeWidth={2.5} />
+              ) : (
+                <Play size={20} strokeWidth={2.5} className="ml-0.5" />
+              )}
             </button>
+
             <button
               onClick={nextEra}
-              className="shrink-0 w-9 h-9 rounded-full border border-border-subtle bg-elevated/40 flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-elevated transition-colors cursor-pointer"
+              className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border border-border-subtle bg-elevated/50 text-text-secondary transition-all hover:scale-105 hover:border-border-active hover:bg-elevated hover:text-text-primary active:scale-95"
               aria-label="Next era"
             >
-              <SkipForward size={14} />
+              <SkipForward size={16} />
             </button>
           </div>
         </div>
 
-        {/* === ROW 2: Scrubber track === */}
+        {/* === Bottom row: era segment track + scrubber === */}
         <div
-          ref={trackRef}
-          className="relative px-5 pb-5 pt-1 md:px-6 md:pb-6 cursor-pointer touch-none select-none"
-          onPointerDown={onPointerDown}
-          onPointerMove={onPointerMove}
-          onPointerUp={onPointerUp}
-          onPointerCancel={onPointerUp}
-          onPointerLeave={onPointerLeave}
-          role="slider"
-          aria-label="Timeline"
-          aria-valuemin={MIN_YEAR}
-          aria-valuemax={MAX_YEAR}
-          aria-valuenow={currentYear}
-          aria-valuetext={formatYear(currentYear)}
-          tabIndex={0}
+          className="px-5 pb-5 sm:px-6 sm:pb-5 md:px-8 md:pb-6"
         >
-          {/* Hover tooltip */}
-          {hoverYear !== null && !isDragging.current && (
-            <div
-              className="absolute top-[-4px] pointer-events-none z-10"
-              style={{ left: `calc(${(hoverX / (trackRef.current?.clientWidth ?? 1)) * 100}% + 20px)`, transform: 'translateX(-50%)' }}
-            >
-              <div className="glass-light rounded-md px-2 py-0.5 text-[10px] font-mono tabular-nums text-text-secondary whitespace-nowrap">
-                {formatYear(hoverYear)}
+          {/* Track wrapper: ref + pointer events live here so % maps 1:1 to track */}
+          <div
+            ref={trackRef}
+            className="relative cursor-pointer touch-none select-none"
+            onPointerDown={onPointerDown}
+            onPointerMove={onPointerMove}
+            onPointerUp={onPointerUp}
+            onPointerCancel={onPointerUp}
+            onPointerLeave={onPointerLeave}
+            role="slider"
+            aria-label="Timeline scrubber"
+            aria-valuemin={MIN_YEAR}
+            aria-valuemax={MAX_YEAR}
+            aria-valuenow={currentYear}
+            aria-valuetext={formatYear(currentYear)}
+            tabIndex={0}
+          >
+            {/* Hover tooltip */}
+            <AnimatePresence>
+              {hoverYear !== null && !isDragging.current && (
+                <motion.div
+                  className="pointer-events-none absolute z-10"
+                  style={{
+                    left: `${hoverPct}%`,
+                    top: '-28px',
+                    transform: 'translateX(-50%)',
+                  }}
+                  initial={{ opacity: 0, y: 4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 4 }}
+                  transition={{ duration: 0.12 }}
+                >
+                  <div className="glass-light rounded-md px-2.5 py-1 font-mono text-[11px] tabular-nums text-text-secondary whitespace-nowrap">
+                    {formatYear(hoverYear)}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Track background well */}
+            <div className="rounded-full bg-white/[0.04] p-[2px]">
+              <div className="flex h-[10px] overflow-hidden rounded-full">
+                {eraSegments.map((era, i) => (
+                  <div
+                    key={era.id}
+                    className="h-full transition-opacity duration-300"
+                    style={{
+                      width: `${era.widthPct}%`,
+                      backgroundColor: era.hex,
+                      opacity: era.isActive ? 0.9 : 0.2,
+                      borderRight:
+                        i < eraSegments.length - 1
+                          ? '1px solid rgba(5,10,24,0.6)'
+                          : undefined,
+                    }}
+                  />
+                ))}
               </div>
             </div>
-          )}
 
-          {/* Era segment track */}
-          <div className="flex h-3 rounded-full overflow-hidden">
-            {eraSegments.map((era, i) => (
+            {/* Thumb — left % maps directly to track since wrapper has no padding */}
+            <div
+              className="pointer-events-none absolute -translate-x-1/2"
+              style={{
+                left: `${currentPercent}%`,
+                top: '-2px',
+              }}
+            >
               <div
-                key={era.id}
-                className="h-full transition-opacity duration-300 relative"
+                className="absolute left-1/2 top-1/2 h-7 w-7 -translate-x-1/2 -translate-y-1/2 rounded-full"
                 style={{
-                  width: `${era.widthPercent}%`,
-                  backgroundColor: ERA_HEX[era.id],
-                  opacity: era.isActive ? 1 : 0.2,
-                  borderRight: i < eraSegments.length - 1 ? '1px solid rgba(5,10,24,0.5)' : undefined,
+                  backgroundColor: eraHex,
+                  filter: 'blur(8px)',
+                  opacity: 0.45,
                 }}
               />
-            ))}
-          </div>
-
-          {/* Thumb */}
-          <div
-            className="absolute top-1 pointer-events-none"
-            style={{ left: `calc(${currentPercent}% * (1 - 40px / ${trackRef.current?.clientWidth ?? 1000}) + 20px)` }}
-          >
-            <div
-              className="w-3 h-5 -translate-x-1/2 rounded-full border-2"
-              style={{
-                backgroundColor: eraHex,
-                borderColor: 'rgba(238,242,247,0.85)',
-                boxShadow: `0 0 10px ${eraHex}80, 0 1px 4px rgba(0,0,0,0.4)`,
-              }}
-            />
+              <div
+                className="relative h-[18px] w-[14px] rounded-full border-[2.5px]"
+                style={{
+                  backgroundColor: eraHex,
+                  borderColor: 'rgba(238,242,247,0.9)',
+                  boxShadow: `0 0 12px ${eraHex}80, 0 2px 6px rgba(0,0,0,0.5)`,
+                }}
+              />
+            </div>
           </div>
         </div>
       </div>

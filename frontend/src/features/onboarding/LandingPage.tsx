@@ -225,23 +225,24 @@ export default function LandingPage() {
             initial="initial"
             animate="animate"
           >
-            <motion.div className="mb-2" variants={stagger.item}>
+            <motion.div className="mb-0" variants={stagger.item}>
               <motion.div
-                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs tracking-[0.15em] uppercase font-medium"
+                className="inline-flex items-center gap-2.5 px-5 py-2 rounded-full tracking-[0.15em] uppercase font-medium"
                 style={{
-                  background: 'rgba(0, 212, 255, 0.06)',
-                  border: '1px solid rgba(0, 212, 255, 0.15)',
-                  color: '#00d4ff',
+                  fontSize: '13px',
+                  background: 'rgba(0, 212, 255, 0.08)',
+                  border: '1px solid rgba(0, 212, 255, 0.22)',
+                  color: 'rgba(0, 212, 255, 0.85)',
                   fontFamily: "'JetBrains Mono', monospace",
                 }}
               >
-                <Compass size={12} strokeWidth={2.5} />
+                <Compass size={14} strokeWidth={2.5} />
                 Interactive Historical Atlas
               </motion.div>
             </motion.div>
 
             <motion.h1
-              className="mt-6 text-center leading-[0.9] tracking-[-0.03em]"
+              className="mt-5 text-center leading-[1.0] tracking-[-0.03em]"
               style={{ fontFamily: "'Space Grotesk', sans-serif" }}
               variants={stagger.item}
             >
@@ -263,11 +264,13 @@ export default function LandingPage() {
             </motion.h1>
 
             <motion.p
-              className="mt-8 text-center text-lg md:text-xl leading-relaxed max-w-lg"
+              className="mt-7 text-center leading-relaxed max-w-lg"
               style={{
-                color: 'var(--color-text-secondary)',
+                fontSize: '18px',
+                color: 'rgba(255, 255, 255, 0.65)',
                 fontFamily: "'Inter', sans-serif",
                 fontWeight: 300,
+                lineHeight: 1.7,
               }}
               variants={stagger.item}
             >
@@ -275,11 +278,12 @@ export default function LandingPage() {
               From the first cities to the modern world.
             </motion.p>
 
-            <motion.div className="w-full mt-12 md:mt-16" variants={stagger.item}>
+            <motion.div className="w-full mt-10 md:mt-12" variants={stagger.item}>
               <p
-                className="text-center text-[11px] uppercase tracking-[0.2em] font-medium mb-6"
+                className="text-center uppercase tracking-[0.2em] font-medium mb-6"
                 style={{
-                  color: 'var(--color-text-muted)',
+                  fontSize: '12px',
+                  color: 'rgba(255, 255, 255, 0.45)',
                   fontFamily: "'JetBrains Mono', monospace",
                 }}
               >
@@ -307,10 +311,10 @@ export default function LandingPage() {
                       style={
                         isSelected
                           ? {
-                              background: `linear-gradient(135deg, ${color}18, ${color}08)`,
-                              borderColor: `${color}60`,
-                              boxShadow: `0 0 30px ${color}25, 0 0 60px ${color}10, inset 0 1px 0 rgba(255,255,255,0.06)`,
-                              transform: 'scale(1.03)',
+                              background: `linear-gradient(135deg, ${color}20, ${color}0a)`,
+                              borderColor: `${color}70`,
+                              boxShadow: `0 0 30px ${color}30, 0 0 60px ${color}15, inset 0 1px 0 rgba(255,255,255,0.08)`,
+                              transform: 'scale(1.04)',
                             }
                           : undefined
                       }
@@ -322,24 +326,28 @@ export default function LandingPage() {
                         className="w-8 h-[3px] rounded-full mb-2.5 transition-all duration-300"
                         style={{
                           background: isSelected ? color : `${color}60`,
-                          boxShadow: isSelected ? `0 0 10px ${color}80` : 'none',
+                          boxShadow: isSelected ? `0 0 12px ${color}90` : 'none',
                         }}
                       />
 
                       <span
                         className={cn(
-                          'text-sm font-medium transition-colors duration-300',
+                          'font-medium transition-colors duration-300',
                           isSelected ? 'text-text-primary' : 'text-text-secondary group-hover:text-text-primary',
                         )}
-                        style={isSelected ? { color } : undefined}
+                        style={{
+                          fontSize: '15px',
+                          ...(isSelected ? { color } : {}),
+                        }}
                       >
                         {era.name}
                       </span>
 
                       <span
-                        className="text-[10px] mt-1 font-mono tracking-wider"
+                        className="mt-1.5 font-mono tracking-wider"
                         style={{
-                          color: isSelected ? `${color}cc` : 'var(--color-text-muted)',
+                          fontSize: '11px',
+                          color: isSelected ? `${color}cc` : 'rgba(255, 255, 255, 0.4)',
                           fontFamily: "'JetBrains Mono', monospace",
                         }}
                       >
@@ -367,15 +375,15 @@ export default function LandingPage() {
               </AnimatePresence>
             </motion.div>
 
-            <motion.div className="mt-12 md:mt-14 flex flex-col items-center" variants={stagger.item}>
+            <motion.div className="mt-10 md:mt-12 flex flex-col items-center" variants={stagger.item}>
               <div className="relative">
                 <motion.div
-                  className="absolute -inset-3 rounded-2xl"
+                  className="absolute -inset-4 rounded-2xl"
                   animate={{
                     boxShadow: [
-                      '0 0 20px rgba(0, 212, 255, 0.15), 0 0 60px rgba(0, 212, 255, 0.05)',
-                      '0 0 30px rgba(0, 212, 255, 0.3), 0 0 80px rgba(0, 212, 255, 0.1)',
-                      '0 0 20px rgba(0, 212, 255, 0.15), 0 0 60px rgba(0, 212, 255, 0.05)',
+                      '0 0 24px rgba(0, 212, 255, 0.18), 0 0 60px rgba(0, 212, 255, 0.06)',
+                      '0 0 36px rgba(0, 212, 255, 0.35), 0 0 80px rgba(0, 212, 255, 0.12)',
+                      '0 0 24px rgba(0, 212, 255, 0.18), 0 0 60px rgba(0, 212, 255, 0.06)',
                     ],
                   }}
                   transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
@@ -384,11 +392,12 @@ export default function LandingPage() {
                   onClick={handleExplore}
                   className={cn(
                     'relative inline-flex items-center justify-center gap-3',
-                    'h-14 px-10 rounded-xl text-base font-semibold',
+                    'h-14 px-10 rounded-xl font-semibold',
                     'bg-accent-cyan text-void cursor-pointer',
                     'transition-all duration-200',
                     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-cyan/50 focus-visible:ring-offset-2 focus-visible:ring-offset-void',
                   )}
+                  style={{ fontSize: '16px' }}
                   whileHover={{ scale: 1.04, boxShadow: '0 0 40px rgba(0, 212, 255, 0.4)' }}
                   whileTap={{ scale: 0.97 }}
                 >
@@ -398,9 +407,10 @@ export default function LandingPage() {
               </div>
 
               <p
-                className="mt-5 text-[10px] uppercase tracking-[0.25em]"
+                className="mt-5 uppercase tracking-[0.25em]"
                 style={{
-                  color: 'var(--color-text-muted)',
+                  fontSize: '11px',
+                  color: 'rgba(255, 255, 255, 0.4)',
                   fontFamily: "'JetBrains Mono', monospace",
                 }}
               >

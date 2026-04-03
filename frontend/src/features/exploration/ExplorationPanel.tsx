@@ -40,7 +40,7 @@ export function ExplorationPanel() {
           className={
             isMobile
               ? 'fixed bottom-28 left-3 right-3 z-30 glass-strong rounded-[var(--radius-xl)] max-h-[45vh] overflow-y-auto'
-              : 'fixed top-4 left-[72px] z-30 w-80 glass-strong rounded-[var(--radius-xl)] max-h-[75vh] overflow-y-auto'
+              : 'fixed top-5 left-[76px] z-30 w-80 glass-strong rounded-xl max-h-[70vh] overflow-y-auto shadow-xl'
           }
           initial={isMobile ? { y: 60, opacity: 0 } : { x: -40, opacity: 0 }}
           animate={isMobile ? { y: 0, opacity: 1 } : { x: 0, opacity: 1 }}
