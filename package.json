@@ -1,27 +1,5 @@
 {
   "name": "time-scroll",
-  "version": "1.0.0",
-  "description": "This is the repository for the project of Lycia Djemili & Georges Simak \r # Historical Timeline Map - time-scroll\r Journey through time with our interactive historical mapping application. This project allows users to explore world history through an intuitive map interface, discovering events, cultural developments, and significant moments that shaped our world.",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/gs-imak/time-scroll.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/gs-imak/time-scroll/issues"
-  },
-  "homepage": "https://github.com/gs-imak/time-scroll#readme",
-  "devDependencies": {
-    "@commitlint/cli": "^19.8.0",
-    "@commitlint/config-conventional": "^19.8.0",
-    "commitizen": "^4.3.1",
-    "cz-conventional-changelog": "^3.3.0",
-    "husky": "^9.1.7"
-  }
+  "private": true,
+  "workspaces": ["frontend"]
 }

@@ -1,0 +1,14 @@
+{
+  "name": "Time Scroll",
+  "short_name": "TimeScroll",
+  "description": "Journey through 12,000 years of world history",
+  "start_url": "/explore",
+  "display": "standalone",
+  "background_color": "#030712",
+  "theme_color": "#030712",
+  "orientation": "any",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

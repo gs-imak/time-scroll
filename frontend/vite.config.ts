@@ -1,20 +1,24 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import path from 'path';
+import tailwindcss from '@tailwindcss/vite';
+import { resolve } from 'path';
 
 export default defineConfig({
-  plugins: [
-    react(),
-  ],
-  build: {
-    chunkSizeWarningLimit: 3000,
-  },
+  plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
+      '@': resolve(__dirname, './src'),
     },
   },
-  server: {
-    hmr: true
-  }
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          mapbox: ['mapbox-gl'],
+          rive: ['@rive-app/react-webgl2'],
+          vendor: ['react', 'react-dom', 'react-router', 'zustand', 'framer-motion'],
+        },
+      },
+    },
+  },
 });
