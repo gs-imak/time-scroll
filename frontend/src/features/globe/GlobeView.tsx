@@ -138,13 +138,16 @@ export function GlobeView({ children }: GlobeViewProps) {
     }
   }, [setMapReady]);
 
-  // Load boundary GeoJSON when year changes
+  // Load boundary GeoJSON when year changes (debounced to prevent rapid flickering)
+  const pendingLoadRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
     const year = closestBoundaryYear(currentYear, SORTED_BOUNDARY_YEARS);
     const fileName = BOUNDARY_YEAR_MAP[year];
     if (!fileName || fileName === loadedFileRef.current) return;
 
-    (async () => {
+    // Debounce: wait 150ms before loading to avoid rapid-fire during scrubbing
+    if (pendingLoadRef.current) clearTimeout(pendingLoadRef.current);
+    pendingLoadRef.current = setTimeout(async () => {
       try {
         const res = await fetch(`/assets/geo/${fileName}.geojson`);
         if (!res.ok) return;
@@ -154,7 +157,9 @@ export function GlobeView({ children }: GlobeViewProps) {
       } catch {
         // Boundary file not found
       }
-    })();
+    }, 150);
+
+    return () => { if (pendingLoadRef.current) clearTimeout(pendingLoadRef.current); };
   }, [currentYear]);
 
   // Get visible events
@@ -217,11 +222,18 @@ export function GlobeView({ children }: GlobeViewProps) {
             // Historical boundaries (polygons)
             polygonsData={polygonsData}
             polygonGeoJsonGeometry={(d: any) => d.geometry}
-            polygonCapColor={() => 'rgba(0, 0, 0, 0)'}
-            polygonSideColor={() => 'rgba(0, 0, 0, 0)'}
+            polygonCapColor={() => {
+              const hex = ERA_HEX_COLORS[currentEra.id] ?? '#ffffff';
+              // Very subtle fill so borders read as regions, not just lines
+              const r = parseInt(hex.slice(1, 3), 16);
+              const g = parseInt(hex.slice(3, 5), 16);
+              const b = parseInt(hex.slice(5, 7), 16);
+              return `rgba(${r}, ${g}, ${b}, 0.04)`;
+            }}
+            polygonSideColor={() => 'rgba(255, 255, 255, 0.02)'}
             polygonStrokeColor={() => ERA_HEX_COLORS[currentEra.id] ?? '#ffffff'}
-            polygonAltitude={0.001}
-            polygonsTransitionDuration={1800}
+            polygonAltitude={0.004}
+            polygonsTransitionDuration={2000}
 
             // Event markers — per-event billboard badges
             customLayerData={events}
