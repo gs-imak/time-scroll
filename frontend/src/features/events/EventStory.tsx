@@ -4,7 +4,7 @@ import { AnimatePresence, motion, useScroll, useTransform, useMotionValueEvent, 
 import {
   X, MapPin, Calendar, Clock, ChevronLeft, ChevronRight,
   Lightbulb, ExternalLink, Play, Image as ImageIcon, Globe,
-  Share2, ArrowUp, Heart,
+  Share2, ArrowUp, Heart, Maximize2,
 } from 'lucide-react';
 import { useEventsStore } from '@/shared/stores/eventsStore';
 import { useProgressStore } from '@/shared/stores/progressStore';
@@ -15,6 +15,7 @@ import { ERAS } from '@/shared/utils/constants';
 import type { HistoricalEvent } from '@/shared/types/events';
 import { EventQuiz } from './EventQuiz';
 import { EventMapVisual } from './EventMapVisual';
+import { useMonumentViewer } from '@/features/monuments/useMonumentViewer';
 
 // ── Category visuals ──
 const CATEGORY_META: Record<string, { color: string; label: string; gradient: string }> = {
@@ -118,6 +119,7 @@ export function EventStory() {
   const selectedEventId = useEventsStore(s => s.selectedEventId);
   const events = useEventsStore(s => s.events);
   const selectEvent = useEventsStore(s => s.selectEvent);
+  const openMonumentViewer = useMonumentViewer(s => s.open);
   const [, setSearchParams] = useSearchParams();
 
   const event = events.find(e => e.id === selectedEventId);
@@ -677,9 +679,36 @@ export function EventStory() {
                         style={{ border: 'none' }}
                       />
                     </div>
-                    <p className="text-[11px] text-[#3a3a4a] mt-3 text-center">
-                      Drag to rotate · Scroll to zoom · Shift+drag to pan
-                    </p>
+                    <div className="flex items-center justify-between mt-3">
+                      <p className="text-[11px] text-[#3a3a4a]">
+                        Drag to rotate · Scroll to zoom · Shift+drag to pan
+                      </p>
+                      <motion.button
+                        onClick={() => openMonumentViewer(event)}
+                        className="flex items-center gap-2 cursor-pointer"
+                        style={{
+                          height: '36px',
+                          padding: '0 16px',
+                          borderRadius: '8px',
+                          background: 'rgba(255,255,255,0.06)',
+                          border: '1px solid rgba(255,255,255,0.08)',
+                          color: '#e0e0e6',
+                          fontSize: '13px',
+                          fontWeight: 500,
+                        }}
+                        whileHover={{
+                          background: 'rgba(255,255,255,0.12)',
+                          borderColor: 'rgba(255,255,255,0.14)',
+                          scale: 1.05,
+                        }}
+                        whileTap={{ scale: 0.95 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <Maximize2 size={14} />
+                        <span className="hidden sm:inline">Explore in Full Screen</span>
+                        <span className="sm:hidden">Full Screen</span>
+                      </motion.button>
+                    </div>
                   </section>
                 </Reveal>
               )}

@@ -14,6 +14,7 @@ import { OnboardingTour } from '@/features/onboarding/OnboardingTour';
 import { AchievementToast } from '@/shared/components/AchievementToast';
 import { KeyboardHelp } from '@/features/help/KeyboardHelp';
 import { ComparisonTool } from '@/features/comparison/ComparisonTool';
+import { MonumentViewer } from '@/features/monuments/MonumentViewer';
 import { useTimeStore } from '@/shared/stores/timeStore';
 import { useEventsStore } from '@/shared/stores/eventsStore';
 
@@ -99,6 +100,7 @@ export default function GlobeExplorer() {
       <ComparisonTool />
       <LoadingScreen />
       <OnboardingTour />
+      <MonumentViewer />
     </div>
   );
 }
