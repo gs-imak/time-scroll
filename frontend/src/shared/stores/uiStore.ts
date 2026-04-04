@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-type Panel = 'none' | 'events' | 'exploration' | 'settings';
+type Panel = 'none' | 'events' | 'exploration' | 'settings' | 'progress';
 
 interface UIStore {
   activePanel: Panel;

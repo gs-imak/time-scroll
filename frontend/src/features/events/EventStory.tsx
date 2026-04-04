@@ -6,9 +6,13 @@ import {
   Share2, ArrowUp,
 } from 'lucide-react';
 import { useEventsStore } from '@/shared/stores/eventsStore';
+import { useProgressStore } from '@/shared/stores/progressStore';
+import { ACHIEVEMENTS } from '@/shared/stores/progressStore';
+import { showAchievementToast } from '@/shared/components/AchievementToast';
 import { formatYear, formatYearRange } from '@/shared/utils/format';
 import { ERAS } from '@/shared/utils/constants';
 import type { HistoricalEvent } from '@/shared/types/events';
+import { EventQuiz } from './EventQuiz';
 
 // ── Category visuals ──
 const CATEGORY_META: Record<string, { color: string; label: string; gradient: string }> = {
@@ -205,6 +209,19 @@ export function EventStory() {
 
   useEffect(() => {
     if (scrollRef.current && event) scrollRef.current.scrollTop = 0;
+  }, [event?.id]);
+
+  useEffect(() => {
+    if (!event) return;
+    const markEventViewed = useProgressStore.getState().markEventViewed;
+    const prevUnlocked = useProgressStore.getState().unlockedAchievements;
+    markEventViewed(event.id);
+    const nowUnlocked = useProgressStore.getState().unlockedAchievements;
+    const newIds = nowUnlocked.filter(id => !prevUnlocked.includes(id));
+    for (const id of newIds) {
+      const ach = ACHIEVEMENTS.find(a => a.id === id);
+      if (ach) showAchievementToast(ach);
+    }
   }, [event?.id]);
 
   return (
@@ -558,6 +575,18 @@ export function EventStory() {
                   </Reveal>
                 </section>
               )}
+
+              {/* Quiz */}
+              <Reveal>
+                <section className="mb-20">
+                  <SectionLabel>Test Your Knowledge</SectionLabel>
+                  <EventQuiz
+                    eventId={event.id}
+                    eventTitle={event.title}
+                    categoryColor={cat.color}
+                  />
+                </section>
+              </Reveal>
 
               {/* Dive Deeper */}
               <section id="deeper" ref={setSectionRef('deeper')} className="mb-20">

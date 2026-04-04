@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
-import { Compass, List, MapPin, Home } from 'lucide-react';
+import { Compass, List, MapPin, Home, Trophy } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useUIStore } from '@/shared/stores/uiStore';
 import { useGlobeCamera } from '@/features/globe/useGlobeCamera';
@@ -81,6 +81,12 @@ export function Toolbar() {
           label="Historical events"
           active={activePanel === 'events'}
           onClick={() => togglePanel('events')}
+        />
+        <ToolButton
+          icon={Trophy}
+          label="Your progress"
+          active={activePanel === 'progress'}
+          onClick={() => togglePanel('progress')}
         />
         <div className="h-px bg-border-subtle mx-1.5 my-0.5" />
         <ToolButton
