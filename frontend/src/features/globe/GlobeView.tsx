@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, createContext, useContext, useCallback, type ReactNode } from 'react';
 import Globe, { type GlobeMethods } from 'react-globe.gl';
+import * as THREE from 'three';
 import { useMapStore } from '@/shared/stores/mapStore';
 import { useTimeStore } from '@/shared/stores/timeStore';
 import { useEventsStore } from '@/shared/stores/eventsStore';
@@ -92,21 +93,58 @@ export function GlobeView({ children }: GlobeViewProps) {
         controls.dampingFactor = 0.1;
       }
 
-      // Enhance globe material for a polished look
+      // Enhance globe material for HD quality
       const scene = globeRef.current.scene();
       if (scene) {
-        scene.traverse((obj: { isMesh?: boolean; material?: any }) => {
-          if (obj.isMesh && obj.material && 'shininess' in obj.material && obj.material.map) {
+        scene.traverse((obj: any) => {
+          if (obj.isMesh && obj.material && obj.material.map) {
             const mat = obj.material;
-            mat.shininess = 15;
-            mat.bumpScale = 0.8;
-            // Set a dark blue specular to avoid harsh white ocean reflections
-            if (mat.specular && typeof mat.specular.setHex === 'function') {
-              mat.specular.setHex(0x1a2a4a);
+
+            // Boost texture quality — enable anisotropic filtering
+            if (mat.map) {
+              mat.map.anisotropy = 16;
+              mat.map.minFilter = THREE.LinearMipmapLinearFilter;
+              mat.map.magFilter = THREE.LinearFilter;
+              mat.map.needsUpdate = true;
+            }
+            if (mat.bumpMap) {
+              mat.bumpMap.anisotropy = 16;
+              mat.bumpMap.needsUpdate = true;
+            }
+
+            // Fine-tune surface appearance
+            if ('shininess' in mat) {
+              mat.shininess = 12;
+              mat.bumpScale = 1.0;
+              if (mat.specular && typeof mat.specular.setHex === 'function') {
+                mat.specular.setHex(0x111833);
+              }
             }
             mat.needsUpdate = true;
           }
         });
+
+        // Add cloud layer — a slightly larger translucent sphere
+        const cloudTexture = new THREE.TextureLoader().load('/assets/images/earth-clouds.png');
+        cloudTexture.anisotropy = 8;
+        const cloudGeo = new THREE.SphereGeometry(101.2, 128, 64);
+        const cloudMat = new THREE.MeshPhongMaterial({
+          map: cloudTexture,
+          transparent: true,
+          opacity: 0.25,
+          depthWrite: false,
+          side: THREE.FrontSide,
+        });
+        const cloudMesh = new THREE.Mesh(cloudGeo, cloudMat);
+        cloudMesh.name = 'cloudLayer';
+        scene.add(cloudMesh);
+
+        // Slowly rotate clouds independently
+        const animateClouds = () => {
+          cloudMesh.rotation.y += 0.00005;
+          requestAnimationFrame(animateClouds);
+        };
+        animateClouds();
       }
     }
   }, [setMapReady]);
@@ -241,12 +279,12 @@ export function GlobeView({ children }: GlobeViewProps) {
             height={dimensions.height}
             onGlobeReady={onGlobeReady}
 
-            // Globe appearance — NASA day texture with topology bump
-            globeImageUrl="//unpkg.com/three-globe/example/img/earth-day.jpg"
-            bumpImageUrl="//unpkg.com/three-globe/example/img/earth-topology.png"
+            // Globe appearance — 8K NASA Blue Marble + 8K bump map
+            globeImageUrl="/assets/images/earth-8k.jpg"
+            bumpImageUrl="/assets/images/earth-bump-8k.png"
             backgroundImageUrl="//unpkg.com/three-globe/example/img/night-sky.png"
             atmosphereColor="#6db3f2"
-            atmosphereAltitude={0.2}
+            atmosphereAltitude={0.18}
             showAtmosphere={true}
 
             // Historical boundaries (polygons)
