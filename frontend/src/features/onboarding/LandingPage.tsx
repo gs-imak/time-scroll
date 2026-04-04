@@ -306,28 +306,31 @@ export default function LandingPage() {
                         'border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-cyan/50',
                         isSelected
                           ? 'border-transparent'
-                          : 'glass-light border-white/[0.08] hover:border-white/[0.15]',
+                          : 'border-white/15 hover:border-white/25',
                       )}
                       style={{
                         minWidth: '140px',
                         ...(isSelected
                           ? {
-                              background: `linear-gradient(135deg, ${color}20, ${color}0a)`,
-                              borderColor: `${color}70`,
-                              boxShadow: `0 0 30px ${color}30, 0 0 60px ${color}15, inset 0 1px 0 rgba(255,255,255,0.08)`,
+                              background: `linear-gradient(135deg, ${color}30, ${color}15)`,
+                              borderColor: `${color}80`,
+                              boxShadow: `0 0 30px ${color}30, 0 0 60px ${color}15, inset 0 1px 0 rgba(255,255,255,0.1)`,
                               transform: 'scale(1.04)',
                             }
-                          : {}),
+                          : {
+                              background: 'rgba(255, 255, 255, 0.07)',
+                              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06), 0 4px 12px rgba(0,0,0,0.3)',
+                            }),
                       }}
                       whileHover={!isSelected ? { y: -2 } : undefined}
                       aria-pressed={isSelected}
                       aria-label={`${era.name}, ${formatYear(era.startYear)} to ${formatYear(era.endYear)}`}
                     >
                       <div
-                        className="w-10 h-[3px] rounded-full mb-2.5 transition-all duration-300"
+                        className="w-10 h-1 rounded-full mb-3 transition-all duration-300"
                         style={{
-                          background: isSelected ? color : `${color}60`,
-                          boxShadow: isSelected ? `0 0 12px ${color}90` : 'none',
+                          background: isSelected ? color : `${color}80`,
+                          boxShadow: isSelected ? `0 0 12px ${color}90` : `0 0 6px ${color}30`,
                         }}
                       />
 
