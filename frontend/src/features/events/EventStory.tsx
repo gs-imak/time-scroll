@@ -1,18 +1,35 @@
 import { useEffect, useCallback, useMemo } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { X, MapPin, Calendar, Clock, ChevronLeft, ChevronRight, Lightbulb, ExternalLink } from 'lucide-react';
+import {
+  X, MapPin, Calendar, Clock, ChevronLeft, ChevronRight,
+  Lightbulb, ExternalLink, Play, Image as ImageIcon, Globe,
+} from 'lucide-react';
 import { useEventsStore } from '@/shared/stores/eventsStore';
-import { formatYear } from '@/shared/utils/format';
+import { formatYear, formatYearRange } from '@/shared/utils/format';
 import { ERAS } from '@/shared/utils/constants';
+import type { HistoricalEvent } from '@/shared/types/events';
 
-// Muted category palette
-const CATEGORY_META: Record<string, { color: string; label: string }> = {
-  war: { color: '#b85454', label: 'War & Conflict' },
-  discovery: { color: '#5a8fa5', label: 'Discovery' },
-  cultural: { color: '#c49a44', label: 'Cultural' },
-  political: { color: '#8b80b0', label: 'Political' },
-  construction: { color: '#6d9476', label: 'Construction' },
-  natural: { color: '#b87a60', label: 'Natural Event' },
+// ── Category visuals ──
+const CATEGORY_META: Record<string, { color: string; label: string; gradient: string }> = {
+  war:          { color: '#b85454', label: 'War & Conflict',  gradient: 'linear-gradient(135deg, #2a1418 0%, #1a0c10 40%, #0a1020 100%)' },
+  discovery:    { color: '#5a8fa5', label: 'Discovery',       gradient: 'linear-gradient(135deg, #0c1e2a 0%, #0a1828 40%, #0a1020 100%)' },
+  cultural:     { color: '#c49a44', label: 'Cultural',        gradient: 'linear-gradient(135deg, #2a2010 0%, #1a1608 40%, #0a1020 100%)' },
+  political:    { color: '#8b80b0', label: 'Political',       gradient: 'linear-gradient(135deg, #1a1628 0%, #120e20 40%, #0a1020 100%)' },
+  construction: { color: '#6d9476', label: 'Construction',    gradient: 'linear-gradient(135deg, #0c201a 0%, #0a1a14 40%, #0a1020 100%)' },
+  natural:      { color: '#b87a60', label: 'Natural Event',   gradient: 'linear-gradient(135deg, #2a1a10 0%, #1a1008 40%, #0a1020 100%)' },
+};
+
+// Per-event icons (same as markers)
+const EVENT_ICONS: Record<string, string> = {
+  'great-pyramid': '△', 'code-hammurabi': '📜', 'trojan-war': '⚔️',
+  'founding-rome': '🐺', 'democracy-athens': '🏛️', 'roman-forum': '🎭',
+  'alexander-empire': '🦅', 'great-wall-begin': '🧱', 'julius-caesar': '🗡️',
+  'colosseum': '🏟️', 'fall-of-rome': '💀', 'hagia-sophia': '🕌',
+  'viking-expansion': '🪓', 'genghis-khan': '🏹', 'black-death': '☠️',
+  'gutenberg-press': '📖', 'columbus-americas': '⛵', 'manhattan-purchase': '📋',
+  'french-revolution': '⚜️', 'steam-locomotive': '🚂', 'suez-canal': '🚢',
+  'eiffel-tower': '🗼', 'ww1': '💣', 'ww2': '✈️',
+  'moon-landing': '🚀', 'berlin-wall': '🔨', 'www-invention': '💻',
 };
 
 export function EventStory() {
@@ -23,8 +40,9 @@ export function EventStory() {
   const event = events.find(e => e.id === selectedEventId);
   const era = event ? ERAS.find(e => e.id === event.eraId) : null;
   const cat = event ? CATEGORY_META[event.category] : null;
+  const icon = event ? EVENT_ICONS[event.id] ?? '●' : '●';
 
-  // Related events: same era or same category, excluding self
+  // Related events
   const relatedEvents = useMemo(() => {
     if (!event) return [];
     return events
@@ -33,290 +51,287 @@ export function EventStory() {
       .slice(0, 4);
   }, [event, events]);
 
-  // Prev/next through all events chronologically
-  const sortedEvents = useMemo(() => [...events].sort((a, b) => a.year - b.year), [events]);
-  const currentIdx = event ? sortedEvents.findIndex(e => e.id === event.id) : -1;
-  const prevEvent = currentIdx > 0 ? sortedEvents[currentIdx - 1] : null;
-  const nextEvent = currentIdx < sortedEvents.length - 1 ? sortedEvents[currentIdx + 1] : null;
+  // Chronological nav
+  const sorted = useMemo(() => [...events].sort((a, b) => a.year - b.year), [events]);
+  const idx = event ? sorted.findIndex(e => e.id === event.id) : -1;
+  const prev = idx > 0 ? sorted[idx - 1] ?? null : null;
+  const next = idx < sorted.length - 1 ? sorted[idx + 1] ?? null : null;
+
+  // Era timeline position (0-1 within the era)
+  const eraProgress = useMemo(() => {
+    if (!event || !era) return 0.5;
+    const span = era.endYear - era.startYear;
+    if (span === 0) return 0.5;
+    return Math.max(0, Math.min(1, (event.year - era.startYear) / span));
+  }, [event, era]);
 
   const onClose = useCallback(() => selectEvent(null), [selectEvent]);
 
-  // Escape key
-  useEffect(() => {
-    if (!event) return;
-    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, [event, onClose]);
-
-  // Arrow keys for prev/next
+  // Keyboard
   useEffect(() => {
     if (!event) return;
     const handler = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowLeft' && prevEvent) selectEvent(prevEvent.id);
-      if (e.key === 'ArrowRight' && nextEvent) selectEvent(nextEvent.id);
+      if (e.key === 'Escape') onClose();
+      if (e.key === 'ArrowLeft' && prev) selectEvent(prev.id);
+      if (e.key === 'ArrowRight' && next) selectEvent(next.id);
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [event, prevEvent, nextEvent, selectEvent]);
+  }, [event, prev, next, selectEvent, onClose]);
 
   return (
     <AnimatePresence>
-      {event && cat && (
+      {event && cat && era && (
         <motion.div
-          className="fixed inset-0 z-50 flex flex-col"
+          className="fixed inset-0 z-50"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.3 }}
+          transition={{ duration: 0.35 }}
         >
           {/* Backdrop */}
-          <motion.div
-            className="absolute inset-0"
-            style={{ background: 'rgba(5, 8, 18, 0.97)' }}
-            onClick={onClose}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          />
+          <div className="absolute inset-0 bg-[#050a14]" onClick={onClose} />
 
-          {/* Content */}
+          {/* Scrollable content */}
           <motion.div
-            className="relative z-10 flex-1 overflow-y-auto"
-            initial={{ y: 60, opacity: 0 }}
+            className="absolute inset-0 overflow-y-auto overflow-x-hidden"
+            initial={{ y: 80, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 40, opacity: 0 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            exit={{ y: 50, opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 280, damping: 28 }}
           >
-            {/* Top bar: close + nav */}
-            <div className="sticky top-0 z-20 flex items-center justify-between px-6 py-4"
-              style={{
-                background: 'linear-gradient(180deg, rgba(5, 8, 18, 0.95) 0%, rgba(5, 8, 18, 0.8) 70%, transparent 100%)',
-              }}
+            {/* ═══════════════ HERO ═══════════════ */}
+            <div
+              className="relative min-h-[420px] sm:min-h-[480px] flex flex-col justify-end"
+              style={{ background: cat.gradient }}
             >
-              <div className="flex items-center gap-3">
-                {prevEvent && (
-                  <button
-                    onClick={() => selectEvent(prevEvent.id)}
-                    className="flex items-center gap-1.5 text-[12px] text-[#6b7a94] hover:text-[#9ba8c2] transition-colors cursor-pointer"
-                  >
-                    <ChevronLeft size={14} />
-                    <span className="hidden sm:inline">{prevEvent.title}</span>
-                  </button>
-                )}
-              </div>
-              <button
-                onClick={onClose}
-                className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-white/[0.06] transition-colors cursor-pointer"
-              >
-                <X size={18} className="text-[#6b7a94]" />
-              </button>
-              <div className="flex items-center gap-3">
-                {nextEvent && (
-                  <button
-                    onClick={() => selectEvent(nextEvent.id)}
-                    className="flex items-center gap-1.5 text-[12px] text-[#6b7a94] hover:text-[#9ba8c2] transition-colors cursor-pointer"
-                  >
-                    <span className="hidden sm:inline">{nextEvent.title}</span>
-                    <ChevronRight size={14} />
-                  </button>
-                )}
-              </div>
-            </div>
+              {/* Decorative grid pattern */}
+              <div
+                className="absolute inset-0 opacity-[0.03]"
+                style={{
+                  backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
+                  backgroundSize: '60px 60px',
+                }}
+              />
 
-            {/* Main content — centered column */}
-            <div className="max-w-[720px] mx-auto px-6 pb-20">
+              {/* Large floating event icon */}
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none select-none">
+                <span className="text-[120px] sm:text-[160px] opacity-[0.06]">{icon}</span>
+              </div>
 
-              {/* ── Hero ── */}
-              <div className="mb-10 mt-4">
-                {/* Category + Year */}
-                <div className="flex items-center gap-3 mb-4">
-                  <span
-                    className="w-2 h-2 rounded-full"
-                    style={{ background: cat.color }}
-                  />
-                  <span className="text-[11px] font-medium tracking-wider uppercase" style={{ color: cat.color }}>
+              {/* Top bar */}
+              <div className="absolute top-0 inset-x-0 z-10 flex items-center justify-between px-5 py-4">
+                <NavButton dir="left" event={prev} onSelect={selectEvent} />
+                <button
+                  onClick={onClose}
+                  className="w-10 h-10 rounded-full flex items-center justify-center bg-white/[0.06] hover:bg-white/[0.1] transition-colors cursor-pointer backdrop-blur-sm"
+                >
+                  <X size={18} className="text-[#8b9dc3]" />
+                </button>
+                <NavButton dir="right" event={next} onSelect={selectEvent} />
+              </div>
+
+              {/* Hero content */}
+              <div className="relative z-10 max-w-[800px] mx-auto w-full px-6 pb-10">
+                {/* Category badge */}
+                <div className="flex items-center gap-2.5 mb-4">
+                  <span className="px-3 py-1 rounded-full text-[10px] font-semibold tracking-wider uppercase"
+                    style={{ background: cat.color + '20', color: cat.color, border: `1px solid ${cat.color}30` }}>
                     {cat.label}
-                  </span>
-                  <span className="text-[11px] text-[#3d4f6a]">·</span>
-                  <span className="text-[11px] text-[#5a6d8a]">
-                    {formatYear(event.year)}
                   </span>
                 </div>
 
                 {/* Title */}
-                <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight text-[#e8ecf2] mb-3">
+                <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold leading-[1.1] text-[#e8ecf2] mb-4">
                   {event.title}
                 </h1>
 
-                {/* Era + Location subtitle */}
-                <div className="flex items-center gap-4 text-[13px] text-[#5a6d8a]">
-                  {era && <span>{era.name}</span>}
+                {/* Meta row */}
+                <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px] text-[#6b7a94]">
+                  <span className="flex items-center gap-1.5">
+                    <Calendar size={13} />
+                    {event.endYear ? formatYearRange(event.year, event.endYear) : formatYear(event.year)}
+                  </span>
                   {event.locationName && (
-                    <>
-                      <span>·</span>
-                      <span className="flex items-center gap-1">
-                        <MapPin size={12} />
-                        {event.locationName}
-                      </span>
-                    </>
+                    <span className="flex items-center gap-1.5">
+                      <MapPin size={13} />
+                      {event.locationName}
+                    </span>
                   )}
+                  <span className="flex items-center gap-1.5">
+                    <Globe size={13} />
+                    {era.name}
+                  </span>
                 </div>
+              </div>
 
-                {/* Hero media (when available) */}
-                {event.imageUrl && (
-                  <div className="mt-6 rounded-xl overflow-hidden">
-                    <img
-                      src={event.imageUrl}
-                      alt={event.title}
-                      className="w-full h-auto object-cover"
-                      style={{ maxHeight: '400px' }}
-                    />
+              {/* Bottom fade into content */}
+              <div className="absolute bottom-0 inset-x-0 h-24" style={{ background: 'linear-gradient(transparent, #050a14)' }} />
+            </div>
+
+            {/* ═══════════════ BODY ═══════════════ */}
+            <div className="max-w-[800px] mx-auto px-6 pb-24">
+
+              {/* ── Era Timeline Bar ── */}
+              <div className="py-8">
+                <div className="flex items-center justify-between text-[10px] text-[#3d4f6a] uppercase tracking-wider mb-3">
+                  <span>{formatYear(era.startYear)}</span>
+                  <span className="text-[#5a6d8a]">{era.name}</span>
+                  <span>{formatYear(era.endYear)}</span>
+                </div>
+                <div className="relative h-[3px] rounded-full bg-white/[0.06]">
+                  <div className="absolute top-0 left-0 h-full rounded-full" style={{ width: `${eraProgress * 100}%`, background: cat.color + '50' }} />
+                  <div
+                    className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full border-2"
+                    style={{ left: `${eraProgress * 100}%`, transform: `translateX(-50%) translateY(-50%)`, background: cat.color, borderColor: '#050a14' }}
+                  />
+                </div>
+              </div>
+
+              {/* ── Media Hero (image or video or placeholder) ── */}
+              <div className="mb-10">
+                {event.imageUrl ? (
+                  <div className="rounded-2xl overflow-hidden">
+                    <img src={event.imageUrl} alt={event.title} className="w-full h-auto object-cover" style={{ maxHeight: '440px' }} />
                   </div>
-                )}
-
-                {/* Video embed (when available) */}
-                {event.videoUrl && (
-                  <div className="mt-6 rounded-xl overflow-hidden aspect-video">
-                    <iframe
-                      src={event.videoUrl}
-                      className="w-full h-full"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                      title={`Video: ${event.title}`}
-                    />
+                ) : event.videoUrl ? (
+                  <div className="rounded-2xl overflow-hidden aspect-video">
+                    <iframe src={event.videoUrl} className="w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen title={event.title} />
+                  </div>
+                ) : (
+                  /* Placeholder — visual, not empty */
+                  <div className="rounded-2xl overflow-hidden aspect-[21/9] flex items-center justify-center relative"
+                    style={{ background: cat.gradient, border: '1px solid rgba(255,255,255,0.04)' }}>
+                    <div className="absolute inset-0 opacity-[0.04]" style={{
+                      backgroundImage: `radial-gradient(circle at 30% 40%, ${cat.color}30 0%, transparent 50%), radial-gradient(circle at 70% 60%, ${cat.color}20 0%, transparent 50%)`,
+                    }} />
+                    <div className="text-center relative z-10">
+                      <div className="flex items-center justify-center gap-4 mb-3">
+                        <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                          <ImageIcon size={20} className="text-[#3d4f6a]" />
+                        </div>
+                        <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                          <Play size={20} className="text-[#3d4f6a]" />
+                        </div>
+                      </div>
+                      <p className="text-[11px] text-[#3d4f6a] tracking-wide">Media coming soon</p>
+                    </div>
                   </div>
                 )}
               </div>
 
-              {/* ── Accent divider ── */}
-              <div className="h-px mb-8" style={{ background: `linear-gradient(90deg, ${cat.color}40, transparent)` }} />
-
               {/* ── Key Facts ── */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-10">
-                <FactCard
-                  icon={<Calendar size={14} />}
-                  label="Date"
-                  value={event.endYear ? `${formatYear(event.year)} — ${formatYear(event.endYear)}` : formatYear(event.year)}
-                />
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-12">
+                <FactCard icon={<Calendar size={14} />} label="Date"
+                  value={event.endYear ? formatYearRange(event.year, event.endYear) : formatYear(event.year)} color={cat.color} />
                 {event.locationName && (
-                  <FactCard
-                    icon={<MapPin size={14} />}
-                    label="Location"
-                    value={event.locationName}
-                  />
+                  <FactCard icon={<MapPin size={14} />} label="Location" value={event.locationName} color={cat.color} />
                 )}
-                {era && (
-                  <FactCard
-                    icon={<Clock size={14} />}
-                    label="Era"
-                    value={era.name}
-                  />
-                )}
-                {event.endYear && (
-                  <FactCard
-                    icon={<Clock size={14} />}
-                    label="Duration"
-                    value={`${Math.abs(event.endYear - event.year)} years`}
-                  />
-                )}
+                <FactCard icon={<Clock size={14} />} label="Era" value={era.name} color={cat.color} />
               </div>
 
               {/* ── Overview ── */}
-              <div className="mb-10">
-                <SectionHeading>Overview</SectionHeading>
-                <p className="text-[15px] text-[#9ba8c2] leading-[1.8]">
+              <section className="mb-12">
+                <SectionLabel>Overview</SectionLabel>
+                <p className="text-[16px] sm:text-[17px] text-[#9ba8c2] leading-[1.85] font-[350]">
                   {event.description}
                 </p>
-              </div>
+              </section>
 
-              {/* ── Did You Know? (when impactText exists) ── */}
+              {/* ── Did You Know? ── */}
               {event.impactText && (
-                <div
-                  className="mb-10 rounded-xl p-5"
-                  style={{
-                    background: 'rgba(255, 255, 255, 0.03)',
-                    border: `1px solid ${cat.color}20`,
-                  }}
-                >
-                  <div className="flex items-center gap-2 mb-3">
-                    <Lightbulb size={15} style={{ color: cat.color }} />
-                    <span className="text-[12px] font-semibold tracking-wide uppercase" style={{ color: cat.color }}>
-                      Did you know?
-                    </span>
-                  </div>
-                  <p className="text-[14px] text-[#b0bbd0] leading-[1.7]">
-                    {event.impactText}
-                  </p>
-                </div>
+                <section className="mb-12">
+                  <motion.div
+                    className="rounded-2xl p-6 sm:p-8 relative overflow-hidden"
+                    style={{ background: 'rgba(255, 255, 255, 0.02)', border: `1px solid ${cat.color}18` }}
+                  >
+                    {/* Decorative accent */}
+                    <div className="absolute top-0 left-0 w-1 h-full rounded-full" style={{ background: cat.color }} />
+                    <div className="pl-5">
+                      <div className="flex items-center gap-2 mb-3">
+                        <Lightbulb size={16} style={{ color: cat.color }} />
+                        <span className="text-[12px] font-semibold tracking-wider uppercase" style={{ color: cat.color }}>
+                          Did you know?
+                        </span>
+                      </div>
+                      <p className="text-[15px] text-[#b0bbd0] leading-[1.75]">
+                        {event.impactText}
+                      </p>
+                    </div>
+                  </motion.div>
+                </section>
               )}
 
-              {/* ── Image Gallery (when images exist) ── */}
-              {event.images && event.images.length > 0 && (
-                <div className="mb-10">
-                  <SectionHeading>Gallery</SectionHeading>
-                  <div className="grid grid-cols-2 gap-3">
-                    {event.images.map((img, i) => (
-                      <div key={i} className="rounded-lg overflow-hidden">
-                        <img src={img} alt={`${event.title} ${i + 1}`} className="w-full h-40 object-cover" />
+              {/* ── Image Gallery Placeholder ── */}
+              {(!event.images || event.images.length === 0) && (
+                <section className="mb-12">
+                  <SectionLabel>Gallery</SectionLabel>
+                  <div className="grid grid-cols-3 gap-3">
+                    {[0, 1, 2].map(i => (
+                      <div key={i} className="aspect-[4/3] rounded-xl flex items-center justify-center"
+                        style={{ background: 'rgba(255,255,255,0.015)', border: '1px solid rgba(255,255,255,0.04)' }}>
+                        <ImageIcon size={20} className="text-[#252d3d]" />
                       </div>
                     ))}
                   </div>
-                </div>
+                </section>
               )}
 
-              {/* ── Sources (when they exist) ── */}
-              {event.sources && event.sources.length > 0 && (
-                <div className="mb-10">
-                  <SectionHeading>Sources</SectionHeading>
-                  <ul className="space-y-2">
-                    {event.sources.map((src, i) => (
-                      <li key={i}>
-                        <a
-                          href={src}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-2 text-[13px] text-[#5a8fa5] hover:text-[#7bb0c4] transition-colors"
-                        >
-                          <ExternalLink size={12} />
-                          {src}
-                        </a>
-                      </li>
+              {/* Actual gallery when images exist */}
+              {event.images && event.images.length > 0 && (
+                <section className="mb-12">
+                  <SectionLabel>Gallery</SectionLabel>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {event.images.map((img, i) => (
+                      <div key={i} className="rounded-xl overflow-hidden aspect-[4/3]">
+                        <img src={img} alt={`${event.title} ${i + 1}`} className="w-full h-full object-cover" />
+                      </div>
                     ))}
-                  </ul>
-                </div>
+                  </div>
+                </section>
+              )}
+
+              {/* ── Video Placeholder ── */}
+              {!event.videoUrl && (
+                <section className="mb-12">
+                  <SectionLabel>Video</SectionLabel>
+                  <div className="aspect-video rounded-2xl flex flex-col items-center justify-center gap-3 cursor-default"
+                    style={{ background: 'rgba(255,255,255,0.015)', border: '1px solid rgba(255,255,255,0.04)' }}>
+                    <div className="w-16 h-16 rounded-full flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.04)' }}>
+                      <Play size={28} className="text-[#2a3448] ml-1" />
+                    </div>
+                    <p className="text-[12px] text-[#2a3448]">Video content coming soon</p>
+                  </div>
+                </section>
+              )}
+
+              {/* ── Sources ── */}
+              {event.sources && event.sources.length > 0 && (
+                <section className="mb-12">
+                  <SectionLabel>Sources</SectionLabel>
+                  <div className="space-y-2">
+                    {event.sources.map((src, i) => (
+                      <a key={i} href={src} target="_blank" rel="noopener noreferrer"
+                        className="flex items-center gap-2.5 p-3 rounded-lg text-[13px] text-[#5a8fa5] hover:text-[#7bb0c4] hover:bg-white/[0.02] transition-colors"
+                        style={{ border: '1px solid rgba(255,255,255,0.04)' }}>
+                        <ExternalLink size={13} />
+                        <span className="truncate">{src}</span>
+                      </a>
+                    ))}
+                  </div>
+                </section>
               )}
 
               {/* ── Related Events ── */}
               {relatedEvents.length > 0 && (
-                <div className="mb-10">
-                  <SectionHeading>Related Events</SectionHeading>
+                <section className="mb-12">
+                  <SectionLabel>Related Events</SectionLabel>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {relatedEvents.map(re => {
-                      const rc = CATEGORY_META[re.category];
-                      return (
-                        <button
-                          key={re.id}
-                          onClick={() => selectEvent(re.id)}
-                          className="flex items-start gap-3 p-4 rounded-xl text-left cursor-pointer transition-colors hover:bg-white/[0.04]"
-                          style={{ border: '1px solid rgba(255, 255, 255, 0.05)' }}
-                        >
-                          <span
-                            className="w-2 h-2 rounded-full mt-1.5 shrink-0"
-                            style={{ background: rc?.color ?? '#7a869a' }}
-                          />
-                          <div className="min-w-0">
-                            <p className="text-[13px] font-medium text-[#c8ced8] truncate">{re.title}</p>
-                            <p className="text-[11px] text-[#5a6d8a] mt-0.5">
-                              {formatYear(re.year)}
-                              {re.locationName && ` · ${re.locationName}`}
-                            </p>
-                          </div>
-                        </button>
-                      );
-                    })}
+                    {relatedEvents.map(re => (
+                      <RelatedCard key={re.id} event={re} onSelect={selectEvent} />
+                    ))}
                   </div>
-                </div>
+                </section>
               )}
             </div>
           </motion.div>
@@ -326,30 +341,63 @@ export function EventStory() {
   );
 }
 
-// ── Small helper components ────────────────────────────────────────
+// ── Sub-components ─────────────────────────────────────────────────
 
-function SectionHeading({ children }: { children: React.ReactNode }) {
+function NavButton({ dir, event, onSelect }: { dir: 'left' | 'right'; event: HistoricalEvent | null; onSelect: (id: string) => void }) {
+  if (!event) return <div className="w-10" />;
   return (
-    <h3 className="text-[11px] font-semibold tracking-wider uppercase text-[#4d5e78] mb-4">
+    <button
+      onClick={() => onSelect(event.id)}
+      className="flex items-center gap-2 px-3 py-2 rounded-full bg-white/[0.05] hover:bg-white/[0.08] backdrop-blur-sm transition-colors cursor-pointer max-w-[200px]"
+    >
+      {dir === 'left' && <ChevronLeft size={14} className="text-[#6b7a94] shrink-0" />}
+      <span className="text-[11px] text-[#6b7a94] truncate">{event.title}</span>
+      {dir === 'right' && <ChevronRight size={14} className="text-[#6b7a94] shrink-0" />}
+    </button>
+  );
+}
+
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <h3 className="text-[11px] font-semibold tracking-[0.12em] uppercase text-[#3d4f6a] mb-5">
       {children}
     </h3>
   );
 }
 
-function FactCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+function FactCard({ icon, label, value, color }: { icon: React.ReactNode; label: string; value: string; color: string }) {
   return (
-    <div
-      className="rounded-lg p-3"
-      style={{
-        background: 'rgba(255, 255, 255, 0.02)',
-        border: '1px solid rgba(255, 255, 255, 0.05)',
-      }}
-    >
-      <div className="flex items-center gap-1.5 text-[#4d5e78] mb-1.5">
-        {icon}
-        <span className="text-[10px] font-medium uppercase tracking-wide">{label}</span>
+    <div className="rounded-xl p-4" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
+      <div className="flex items-center gap-1.5 mb-2">
+        <span style={{ color: color + '80' }}>{icon}</span>
+        <span className="text-[10px] font-medium uppercase tracking-wider text-[#3d4f6a]">{label}</span>
       </div>
-      <p className="text-[13px] text-[#9ba8c2] font-medium">{value}</p>
+      <p className="text-[14px] text-[#b0bbd0] font-medium">{value}</p>
     </div>
+  );
+}
+
+function RelatedCard({ event, onSelect }: { event: HistoricalEvent; onSelect: (id: string) => void }) {
+  const cat = CATEGORY_META[event.category];
+  const icon = EVENT_ICONS[event.id] ?? '●';
+  return (
+    <button
+      onClick={() => onSelect(event.id)}
+      className="flex items-center gap-4 p-4 rounded-xl text-left cursor-pointer transition-all hover:bg-white/[0.03] group"
+      style={{ border: '1px solid rgba(255,255,255,0.05)' }}
+    >
+      <span className="text-2xl w-10 h-10 flex items-center justify-center rounded-lg shrink-0"
+        style={{ background: (cat?.color ?? '#7a869a') + '12' }}>
+        {icon}
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="text-[13px] font-medium text-[#9ba8c2] group-hover:text-[#c8ced8] transition-colors truncate">{event.title}</p>
+        <p className="text-[11px] text-[#3d4f6a] mt-0.5">
+          {formatYear(event.year)}
+          {event.locationName && ` · ${event.locationName}`}
+        </p>
+      </div>
+      <ChevronRight size={14} className="text-[#2a3448] group-hover:text-[#3d4f6a] transition-colors shrink-0" />
+    </button>
   );
 }
