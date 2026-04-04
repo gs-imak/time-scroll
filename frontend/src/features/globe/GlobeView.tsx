@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useMemo, createContext, useContext, useCallback, type ReactNode } from 'react';
+import { useEffect, useRef, useState, createContext, useContext, useCallback, type ReactNode } from 'react';
 import Globe, { type GlobeMethods } from 'react-globe.gl';
 import * as THREE from 'three';
 import { useMapStore } from '@/shared/stores/mapStore';
@@ -40,15 +40,6 @@ const CATEGORY_ICONS: Record<string, string> = {
   war: '⚔️', discovery: '🔭', cultural: '🎭',
   political: '👑', construction: '🏛️', natural: '🌋',
 };
-
-// === Hex to RGB for ring fade ===
-function hexToRgb(hex: string): string {
-  const h = hex.replace('#', '');
-  const r = parseInt(h.substring(0, 2), 16);
-  const g = parseInt(h.substring(2, 4), 16);
-  const b = parseInt(h.substring(4, 6), 16);
-  return `${r},${g},${b}`;
-}
 
 // === Sorted boundary years ===
 const SORTED_BOUNDARY_YEARS = Object.keys(BOUNDARY_YEAR_MAP).map(Number).sort((a, b) => a - b);
@@ -189,17 +180,6 @@ export function GlobeView({ children }: GlobeViewProps) {
     return { x: coords.x, y: coords.y };
   }, []);
 
-  // Build rings data from events for the animated pulse effect
-  const ringsData = useMemo(
-    () =>
-      events.map((e: any) => ({
-        lat: e.latitude,
-        lng: e.longitude,
-        color: CATEGORY_COLORS[e.category] ?? '#8b9dc3',
-      })),
-    [events],
-  );
-
   // Create category-specific 3D marker for each event
   const createCustomMarker = useCallback((d: any) => {
     const color = new THREE.Color(CATEGORY_COLORS[d.category] ?? '#8b9dc3');
@@ -286,14 +266,6 @@ export function GlobeView({ children }: GlobeViewProps) {
               </div>
             `}
 
-            // Animated pulse rings at event locations
-            ringsData={ringsData}
-            ringLat={(d: any) => d.lat}
-            ringLng={(d: any) => d.lng}
-            ringColor={(d: any) => (t: number) => `rgba(${hexToRgb(d.color)}, ${1 - t})`}
-            ringMaxRadius={3}
-            ringPropagationSpeed={2}
-            ringRepeatPeriod={1200}
           />
         )}
         {ready && children}
