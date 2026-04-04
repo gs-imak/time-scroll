@@ -74,7 +74,7 @@ export function LoadingScreen() {
       {visible && (
         <motion.div
           className="fixed inset-0 z-60 flex flex-col items-center justify-center"
-          style={{ background: '#050a18' }}
+          style={{ background: '#08080c' }}
           initial={{ opacity: 1 }}
           exit={{
             opacity: 0,

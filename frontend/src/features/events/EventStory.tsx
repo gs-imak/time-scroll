@@ -110,6 +110,14 @@ export function EventStory() {
   const heroScale = useTransform(scrollYProgress, [0, 0.2], [1, 1.1]);
   const heroOpacity = useTransform(scrollYProgress, [0, 0.15], [0.06, 0]);
 
+  // Parallax side elements — different layers at different speeds
+  const sideLeftY1 = useTransform(scrollYProgress, [0, 1], [100, -300]);   // year — slow
+  const sideLeftY2 = useTransform(scrollYProgress, [0, 1], [400, -100]);   // coordinates — medium
+  const sideRightY1 = useTransform(scrollYProgress, [0, 1], [200, -250]);  // era label — slow
+  const sideRightY2 = useTransform(scrollYProgress, [0, 1], [500, -50]);   // category — medium
+  const sideOpacity1 = useTransform(scrollYProgress, [0, 0.05, 0.15, 0.8, 0.95], [0, 0, 1, 1, 0]);
+  const sideOpacity2 = useTransform(scrollYProgress, [0, 0.1, 0.25, 0.75, 0.9], [0, 0, 1, 1, 0]);
+
   // Section refs for side nav tracking
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
   const setSectionRef = useCallback((id: string) => (el: HTMLElement | null) => { sectionRefs.current[id] = el; }, []);
@@ -209,7 +217,7 @@ export function EventStory() {
           exit={{ opacity: 0 }}
           transition={{ duration: 0.35 }}
         >
-          <div className="absolute inset-0 bg-[#050a14]" onClick={onClose} />
+          <div className="absolute inset-0 bg-[#08080c]" onClick={onClose} />
 
           {/* ── Progress Bar (fixed to viewport top) ── */}
           <div className="absolute top-0 left-0 right-0 h-[3px] z-40 overflow-hidden">
@@ -232,7 +240,7 @@ export function EventStory() {
                 className="group flex items-center gap-2 cursor-pointer"
                 title={SECTION_LABELS[s]}
               >
-                <span className="text-[9px] font-medium tracking-wider uppercase opacity-0 group-hover:opacity-100 transition-opacity text-[#5a6d8a] translate-x-1 group-hover:translate-x-0">
+                <span className="text-[9px] font-medium tracking-wider uppercase opacity-0 group-hover:opacity-100 transition-opacity text-[#55556a] translate-x-1 group-hover:translate-x-0">
                   {SECTION_LABELS[s]}
                 </span>
                 <span
@@ -240,7 +248,7 @@ export function EventStory() {
                   style={{
                     width: activeSection === s ? 10 : 5,
                     height: activeSection === s ? 10 : 5,
-                    background: activeSection === s ? cat.color : '#2a3448',
+                    background: activeSection === s ? cat.color : '#28282f',
                     boxShadow: activeSection === s ? `0 0 6px ${cat.color}50` : 'none',
                   }}
                 />
@@ -261,7 +269,7 @@ export function EventStory() {
                 whileHover={{ scale: 1.1, backgroundColor: 'rgba(255,255,255,0.1)' }}
                 whileTap={{ scale: 0.95 }}
               >
-                <ArrowUp size={16} className="text-[#8b9dc3]" />
+                <ArrowUp size={16} className="text-[#8a8a9a]" />
               </motion.button>
             )}
           </AnimatePresence>
@@ -275,6 +283,66 @@ export function EventStory() {
             exit={{ y: 50, opacity: 0 }}
             transition={{ type: 'spring', stiffness: 280, damping: 28 }}
           >
+            {/* ═══ PARALLAX SIDE ELEMENTS (desktop only) ═══ */}
+            <div className="hidden xl:block pointer-events-none select-none" aria-hidden="true">
+              {/* Left: Large year number */}
+              <motion.div
+                className="absolute left-[3%] top-[500px] z-0"
+                style={{ y: sideLeftY1, opacity: sideOpacity1 }}
+              >
+                <span className="text-[140px] font-extralight leading-none tracking-tight"
+                  style={{ color: '#15151a', WebkitTextStroke: `1px ${cat.color}15` }}>
+                  {Math.abs(event.year)}
+                </span>
+              </motion.div>
+
+              {/* Left: Coordinates */}
+              <motion.div
+                className="absolute left-[4%] top-[900px] z-0"
+                style={{ y: sideLeftY2, opacity: sideOpacity2 }}
+              >
+                <div className="font-mono text-[11px] leading-relaxed" style={{ color: '#1a1a22' }}>
+                  <div>{event.latitude.toFixed(4)}°N</div>
+                  <div>{event.longitude.toFixed(4)}°E</div>
+                </div>
+              </motion.div>
+
+              {/* Right: Era name (vertical) */}
+              <motion.div
+                className="absolute right-[3%] top-[600px] z-0"
+                style={{ y: sideRightY1, opacity: sideOpacity1, writingMode: 'vertical-rl' }}
+              >
+                <span className="text-[14px] font-light tracking-[0.3em] uppercase"
+                  style={{ color: '#15151a' }}>
+                  {era.name}
+                </span>
+              </motion.div>
+
+              {/* Right: Category icon large */}
+              <motion.div
+                className="absolute right-[5%] top-[1100px] z-0"
+                style={{ y: sideRightY2, opacity: sideOpacity2 }}
+              >
+                <span className="text-[80px] opacity-[0.04]">{icon}</span>
+              </motion.div>
+
+              {/* Left: Decorative line */}
+              <motion.div
+                className="absolute left-[6%] top-[1400px] z-0"
+                style={{ y: sideLeftY1, opacity: sideOpacity2 }}
+              >
+                <div className="w-px h-[200px]" style={{ background: `linear-gradient(180deg, transparent, ${cat.color}10, transparent)` }} />
+              </motion.div>
+
+              {/* Right: Decorative line */}
+              <motion.div
+                className="absolute right-[6%] top-[800px] z-0"
+                style={{ y: sideRightY1, opacity: sideOpacity1 }}
+              >
+                <div className="w-px h-[160px]" style={{ background: `linear-gradient(180deg, transparent, ${cat.color}10, transparent)` }} />
+              </motion.div>
+            </div>
+
             {/* ═══ HERO ═══ */}
             <div className="relative min-h-[460px] sm:min-h-[520px] flex flex-col justify-end" style={{ background: cat.gradient }}>
               <div className="absolute inset-0 opacity-[0.03]" style={{
@@ -296,11 +364,11 @@ export function EventStory() {
                   <motion.button onClick={onShare}
                     className="w-10 h-10 rounded-full flex items-center justify-center bg-white/[0.06] hover:bg-white/[0.1] transition-colors cursor-pointer backdrop-blur-sm"
                     whileTap={{ scale: 0.9 }}>
-                    <Share2 size={15} className="text-[#6b7a94]" />
+                    <Share2 size={15} className="text-[#606070]" />
                   </motion.button>
                   <button onClick={onClose}
                     className="w-10 h-10 rounded-full flex items-center justify-center bg-white/[0.06] hover:bg-white/[0.1] transition-colors cursor-pointer backdrop-blur-sm">
-                    <X size={18} className="text-[#8b9dc3]" />
+                    <X size={18} className="text-[#8a8a9a]" />
                   </button>
                 </div>
                 <NavButton dir="right" event={next} onSelect={selectEvent} />
@@ -309,7 +377,7 @@ export function EventStory() {
               {/* Copied toast */}
               <AnimatePresence>
                 {copied && (
-                  <motion.div className="absolute top-16 left-1/2 -translate-x-1/2 z-20 px-4 py-2 rounded-full text-[11px] text-[#8b9dc3]"
+                  <motion.div className="absolute top-16 left-1/2 -translate-x-1/2 z-20 px-4 py-2 rounded-full text-[11px] text-[#8a8a9a]"
                     style={{ background: 'rgba(10,16,28,0.9)', border: '1px solid rgba(255,255,255,0.08)' }}
                     initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
                     Copied to clipboard
@@ -326,16 +394,16 @@ export function EventStory() {
                     {cat.label}
                   </span>
                 </div>
-                <h1 className="text-4xl sm:text-5xl md:text-[3.5rem] font-bold leading-[1.08] text-[#e8ecf2] mb-5">
+                <h1 className="text-4xl sm:text-5xl md:text-[3.5rem] font-bold leading-[1.08] text-[#e0e0e6] mb-5">
                   {event.title}
                 </h1>
 
                 {/* Animated year display */}
-                <div className="text-[28px] sm:text-[36px] font-light text-[#4d5e78] mb-4 tabular-nums">
+                <div className="text-[28px] sm:text-[36px] font-light text-[#454555] mb-4 tabular-nums">
                   <AnimatedYear year={event.year} />
                 </div>
 
-                <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px] text-[#5a6d8a]">
+                <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px] text-[#55556a]">
                   {event.locationName && (
                     <span className="flex items-center gap-1.5"><MapPin size={13} />{event.locationName}</span>
                   )}
@@ -346,7 +414,7 @@ export function EventStory() {
                 </div>
               </motion.div>
 
-              <div className="absolute bottom-0 inset-x-0 h-32" style={{ background: 'linear-gradient(transparent, #050a14)' }} />
+              <div className="absolute bottom-0 inset-x-0 h-32" style={{ background: 'linear-gradient(transparent, #08080c)' }} />
             </div>
 
             {/* ═══ BODY ═══ */}
@@ -355,9 +423,9 @@ export function EventStory() {
               {/* Timeline */}
               <Reveal>
                 <div className="py-10">
-                  <div className="flex items-center justify-between text-[10px] text-[#3d4f6a] uppercase tracking-wider mb-3">
+                  <div className="flex items-center justify-between text-[10px] text-[#3a3a4a] uppercase tracking-wider mb-3">
                     <span>{formatYear(era.startYear)}</span>
-                    <span className="text-[#5a6d8a]">{era.name}</span>
+                    <span className="text-[#55556a]">{era.name}</span>
                     <span>{formatYear(era.endYear)}</span>
                   </div>
                   <div className="relative h-[3px] rounded-full bg-white/[0.06]">
@@ -375,19 +443,19 @@ export function EventStory() {
                           <span className="block rounded-full transition-all duration-300"
                             style={{
                               width: isActive ? 14 : 7, height: isActive ? 14 : 7,
-                              background: isActive ? cat.color : '#3d4f6a',
-                              border: isActive ? '2px solid #050a14' : 'none',
+                              background: isActive ? cat.color : '#3a3a4a',
+                              border: isActive ? '2px solid #08080c' : 'none',
                               transform: 'translate(-50%, -50%)',
                               boxShadow: isActive ? `0 0 10px ${cat.color}60` : 'none',
                             }} />
-                          <span className="absolute bottom-5 left-1/2 -translate-x-1/2 whitespace-nowrap px-2.5 py-1 rounded-md text-[10px] bg-[#0c1425] text-[#8b9dc3] border border-white/[0.08] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                          <span className="absolute bottom-5 left-1/2 -translate-x-1/2 whitespace-nowrap px-2.5 py-1 rounded-md text-[10px] bg-[#0e0e14] text-[#8a8a9a] border border-white/[0.08] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                             {ee.title}
                           </span>
                         </button>
                       );
                     })}
                   </div>
-                  <p className="text-[10px] text-[#2a3448] mt-3">{eraEvents.length} events in this era</p>
+                  <p className="text-[10px] text-[#28282f] mt-3">{eraEvents.length} events in this era</p>
                 </div>
               </Reveal>
 
@@ -409,13 +477,13 @@ export function EventStory() {
                       <div className="text-center relative z-10">
                         <div className="flex items-center justify-center gap-4 mb-3">
                           <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                            <ImageIcon size={20} className="text-[#3d4f6a]" />
+                            <ImageIcon size={20} className="text-[#3a3a4a]" />
                           </div>
                           <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                            <Play size={20} className="text-[#3d4f6a]" />
+                            <Play size={20} className="text-[#3a3a4a]" />
                           </div>
                         </div>
-                        <p className="text-[11px] text-[#3d4f6a]">Media coming soon</p>
+                        <p className="text-[11px] text-[#3a3a4a]">Media coming soon</p>
                       </div>
                     </div>
                   )}
@@ -439,12 +507,12 @@ export function EventStory() {
                 </Reveal>
                 {event.description.split('\n\n').map((para, i) => (
                   <Reveal key={i} delay={i * 0.06}>
-                    <p className="text-[15px] sm:text-[16px] text-[#9ba8c2] leading-[1.9] mb-6">{para}</p>
+                    <p className="text-[15px] sm:text-[16px] text-[#95959f] leading-[1.9] mb-6">{para}</p>
                     {/* Pull-quote after first paragraph */}
                     {i === 0 && pullQuote && (
                       <Reveal delay={0.1}>
                         <blockquote className="my-10 py-6 px-8 border-l-[3px] rounded-r-xl" style={{ borderColor: cat.color, background: `${cat.color}06` }}>
-                          <p className="text-[18px] sm:text-[20px] text-[#b0bbd0] leading-[1.7] italic font-light">
+                          <p className="text-[18px] sm:text-[20px] text-[#a8a8b4] leading-[1.7] italic font-light">
                             "{pullQuote}"
                           </p>
                         </blockquote>
@@ -467,7 +535,7 @@ export function EventStory() {
                           <Lightbulb size={16} style={{ color: cat.color }} />
                           <span className="text-[12px] font-semibold tracking-wider uppercase" style={{ color: cat.color }}>Did you know?</span>
                         </div>
-                        <p className="text-[16px] text-[#b0bbd0] leading-[1.8]">{event.impactText}</p>
+                        <p className="text-[16px] text-[#a8a8b4] leading-[1.8]">{event.impactText}</p>
                       </div>
                     </motion.div>
                   </Reveal>
@@ -506,7 +574,7 @@ export function EventStory() {
                         <motion.div key={i} className="aspect-[4/3] rounded-xl flex items-center justify-center"
                           style={{ background: 'rgba(255,255,255,0.015)', border: '1px solid rgba(255,255,255,0.04)' }}
                           whileHover={{ borderColor: `${cat.color}30`, background: `${cat.color}06` }}>
-                          <ImageIcon size={20} className="text-[#1e2738]" />
+                          <ImageIcon size={20} className="text-[#1a1a22]" />
                         </motion.div>
                       ))}
                     </div>
@@ -529,9 +597,9 @@ export function EventStory() {
                       <motion.div className="w-16 h-16 rounded-full flex items-center justify-center"
                         style={{ background: 'rgba(255,255,255,0.04)' }}
                         whileHover={{ scale: 1.15, background: `${cat.color}15` }}>
-                        <Play size={28} className="text-[#2a3448] ml-1" />
+                        <Play size={28} className="text-[#28282f] ml-1" />
                       </motion.div>
-                      <p className="text-[12px] text-[#2a3448]">Video content coming soon</p>
+                      <p className="text-[12px] text-[#28282f]">Video content coming soon</p>
                     </motion.div>
                   )}
                 </Reveal>
@@ -587,15 +655,15 @@ function NavButton({ dir, event, onSelect }: { dir: 'left' | 'right'; event: His
     <motion.button onClick={() => onSelect(event.id)}
       className="flex items-center gap-2 px-3 py-2 rounded-full bg-white/[0.05] hover:bg-white/[0.08] backdrop-blur-sm transition-colors cursor-pointer max-w-[200px]"
       whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
-      {dir === 'left' && <ChevronLeft size={14} className="text-[#6b7a94] shrink-0" />}
-      <span className="text-[11px] text-[#6b7a94] truncate">{event.title}</span>
-      {dir === 'right' && <ChevronRight size={14} className="text-[#6b7a94] shrink-0" />}
+      {dir === 'left' && <ChevronLeft size={14} className="text-[#606070] shrink-0" />}
+      <span className="text-[11px] text-[#606070] truncate">{event.title}</span>
+      {dir === 'right' && <ChevronRight size={14} className="text-[#606070] shrink-0" />}
     </motion.button>
   );
 }
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
-  return <h3 className="text-[11px] font-semibold tracking-[0.14em] uppercase text-[#3d4f6a] mb-6">{children}</h3>;
+  return <h3 className="text-[11px] font-semibold tracking-[0.14em] uppercase text-[#3a3a4a] mb-6">{children}</h3>;
 }
 
 function FactCard({ icon, label, value, color }: { icon: React.ReactNode; label: string; value: string; color: string }) {
@@ -604,9 +672,9 @@ function FactCard({ icon, label, value, color }: { icon: React.ReactNode; label:
       whileHover={{ borderColor: `${color}25`, y: -3 }} transition={{ type: 'spring', stiffness: 400, damping: 25 }}>
       <div className="flex items-center gap-1.5 mb-2">
         <span style={{ color: color + '80' }}>{icon}</span>
-        <span className="text-[10px] font-medium uppercase tracking-wider text-[#3d4f6a]">{label}</span>
+        <span className="text-[10px] font-medium uppercase tracking-wider text-[#3a3a4a]">{label}</span>
       </div>
-      <p className="text-[14px] text-[#b0bbd0] font-medium">{value}</p>
+      <p className="text-[14px] text-[#a8a8b4] font-medium">{value}</p>
     </motion.div>
   );
 }
@@ -622,10 +690,10 @@ function DiveLink({ emoji, title, subtitle, href, color }: { emoji: string; titl
         <span className="text-lg">{emoji}</span>
       </div>
       <div>
-        <p className="text-[13px] font-medium text-[#9ba8c2]">{title}</p>
-        <p className="text-[11px] text-[#3d4f6a]">{subtitle}</p>
+        <p className="text-[13px] font-medium text-[#95959f]">{title}</p>
+        <p className="text-[11px] text-[#3a3a4a]">{subtitle}</p>
       </div>
-      <ExternalLink size={14} className="text-[#3d4f6a] ml-auto shrink-0" />
+      <ExternalLink size={14} className="text-[#3a3a4a] ml-auto shrink-0" />
     </motion.a>
   );
 }
@@ -642,12 +710,12 @@ function RelatedCard({ event, onSelect }: { event: HistoricalEvent; onSelect: (i
       <span className="text-2xl w-11 h-11 flex items-center justify-center rounded-lg shrink-0"
         style={{ background: (cat?.color ?? '#7a869a') + '12' }}>{icon}</span>
       <div className="min-w-0 flex-1">
-        <p className="text-[13px] font-medium text-[#9ba8c2] group-hover:text-[#c8ced8] transition-colors truncate">{event.title}</p>
-        <p className="text-[11px] text-[#3d4f6a] mt-1">
+        <p className="text-[13px] font-medium text-[#95959f] group-hover:text-[#c0c0c8] transition-colors truncate">{event.title}</p>
+        <p className="text-[11px] text-[#3a3a4a] mt-1">
           {formatYear(event.year)}{event.locationName && ` · ${event.locationName}`}
         </p>
       </div>
-      <ChevronRight size={14} className="text-[#2a3448] group-hover:text-[#3d4f6a] transition-colors shrink-0" />
+      <ChevronRight size={14} className="text-[#28282f] group-hover:text-[#3a3a4a] transition-colors shrink-0" />
     </motion.button>
   );
 }

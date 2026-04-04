@@ -237,11 +237,11 @@ export function GlobeView({ children }: GlobeViewProps) {
               }
             }}
             customLayerLabel={(d: any) => {
-              const c = CATEGORY_COLORS[d.category] ?? '#8b9dc3';
+              const c = CATEGORY_COLORS[d.category] ?? '#8a8a9a';
               return `<div style="
-                background: rgba(10, 16, 30, 0.95);
+                background: rgba(14, 14, 20, 0.95);
                 backdrop-filter: blur(20px);
-                border: 1px solid ${c}40;
+                border: 1px solid rgba(255,255,255,0.06);
                 border-left: 3px solid ${c};
                 border-radius: 10px;
                 padding: 10px 14px;
@@ -249,13 +249,13 @@ export function GlobeView({ children }: GlobeViewProps) {
                 font-family: 'Inter', system-ui, sans-serif;
                 box-shadow: 0 4px 24px rgba(0,0,0,0.6);
               ">
-                <div style="font-size: 13px; font-weight: 600; color: #edf1f7; margin-bottom: 2px;">
+                <div style="font-size: 13px; font-weight: 600; color: #e0e0e6; margin-bottom: 2px;">
                   ${d.title}
                 </div>
                 <div style="font-size: 10px; font-weight: 500; color: ${c}; margin-bottom: 6px;">
                   ${formatYear(d.year)} · ${d.category}
                 </div>
-                <div style="font-size: 11px; color: #8b9dc3; line-height: 1.45;">
+                <div style="font-size: 11px; color: #8a8a9a; line-height: 1.45;">
                   ${d.description?.slice(0, 140)}${d.description?.length > 140 ? '…' : ''}
                 </div>
               </div>`;

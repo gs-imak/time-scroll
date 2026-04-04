@@ -1,26 +1,26 @@
 @theme {
-  /* === Backgrounds === */
-  --color-void: #050a18;
-  --color-surface: #0c1425;
-  --color-elevated: #162036;
-  --color-overlay: rgba(5, 10, 24, 0.9);
+  /* === Backgrounds — warm neutral dark (museum-at-night feel) === */
+  --color-void: #08080c;
+  --color-surface: #0e0e14;
+  --color-elevated: #17171f;
+  --color-overlay: rgba(8, 8, 12, 0.92);
 
-  /* === Borders (visible this time) === */
-  --color-border-subtle: rgba(255, 255, 255, 0.1);
-  --color-border-active: rgba(255, 255, 255, 0.2);
-  --color-border-bright: rgba(255, 255, 255, 0.35);
+  /* === Borders === */
+  --color-border-subtle: rgba(255, 255, 255, 0.07);
+  --color-border-active: rgba(255, 255, 255, 0.14);
+  --color-border-bright: rgba(255, 255, 255, 0.24);
 
-  /* === Text === */
-  --color-text-primary: #eef2f7;
-  --color-text-secondary: #8b9dc3;
-  --color-text-muted: #5a6d8a;
+  /* === Text — neutral, no blue tint === */
+  --color-text-primary: #e0e0e6;
+  --color-text-secondary: #8a8a9a;
+  --color-text-muted: #55556a;
 
-  /* === Accents — desaturated, cinematic ===  */
+  /* === Accents — desaturated, cinematic === */
   --color-accent-gold: #c49a44;
   --color-accent-cyan: #5a9aaa;
   --color-accent-rose: #b85454;
 
-  /* === Category colors — muted jewel tones for dark backgrounds === */
+  /* === Category colors — muted jewel tones === */
   --color-cat-war: #b85454;
   --color-cat-discovery: #5a8fa5;
   --color-cat-cultural: #c49a44;

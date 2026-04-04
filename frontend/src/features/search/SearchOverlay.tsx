@@ -210,7 +210,7 @@ export function SearchOverlay() {
           {/* Backdrop */}
           <motion.div
             className="absolute inset-0"
-            style={{ background: 'rgba(5, 10, 24, 0.6)' }}
+            style={{ background: 'rgba(8, 8, 12, 0.6)' }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}

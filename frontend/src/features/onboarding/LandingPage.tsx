@@ -200,7 +200,7 @@ export default function LandingPage() {
           className="fixed inset-0 z-50 flex flex-col items-center justify-center overflow-y-auto overflow-x-hidden"
           style={{
             background:
-              'radial-gradient(ellipse 80% 60% at 50% 45%, #0c1e3a 0%, #070e20 40%, #050a18 70%, #030510 100%)',
+              'radial-gradient(ellipse 80% 60% at 50% 45%, #14141e 0%, #0c0c12 40%, #08080c 70%, #050508 100%)',
           }}
           exit={{
             scale: 1.15,
@@ -215,7 +215,7 @@ export default function LandingPage() {
           <div
             className="absolute inset-x-0 bottom-0 h-48 pointer-events-none"
             style={{
-              background: 'linear-gradient(to top, #050a18 0%, transparent 100%)',
+              background: 'linear-gradient(to top, #08080c 0%, transparent 100%)',
             }}
           />
 
@@ -431,7 +431,7 @@ export default function LandingPage() {
         <motion.div
           key="exit-void"
           className="fixed inset-0 z-50"
-          style={{ background: '#050a18' }}
+          style={{ background: '#08080c' }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.4 }}

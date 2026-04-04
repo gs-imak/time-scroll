@@ -30,7 +30,7 @@ export function EraIndicator() {
           <motion.div
             className="absolute inset-0"
             style={{
-              background: `radial-gradient(ellipse at center, rgba(5, 10, 24, 0.7) 0%, rgba(5, 10, 24, 0.4) 50%, transparent 80%)`,
+              background: `radial-gradient(ellipse at center, rgba(8, 8, 12, 0.7) 0%, rgba(8, 8, 12, 0.4) 50%, transparent 80%)`,
             }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

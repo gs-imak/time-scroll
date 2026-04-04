@@ -259,7 +259,7 @@ export function TimelineScrubber() {
                       opacity: era.isActive ? 0.9 : 0.2,
                       borderRight:
                         i < eraSegments.length - 1
-                          ? '1px solid rgba(5,10,24,0.6)'
+                          ? '1px solid rgba(8,8,12,0.6)'
                           : undefined,
                     }}
                   />
