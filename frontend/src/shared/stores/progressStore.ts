@@ -18,6 +18,10 @@ interface ProgressState {
   lastVisitDate: string | null;
   favoriteEvents: string[];
   eventNotes: Record<string, string>;
+  dailyChallengeEventId: string | null;
+  dailyChallengeDate: string | null;
+  dailyChallengeCompleted: boolean;
+  compareEvents: [string, string] | null;
 }
 
 interface ProgressActions {
@@ -28,6 +32,10 @@ interface ProgressActions {
   totalEventsExplored: () => number;
   toggleFavorite: (id: string) => void;
   setEventNote: (id: string, note: string) => void;
+  getDailyChallenge: () => string;
+  completeDailyChallenge: () => void;
+  setCompareEvent: (id: string) => void;
+  clearCompareEvents: () => void;
 }
 
 type ProgressStore = ProgressState & ProgressActions;
@@ -147,6 +155,10 @@ export const useProgressStore = create<ProgressStore>()(
       lastVisitDate: null,
       favoriteEvents: [],
       eventNotes: {},
+      dailyChallengeEventId: null,
+      dailyChallengeDate: null,
+      dailyChallengeCompleted: false,
+      compareEvents: null,
 
       totalEventsExplored: () => get().viewedEvents.length,
 
@@ -223,6 +235,52 @@ export const useProgressStore = create<ProgressStore>()(
           set({ eventNotes: { ...state.eventNotes, [id]: note } });
         }
       },
+
+      getDailyChallenge: () => {
+        const state = get();
+        const today = getToday();
+
+        // If date hasn't changed and we already have an event, return it
+        if (state.dailyChallengeDate === today && state.dailyChallengeEventId) {
+          return state.dailyChallengeEventId;
+        }
+
+        // Date changed — reset completion and pick a new event deterministically
+        // Simple hash from date string: sum of char codes
+        const seed = today.split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+        const eventIds = SEED_EVENTS.map(e => e.id);
+        const index = seed % eventIds.length;
+        const eventId = eventIds[index]!;
+
+        set({
+          dailyChallengeEventId: eventId,
+          dailyChallengeDate: today,
+          dailyChallengeCompleted: false,
+        });
+
+        return eventId;
+      },
+
+      completeDailyChallenge: () => {
+        set({ dailyChallengeCompleted: true });
+      },
+
+      setCompareEvent: (id: string) => {
+        const state = get();
+        if (!state.compareEvents) {
+          set({ compareEvents: [id, ''] as [string, string] });
+        } else if (state.compareEvents[1] === '') {
+          if (state.compareEvents[0] === id) return;
+          set({ compareEvents: [state.compareEvents[0], id] });
+        } else {
+          // Both slots full — start fresh with this event
+          set({ compareEvents: [id, ''] as [string, string] });
+        }
+      },
+
+      clearCompareEvents: () => {
+        set({ compareEvents: null });
+      },
     }),
     {
       name: 'time-scroll-progress',
@@ -234,6 +292,9 @@ export const useProgressStore = create<ProgressStore>()(
         lastVisitDate: state.lastVisitDate,
         favoriteEvents: state.favoriteEvents,
         eventNotes: state.eventNotes,
+        dailyChallengeEventId: state.dailyChallengeEventId,
+        dailyChallengeDate: state.dailyChallengeDate,
+        dailyChallengeCompleted: state.dailyChallengeCompleted,
       }),
     },
   ),

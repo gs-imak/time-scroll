@@ -3,12 +3,13 @@ import { useNavigate } from 'react-router';
 import { motion } from 'framer-motion';
 import {
   Flame, Globe, Dices, Brain, Trophy, ArrowRight,
-  Compass, Sparkles, Heart,
+  Compass, Sparkles, Heart, CheckCircle, Scale, BookOpen, Clock, ChevronRight,
 } from 'lucide-react';
 import { useProgressStore, ACHIEVEMENTS } from '@/shared/stores/progressStore';
 import { useEventsStore } from '@/shared/stores/eventsStore';
 import { ERAS } from '@/shared/utils/constants';
 import { EVENT_QUIZZES } from '@/shared/data/eventQuizzes';
+import { JOURNEYS } from '@/shared/data/journeys';
 import { cn } from '@/shared/utils/cn';
 
 const ERA_COLORS: Record<string, string> = {
@@ -93,10 +94,19 @@ export default function Dashboard() {
   const currentStreak = useProgressStore(s => s.currentStreak);
   const updateStreak = useProgressStore(s => s.updateStreak);
   const favoriteEvents = useProgressStore(s => s.favoriteEvents);
+  const getDailyChallenge = useProgressStore(s => s.getDailyChallenge);
+  const dailyChallengeCompleted = useProgressStore(s => s.dailyChallengeCompleted);
+  const setCompareEvent = useProgressStore(s => s.setCompareEvent);
 
   const events = useEventsStore(s => s.events);
 
   useEffect(() => { updateStreak(); }, [updateStreak]);
+
+  const dailyEventId = useMemo(() => getDailyChallenge(), [getDailyChallenge]);
+  const dailyEvent = useMemo(
+    () => events.find(e => e.id === dailyEventId),
+    [events, dailyEventId],
+  );
 
   const totalEvents = events.length;
   const exploredCount = viewedEvents.length;
@@ -202,6 +212,112 @@ export default function Dashboard() {
           </div>
         </motion.header>
 
+        {/* ── Daily Challenge ── */}
+        {dailyEvent && (
+          <motion.section className="mb-12" {...section(0.15)}>
+            <GlassCard
+              className="relative overflow-hidden"
+              style={{
+                border: dailyChallengeCompleted
+                  ? '1px solid rgba(109, 148, 118, 0.35)'
+                  : '1px solid rgba(196, 154, 68, 0.35)',
+                boxShadow: dailyChallengeCompleted
+                  ? '0 0 24px rgba(109, 148, 118, 0.08)'
+                  : '0 0 24px rgba(196, 154, 68, 0.08)',
+              }}
+            >
+              <div className="flex flex-col sm:flex-row gap-0">
+                {/* Image */}
+                <div
+                  className="w-full sm:w-[220px] h-[140px] sm:h-auto relative flex-shrink-0 overflow-hidden"
+                  style={{
+                    background: dailyEvent.imageUrl
+                      ? `url(${dailyEvent.imageUrl}) center/cover`
+                      : `linear-gradient(135deg, ${CATEGORY_COLORS[dailyEvent.category] ?? '#8a8a9a'}30, ${CATEGORY_COLORS[dailyEvent.category] ?? '#8a8a9a'}10)`,
+                  }}
+                >
+                  <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, transparent 40%, rgba(14,14,20,0.95) 100%)' }} />
+                  <div className="absolute inset-0 sm:hidden" style={{ background: 'linear-gradient(to bottom, transparent 40%, rgba(14,14,20,0.95) 100%)' }} />
+                </div>
+
+                {/* Content */}
+                <div className="flex-1 px-5 py-4 sm:px-6 sm:py-5 flex flex-col justify-center">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span
+                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full"
+                      style={{
+                        fontFamily: "'JetBrains Mono', monospace",
+                        fontSize: '11px',
+                        fontWeight: 600,
+                        letterSpacing: '0.08em',
+                        textTransform: 'uppercase' as const,
+                        background: dailyChallengeCompleted ? 'rgba(109, 148, 118, 0.15)' : 'rgba(196, 154, 68, 0.15)',
+                        color: dailyChallengeCompleted ? '#6d9476' : '#c49a44',
+                        border: dailyChallengeCompleted ? '1px solid rgba(109, 148, 118, 0.2)' : '1px solid rgba(196, 154, 68, 0.2)',
+                      }}
+                    >
+                      {dailyChallengeCompleted ? (
+                        <><CheckCircle size={12} /> Completed</>
+                      ) : (
+                        <>Daily Challenge</>
+                      )}
+                    </span>
+                    <span
+                      className="px-2.5 py-0.5 rounded-full"
+                      style={{
+                        fontFamily: "'JetBrains Mono', monospace",
+                        fontSize: '11px',
+                        color: CATEGORY_COLORS[dailyEvent.category] ?? '#8a8a9a',
+                        background: `${CATEGORY_COLORS[dailyEvent.category] ?? '#8a8a9a'}15`,
+                      }}
+                    >
+                      {dailyEvent.category}
+                    </span>
+                  </div>
+
+                  <h3
+                    className="text-text-primary"
+                    style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '20px', fontWeight: 600, lineHeight: 1.3 }}
+                  >
+                    {dailyEvent.title}
+                  </h3>
+                  <span
+                    className="mt-1"
+                    style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '13px', color: '#55556a' }}
+                  >
+                    {formatYear(dailyEvent.year)}{dailyEvent.locationName ? ` \u00b7 ${dailyEvent.locationName}` : ''}
+                  </span>
+
+                  <div className="mt-4">
+                    {dailyChallengeCompleted ? (
+                      <p style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '14px', color: '#6d9476' }}>
+                        Well done! Come back tomorrow for a new challenge.
+                      </p>
+                    ) : (
+                      <motion.button
+                        onClick={() => navigate(`/explore?event=${dailyEvent.id}`)}
+                        className="flex items-center gap-2 h-[44px] px-5 rounded-[10px] cursor-pointer"
+                        style={{
+                          fontFamily: "'Space Grotesk', sans-serif",
+                          fontSize: '14px',
+                          fontWeight: 600,
+                          background: 'linear-gradient(135deg, #c49a44 0%, #a07830 100%)',
+                          color: '#08080c',
+                        }}
+                        whileHover={{ scale: 1.04, boxShadow: '0 0 24px rgba(196, 154, 68, 0.3)' }}
+                        whileTap={{ scale: 0.96 }}
+                      >
+                        Take the Challenge
+                        <ArrowRight size={16} strokeWidth={2.2} />
+                      </motion.button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </GlassCard>
+          </motion.section>
+        )}
+
         {/* ── Progress Overview ── */}
         <motion.section className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-12" {...section(0.2)}>
           <GlassCard className="flex items-center gap-4 p-5">
@@ -256,6 +372,78 @@ export default function Dashboard() {
           </GlassCard>
         </motion.section>
 
+        {/* ── Featured Journeys ── */}
+        <motion.section className="mb-12" {...section(0.25)}>
+          <div className="flex items-center justify-between mb-4">
+            <SectionLabel>Featured Journeys</SectionLabel>
+            <button
+              onClick={() => navigate('/journeys')}
+              className="flex items-center gap-1 cursor-pointer transition-colors duration-200 hover:text-[#c49a44]"
+              style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: '#55556a' }}
+            >
+              View all <ChevronRight size={14} />
+            </button>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {JOURNEYS.slice(0, 3).map((journey, i) => {
+              const viewedInJourney = journey.eventIds.filter(id => viewedEvents.includes(id)).length;
+              const progress = journey.eventIds.length > 0 ? viewedInJourney / journey.eventIds.length : 0;
+              return (
+                <motion.div
+                  key={journey.id}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.3 + i * 0.08, ease: EASE }}
+                >
+                  <GlassCard
+                    className="group relative overflow-hidden cursor-pointer transition-all duration-200 hover:border-white/[0.14] hover:translate-y-[-2px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-void active:scale-[0.97]"
+                    style={{ border: '1px solid rgba(255,255,255,0.06)' }}
+                    onClick={() => navigate(`/journeys/${journey.id}`)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={e => e.key === 'Enter' && navigate(`/journeys/${journey.id}`)}
+                  >
+                    {progress > 0 && (
+                      <div
+                        className="absolute top-0 left-0 h-[3px]"
+                        style={{
+                          width: `${progress * 100}%`,
+                          background: 'linear-gradient(90deg, #c49a44, #a07830)',
+                        }}
+                      />
+                    )}
+                    <div className="px-5 py-4">
+                      <div className="flex items-center gap-3 mb-2">
+                        <span style={{ fontSize: '20px' }}>{journey.icon}</span>
+                        <h3
+                          className="text-text-primary group-hover:text-[#c49a44] transition-colors truncate"
+                          style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '15px', fontWeight: 500 }}
+                        >
+                          {journey.title}
+                        </h3>
+                      </div>
+                      <p
+                        className="line-clamp-2 mb-3"
+                        style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '13px', color: '#8a8a9a', lineHeight: 1.5 }}
+                      >
+                        {journey.description}
+                      </p>
+                      <div className="flex items-center gap-3">
+                        <span className="inline-flex items-center gap-1" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', color: '#55556a' }}>
+                          <BookOpen size={12} /> {journey.eventIds.length} events
+                        </span>
+                        <span className="inline-flex items-center gap-1" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', color: '#55556a' }}>
+                          <Clock size={12} /> {journey.estimatedMinutes} min
+                        </span>
+                      </div>
+                    </div>
+                  </GlassCard>
+                </motion.div>
+              );
+            })}
+          </div>
+        </motion.section>
+
         {/* ── Continue Exploring ── */}
         <motion.section className="mb-12" {...section(0.3)}>
           <SectionLabel>Continue Your Journey</SectionLabel>
@@ -290,6 +478,21 @@ export default function Dashboard() {
                           className="absolute top-3 left-3 w-2.5 h-2.5 rounded-full"
                           style={{ background: catColor, boxShadow: `0 0 8px ${catColor}60` }}
                         />
+                        <motion.button
+                          className="absolute top-2.5 right-2.5 flex items-center justify-center rounded-[8px] opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                          style={{
+                            width: '36px', height: '36px',
+                            background: 'rgba(8, 8, 12, 0.7)',
+                            backdropFilter: 'blur(8px)',
+                            border: '1px solid rgba(255,255,255,0.1)',
+                          }}
+                          onClick={(e) => { e.stopPropagation(); setCompareEvent(event.id); }}
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          title="Compare this event"
+                        >
+                          <Scale size={14} style={{ color: '#8a8a9a' }} />
+                        </motion.button>
                       </div>
                       <div className="px-4 py-3">
                         <h3
@@ -358,6 +561,21 @@ export default function Dashboard() {
                           style={{ background: catColor, boxShadow: `0 0 8px ${catColor}60` }}
                         />
                         <Heart size={14} fill="#c49a44" stroke="#c49a44" className="absolute top-3 right-3" />
+                        <motion.button
+                          className="absolute top-2.5 right-8 flex items-center justify-center rounded-[8px] opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                          style={{
+                            width: '36px', height: '36px',
+                            background: 'rgba(8, 8, 12, 0.7)',
+                            backdropFilter: 'blur(8px)',
+                            border: '1px solid rgba(255,255,255,0.1)',
+                          }}
+                          onClick={(e) => { e.stopPropagation(); setCompareEvent(event.id); }}
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          title="Compare this event"
+                        >
+                          <Scale size={14} style={{ color: '#8a8a9a' }} />
+                        </motion.button>
                       </div>
                       <div className="px-4 py-3">
                         <h3
@@ -453,6 +671,20 @@ export default function Dashboard() {
                     <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: '#55556a' }}>
                       {formatYear(event.year)}
                     </span>
+                    <motion.span
+                      className="flex items-center justify-center rounded-[8px] cursor-pointer opacity-0 hover:opacity-100 focus-visible:opacity-100 transition-opacity ml-1"
+                      style={{
+                        width: '36px', height: '36px', flexShrink: 0,
+                        background: 'rgba(255,255,255,0.04)',
+                        border: '1px solid rgba(255,255,255,0.08)',
+                      }}
+                      onClick={(e) => { e.stopPropagation(); setCompareEvent(event.id); }}
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      title="Compare this event"
+                    >
+                      <Scale size={14} style={{ color: '#8a8a9a' }} />
+                    </motion.span>
                   </button>
                 );
               })}

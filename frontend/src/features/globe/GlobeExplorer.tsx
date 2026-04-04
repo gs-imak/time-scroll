@@ -13,6 +13,7 @@ import { LoadingScreen } from '@/features/onboarding/LoadingScreen';
 import { OnboardingTour } from '@/features/onboarding/OnboardingTour';
 import { AchievementToast } from '@/shared/components/AchievementToast';
 import { KeyboardHelp } from '@/features/help/KeyboardHelp';
+import { ComparisonTool } from '@/features/comparison/ComparisonTool';
 import { useTimeStore } from '@/shared/stores/timeStore';
 import { useEventsStore } from '@/shared/stores/eventsStore';
 
@@ -95,6 +96,7 @@ export default function GlobeExplorer() {
       <SearchOverlay />
       <TimelineScrubber />
       <KeyboardHelp />
+      <ComparisonTool />
       <LoadingScreen />
       <OnboardingTour />
     </div>

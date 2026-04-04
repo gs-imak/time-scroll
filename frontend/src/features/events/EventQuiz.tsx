@@ -1,7 +1,8 @@
 import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle, XCircle, ChevronRight, RotateCcw } from 'lucide-react';
+import { CheckCircle, XCircle, ChevronRight, RotateCcw, Star } from 'lucide-react';
 import { EVENT_QUIZZES } from '@/shared/data/eventQuizzes';
+import { useProgressStore } from '@/shared/stores/progressStore';
 
 interface EventQuizProps {
   eventId: string;
@@ -18,6 +19,11 @@ export function EventQuiz({ eventId, eventTitle, categoryColor, onComplete }: Ev
   const [correctCount, setCorrectCount] = useState(0);
   const [finished, setFinished] = useState(false);
   const [started, setStarted] = useState(false);
+  const [isDailyComplete, setIsDailyComplete] = useState(false);
+
+  const dailyChallengeEventId = useProgressStore(s => s.dailyChallengeEventId);
+  const dailyChallengeCompleted = useProgressStore(s => s.dailyChallengeCompleted);
+  const completeDailyChallenge = useProgressStore(s => s.completeDailyChallenge);
 
   if (!questions || questions.length === 0) return null;
 
@@ -44,8 +50,14 @@ export function EventQuiz({ eventId, eventTitle, categoryColor, onComplete }: Ev
       const finalScore = Math.round(((correctCount + (isCorrect ? 0 : 0)) / total) * 100);
       setFinished(true);
       onComplete?.(finalScore);
+
+      // Check if this is the daily challenge event
+      if (eventId === dailyChallengeEventId && !dailyChallengeCompleted) {
+        completeDailyChallenge();
+        setIsDailyComplete(true);
+      }
     }
-  }, [currentQ, total, correctCount, isCorrect, onComplete]);
+  }, [currentQ, total, correctCount, isCorrect, onComplete, eventId, dailyChallengeEventId, dailyChallengeCompleted, completeDailyChallenge]);
 
   const handleRestart = useCallback(() => {
     setCurrentQ(0);
@@ -115,6 +127,24 @@ export function EventQuiz({ eventId, eventTitle, categoryColor, onComplete }: Ev
             transition={{ duration: 0.8, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
           />
         </div>
+
+        {isDailyComplete && (
+          <motion.div
+            className="flex items-center justify-center gap-2 mb-5 px-4 py-3 rounded-xl"
+            style={{
+              background: 'rgba(196, 154, 68, 0.12)',
+              border: '1px solid rgba(196, 154, 68, 0.25)',
+            }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+          >
+            <Star size={16} style={{ color: '#c49a44' }} fill="#c49a44" />
+            <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '14px', fontWeight: 600, color: '#c49a44' }}>
+              Daily Challenge Complete!
+            </span>
+          </motion.div>
+        )}
 
         <div className="flex items-center justify-center gap-3">
           <motion.button

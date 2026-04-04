@@ -14,6 +14,7 @@ import { formatYear, formatYearRange } from '@/shared/utils/format';
 import { ERAS } from '@/shared/utils/constants';
 import type { HistoricalEvent } from '@/shared/types/events';
 import { EventQuiz } from './EventQuiz';
+import { EventMapVisual } from './EventMapVisual';
 
 // ── Category visuals ──
 const CATEGORY_META: Record<string, { color: string; label: string; gradient: string }> = {
@@ -692,6 +693,9 @@ export function EventStory() {
                   <FactCard icon={<Clock size={14} />} label="Era" value={era.name} color={cat.color} />
                 </div>
               </Reveal>
+
+              {/* Interactive Map Visual */}
+              <EventMapVisual eventId={event.id} />
 
               {/* Overview */}
               <section id="overview" ref={setSectionRef('overview')} className="mb-20">

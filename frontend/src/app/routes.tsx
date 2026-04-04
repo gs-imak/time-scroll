@@ -6,6 +6,8 @@ const LandingPage = lazy(() => import('@/features/onboarding/LandingPage'));
 const Dashboard = lazy(() => import('@/features/dashboard/Dashboard'));
 const GlobeExplorer = lazy(() => import('@/features/globe/GlobeExplorer'));
 const TimelineView = lazy(() => import('@/features/timeline/TimelineView'));
+const JourneyBrowser = lazy(() => import('@/features/journeys/JourneyBrowser'));
+const JourneyPlayer = lazy(() => import('@/features/journeys/JourneyPlayer'));
 
 function Loading() {
   return (
@@ -49,6 +51,22 @@ export const router = createBrowserRouter([
         element: (
           <Suspense fallback={<Loading />}>
             <GlobeExplorer />
+          </Suspense>
+        ),
+      },
+      {
+        path: '/journeys',
+        element: (
+          <Suspense fallback={<Loading />}>
+            <JourneyBrowser />
+          </Suspense>
+        ),
+      },
+      {
+        path: '/journeys/:journeyId',
+        element: (
+          <Suspense fallback={<Loading />}>
+            <JourneyPlayer />
           </Suspense>
         ),
       },
