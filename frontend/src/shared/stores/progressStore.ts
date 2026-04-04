@@ -66,11 +66,18 @@ export const ACHIEVEMENTS: Achievement[] = [
     check: (s) => s.viewedEvents.length >= 20,
   },
   {
+    id: 'scholar',
+    title: 'Scholar',
+    desc: 'Explore 30 events',
+    icon: '\u{1F9D0}',
+    check: (s) => s.viewedEvents.length >= 30,
+  },
+  {
     id: 'master',
     title: 'Master Historian',
-    desc: 'Explore all 27 events',
+    desc: 'Explore all 45 events',
     icon: '\u{1F3C6}',
-    check: (s) => s.viewedEvents.length >= 27,
+    check: (s) => s.viewedEvents.length >= 45,
   },
   {
     id: 'quiz-ace',

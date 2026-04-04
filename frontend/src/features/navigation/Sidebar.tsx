@@ -197,7 +197,7 @@ function DesktopSidebar() {
       onMouseLeave={() => setExpanded(false)}
       aria-label="Main navigation"
     >
-      <div className="flex flex-col flex-1 py-4 px-2 gap-1">
+      <div className="flex flex-col flex-1 pt-4 pb-[140px] px-2 gap-1">
         {/* Logo / brand mark area */}
         <div
           className="flex items-center justify-center h-11 mb-2 shrink-0"
@@ -329,7 +329,7 @@ function MobileDrawer() {
     <>
       {/* Hamburger trigger */}
       <motion.button
-        className="fixed top-3 left-3 z-30 flex items-center justify-center w-11 h-11 rounded-[10px] cursor-pointer"
+        className="fixed top-3 left-3 z-40 flex items-center justify-center w-11 h-11 rounded-[10px] cursor-pointer"
         style={{
           background: 'rgba(14, 14, 20, 0.85)',
           backdropFilter: 'blur(12px)',
