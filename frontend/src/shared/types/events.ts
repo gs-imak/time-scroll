@@ -12,6 +12,7 @@ export interface HistoricalEvent {
   category: EventCategory;
   imageUrl?: string;
   videoUrl?: string;
+  modelUrl?: string;
   images?: string[];
   impactText?: string;
   locationName?: string;

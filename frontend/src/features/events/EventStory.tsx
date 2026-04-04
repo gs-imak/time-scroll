@@ -524,6 +524,28 @@ export function EventStory() {
                 </div>
               </Reveal>
 
+              {/* 3D Model Viewer (when modelUrl exists) */}
+              {event.modelUrl && (
+                <Reveal>
+                  <section className="mb-16">
+                    <SectionLabel>3D Model — Explore in 3D</SectionLabel>
+                    <div className="rounded-2xl overflow-hidden aspect-[16/10]" style={{ border: '1px solid rgba(255,255,255,0.06)' }}>
+                      <iframe
+                        src={event.modelUrl}
+                        className="w-full h-full"
+                        allow="autoplay; fullscreen; xr-spatial-tracking"
+                        allowFullScreen
+                        title={`3D Model: ${event.title}`}
+                        style={{ border: 'none' }}
+                      />
+                    </div>
+                    <p className="text-[11px] text-[#3a3a4a] mt-3 text-center">
+                      Drag to rotate · Scroll to zoom · Shift+drag to pan
+                    </p>
+                  </section>
+                </Reveal>
+              )}
+
               {/* Key Facts */}
               <Reveal delay={0.1}>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-16">

@@ -42,7 +42,7 @@ export function CategoryFilters() {
       className={
         isMobile
           ? 'fixed top-4 left-3 right-3 z-30 glass rounded-xl p-2 overflow-x-auto'
-          : 'absolute top-[280px] left-5 z-30 glass rounded-xl p-2'
+          : 'absolute top-[280px] left-[80px] z-30 glass rounded-xl p-2'
       }
       initial={isMobile ? { y: -20, opacity: 0 } : { x: -40, opacity: 0 }}
       animate={isMobile ? { y: 0, opacity: 1 } : { x: 0, opacity: 1 }}
