@@ -35,6 +35,11 @@ const CATEGORY_COLORS: Record<string, string> = {
 };
 
 
+const CATEGORY_ICONS: Record<string, string> = {
+  war: '⚔️', discovery: '🔭', cultural: '🎭',
+  political: '👑', construction: '🏛️', natural: '🌋',
+};
+
 // === Hex to RGB for ring fade ===
 function hexToRgb(hex: string): string {
   const h = hex.replace('#', '');
@@ -194,6 +199,93 @@ export function GlobeView({ children }: GlobeViewProps) {
     [events],
   );
 
+  // Create custom 3D marker mesh for each event
+  const createCustomMarker = useCallback((d: any) => {
+    const color = new THREE.Color(CATEGORY_COLORS[d.category] ?? '#8b9dc3');
+    const group = new THREE.Group();
+
+    // Outer glow cone — translucent, large
+    const glowGeo = new THREE.ConeGeometry(3.5, 14, 16, 1, true);
+    const glowMat = new THREE.MeshBasicMaterial({
+      color,
+      transparent: true,
+      opacity: 0.08,
+      side: THREE.DoubleSide,
+      depthWrite: false,
+    });
+    const glow = new THREE.Mesh(glowGeo, glowMat);
+    glow.position.y = 7;
+    group.add(glow);
+
+    // Inner beam — bright, thin cone
+    const beamGeo = new THREE.ConeGeometry(0.8, 12, 8, 1, true);
+    const beamMat = new THREE.MeshBasicMaterial({
+      color,
+      transparent: true,
+      opacity: 0.5,
+    });
+    const beam = new THREE.Mesh(beamGeo, beamMat);
+    beam.position.y = 6;
+    group.add(beam);
+
+    // Core line — very thin, bright
+    const coreGeo = new THREE.CylinderGeometry(0.15, 0.15, 12, 4);
+    const coreMat = new THREE.MeshBasicMaterial({
+      color: 0xffffff,
+      transparent: true,
+      opacity: 0.7,
+    });
+    const core = new THREE.Mesh(coreGeo, coreMat);
+    core.position.y = 6;
+    group.add(core);
+
+    // Top diamond — floating crystal
+    const diamondGeo = new THREE.OctahedronGeometry(1.8, 0);
+    const diamondMat = new THREE.MeshPhongMaterial({
+      color,
+      emissive: color,
+      emissiveIntensity: 0.6,
+      transparent: true,
+      opacity: 0.9,
+      shininess: 80,
+    });
+    const diamond = new THREE.Mesh(diamondGeo, diamondMat);
+    diamond.position.y = 13.5;
+    group.add(diamond);
+
+    // Diamond glow halo
+    const haloGeo = new THREE.SphereGeometry(3, 12, 8);
+    const haloMat = new THREE.MeshBasicMaterial({
+      color,
+      transparent: true,
+      opacity: 0.1,
+      depthWrite: false,
+    });
+    const halo = new THREE.Mesh(haloGeo, haloMat);
+    halo.position.y = 13.5;
+    group.add(halo);
+
+    return group;
+  }, []);
+
+  // Update marker position using getCoords
+  const updateMarkerPosition = useCallback((obj: any, d: any) => {
+    if (!globeRef.current) return;
+    const coords = globeRef.current.getCoords(d.latitude, d.longitude, 0.01);
+    if (coords) {
+      Object.assign(obj.position, coords);
+
+      // Orient the marker to point away from the globe center
+      const pos = new THREE.Vector3(coords.x, coords.y, coords.z);
+      const up = pos.clone().normalize();
+      const quaternion = new THREE.Quaternion().setFromUnitVectors(
+        new THREE.Vector3(0, 1, 0),
+        up,
+      );
+      obj.setRotationFromQuaternion(quaternion);
+    }
+  }, []);
+
   return (
     <GlobeContext.Provider value={{ globeRef, getScreenCoords }}>
       <div ref={containerRef} className="absolute inset-0">
@@ -221,52 +313,49 @@ export function GlobeView({ children }: GlobeViewProps) {
             polygonAltitude={0.001}
             polygonsTransitionDuration={600}
 
-            // Event markers — glowing vertical beams
-            pointsData={events}
-            pointLat={(d: any) => d.latitude}
-            pointLng={(d: any) => d.longitude}
-            pointColor={(d: any) => CATEGORY_COLORS[d.category] ?? '#8b9dc3'}
-            pointAltitude={0.06}
-            pointRadius={0.18}
-            pointResolution={6}
-            pointLabel={(d: any) => `
+            // 3D event markers — glowing beam + floating crystal
+            customLayerData={events}
+            customThreeObject={createCustomMarker}
+            customThreeObjectUpdate={updateMarkerPosition}
+            onCustomLayerClick={(obj: any) => {
+              selectEvent(obj.id);
+              if (globeRef.current) {
+                globeRef.current.pointOfView(
+                  { lat: obj.latitude, lng: obj.longitude, altitude: 0.4 },
+                  1200
+                );
+              }
+            }}
+            customLayerLabel={(d: any) => `
               <div style="
-                background: rgba(12, 20, 37, 0.92);
-                backdrop-filter: blur(16px);
-                border: 1px solid ${CATEGORY_COLORS[d.category] ?? '#8b9dc3'}40;
-                border-radius: 10px;
-                padding: 10px 14px;
-                box-shadow: 0 8px 24px rgba(0,0,0,0.6);
-                max-width: 240px;
+                background: rgba(12, 20, 37, 0.94);
+                backdrop-filter: blur(20px);
+                border: 1px solid ${CATEGORY_COLORS[d.category] ?? '#8b9dc3'}50;
+                border-radius: 12px;
+                padding: 12px 16px;
+                box-shadow: 0 8px 32px rgba(0,0,0,0.6), 0 0 20px ${CATEGORY_COLORS[d.category] ?? '#8b9dc3'}15;
+                max-width: 260px;
               ">
-                <div style="font-size: 10px; font-weight: 600; color: ${CATEGORY_COLORS[d.category] ?? '#8b9dc3'}; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px;">
-                  ${formatYear(d.year)}
+                <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 5px;">
+                  <span style="font-size: 14px;">${CATEGORY_ICONS[d.category] ?? '●'}</span>
+                  <span style="font-size: 10px; font-weight: 600; color: ${CATEGORY_COLORS[d.category] ?? '#8b9dc3'}; text-transform: uppercase; letter-spacing: 0.06em;">
+                    ${formatYear(d.year)}
+                  </span>
                 </div>
-                <div style="font-size: 13px; font-weight: 600; color: #eef2f7; font-family: 'Inter', system-ui, sans-serif;">
+                <div style="font-size: 14px; font-weight: 600; color: #eef2f7; font-family: 'Inter', system-ui, sans-serif; line-height: 1.3;">
                   ${d.title}
                 </div>
               </div>
             `}
-            onPointClick={(_point: any) => {
-              const d = _point as any;
-              selectEvent(d.id);
-              if (globeRef.current) {
-                globeRef.current.pointOfView(
-                  { lat: d.latitude, lng: d.longitude, altitude: 0.5 },
-                  1000
-                );
-              }
-            }}
-            pointsTransitionDuration={600}
 
             // Animated pulse rings at event locations
             ringsData={ringsData}
             ringLat={(d: any) => d.lat}
             ringLng={(d: any) => d.lng}
             ringColor={(d: any) => (t: number) => `rgba(${hexToRgb(d.color)}, ${1 - t})`}
-            ringMaxRadius={2.5}
-            ringPropagationSpeed={1.5}
-            ringRepeatPeriod={1400}
+            ringMaxRadius={3}
+            ringPropagationSpeed={2}
+            ringRepeatPeriod={1200}
           />
         )}
         {ready && children}
