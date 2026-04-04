@@ -1,5 +1,5 @@
-import { useEffect, useCallback, useMemo } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { useEffect, useCallback, useMemo, useRef, useState } from 'react';
+import { AnimatePresence, motion, useScroll, useTransform, useMotionValueEvent, useInView } from 'framer-motion';
 import {
   X, MapPin, Calendar, Clock, ChevronLeft, ChevronRight,
   Lightbulb, ExternalLink, Play, Image as ImageIcon, Globe,
@@ -19,7 +19,6 @@ const CATEGORY_META: Record<string, { color: string; label: string; gradient: st
   natural:      { color: '#b87a60', label: 'Natural Event',   gradient: 'linear-gradient(135deg, #2a1a10 0%, #1a1008 40%, #0a1020 100%)' },
 };
 
-// Per-event icons (same as markers)
 const EVENT_ICONS: Record<string, string> = {
   'great-pyramid': '△', 'code-hammurabi': '📜', 'trojan-war': '⚔️',
   'founding-rome': '🐺', 'democracy-athens': '🏛️', 'roman-forum': '🎭',
@@ -32,6 +31,22 @@ const EVENT_ICONS: Record<string, string> = {
   'moon-landing': '🚀', 'berlin-wall': '🔨', 'www-invention': '💻',
 };
 
+// ── Scroll-reveal wrapper ──
+function Reveal({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { once: true, margin: '-60px' });
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 30 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.6, delay, ease: [0.16, 1, 0.3, 1] }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
 export function EventStory() {
   const selectedEventId = useEventsStore(s => s.selectedEventId);
   const events = useEventsStore(s => s.events);
@@ -42,6 +57,16 @@ export function EventStory() {
   const cat = event ? CATEGORY_META[event.category] : null;
   const icon = event ? EVENT_ICONS[event.id] ?? '●' : '●';
 
+  // Scroll container ref for progress tracking + parallax
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({ container: scrollRef });
+  const [progress, setProgress] = useState(0);
+  useMotionValueEvent(scrollYProgress, 'change', v => setProgress(v));
+
+  // Parallax: hero icon moves slower than scroll
+  const heroY = useTransform(scrollYProgress, [0, 0.3], [0, 80]);
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.2], [0.06, 0]);
+
   // Related events
   const relatedEvents = useMemo(() => {
     if (!event) return [];
@@ -51,13 +76,19 @@ export function EventStory() {
       .slice(0, 4);
   }, [event, events]);
 
+  // Era events for the interactive timeline
+  const eraEvents = useMemo(() => {
+    if (!event) return [];
+    return events.filter(e => e.eraId === event.eraId).sort((a, b) => a.year - b.year);
+  }, [event, events]);
+
   // Chronological nav
   const sorted = useMemo(() => [...events].sort((a, b) => a.year - b.year), [events]);
   const idx = event ? sorted.findIndex(e => e.id === event.id) : -1;
   const prev = idx > 0 ? sorted[idx - 1] ?? null : null;
   const next = idx < sorted.length - 1 ? sorted[idx + 1] ?? null : null;
 
-  // Era timeline position (0-1 within the era)
+  // Era timeline position
   const eraProgress = useMemo(() => {
     if (!event || !era) return 0.5;
     const span = era.endYear - era.startYear;
@@ -79,6 +110,13 @@ export function EventStory() {
     return () => window.removeEventListener('keydown', handler);
   }, [event, prev, next, selectEvent, onClose]);
 
+  // Reset scroll on event change
+  useEffect(() => {
+    if (scrollRef.current && event) {
+      scrollRef.current.scrollTop = 0;
+    }
+  }, [event?.id]);
+
   return (
     <AnimatePresence>
       {event && cat && era && (
@@ -92,8 +130,18 @@ export function EventStory() {
           {/* Backdrop */}
           <div className="absolute inset-0 bg-[#050a14]" onClick={onClose} />
 
+          {/* ── Reading Progress Bar ── */}
+          <motion.div
+            className="absolute top-0 left-0 right-0 h-[2px] z-30 origin-left"
+            style={{
+              scaleX: progress,
+              background: cat.color,
+            }}
+          />
+
           {/* Scrollable content */}
           <motion.div
+            ref={scrollRef}
             className="absolute inset-0 overflow-y-auto overflow-x-hidden"
             initial={{ y: 80, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -102,22 +150,22 @@ export function EventStory() {
           >
             {/* ═══════════════ HERO ═══════════════ */}
             <div
-              className="relative min-h-[420px] sm:min-h-[480px] flex flex-col justify-end"
+              className="relative min-h-[420px] sm:min-h-[500px] flex flex-col justify-end"
               style={{ background: cat.gradient }}
             >
-              {/* Decorative grid pattern */}
-              <div
-                className="absolute inset-0 opacity-[0.03]"
-                style={{
-                  backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
-                  backgroundSize: '60px 60px',
-                }}
-              />
+              {/* Decorative grid */}
+              <div className="absolute inset-0 opacity-[0.03]" style={{
+                backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
+                backgroundSize: '60px 60px',
+              }} />
 
-              {/* Large floating event icon */}
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none select-none">
-                <span className="text-[120px] sm:text-[160px] opacity-[0.06]">{icon}</span>
-              </div>
+              {/* Parallax floating icon */}
+              <motion.div
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none select-none"
+                style={{ y: heroY, opacity: heroOpacity }}
+              >
+                <span className="text-[140px] sm:text-[180px]">{icon}</span>
+              </motion.div>
 
               {/* Top bar */}
               <div className="absolute top-0 inset-x-0 z-10 flex items-center justify-between px-5 py-4">
@@ -132,206 +180,270 @@ export function EventStory() {
               </div>
 
               {/* Hero content */}
-              <div className="relative z-10 max-w-[800px] mx-auto w-full px-6 pb-10">
-                {/* Category badge */}
+              <motion.div
+                className="relative z-10 max-w-[800px] mx-auto w-full px-6 pb-10"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.15, duration: 0.5 }}
+              >
                 <div className="flex items-center gap-2.5 mb-4">
                   <span className="px-3 py-1 rounded-full text-[10px] font-semibold tracking-wider uppercase"
                     style={{ background: cat.color + '20', color: cat.color, border: `1px solid ${cat.color}30` }}>
                     {cat.label}
                   </span>
                 </div>
-
-                {/* Title */}
                 <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold leading-[1.1] text-[#e8ecf2] mb-4">
                   {event.title}
                 </h1>
-
-                {/* Meta row */}
                 <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px] text-[#6b7a94]">
                   <span className="flex items-center gap-1.5">
                     <Calendar size={13} />
                     {event.endYear ? formatYearRange(event.year, event.endYear) : formatYear(event.year)}
                   </span>
                   {event.locationName && (
-                    <span className="flex items-center gap-1.5">
-                      <MapPin size={13} />
-                      {event.locationName}
-                    </span>
+                    <span className="flex items-center gap-1.5"><MapPin size={13} />{event.locationName}</span>
                   )}
-                  <span className="flex items-center gap-1.5">
-                    <Globe size={13} />
-                    {era.name}
-                  </span>
+                  <span className="flex items-center gap-1.5"><Globe size={13} />{era.name}</span>
                 </div>
-              </div>
+              </motion.div>
 
-              {/* Bottom fade into content */}
               <div className="absolute bottom-0 inset-x-0 h-24" style={{ background: 'linear-gradient(transparent, #050a14)' }} />
             </div>
 
             {/* ═══════════════ BODY ═══════════════ */}
             <div className="max-w-[800px] mx-auto px-6 pb-24">
 
-              {/* ── Era Timeline Bar ── */}
-              <div className="py-8">
-                <div className="flex items-center justify-between text-[10px] text-[#3d4f6a] uppercase tracking-wider mb-3">
-                  <span>{formatYear(era.startYear)}</span>
-                  <span className="text-[#5a6d8a]">{era.name}</span>
-                  <span>{formatYear(era.endYear)}</span>
-                </div>
-                <div className="relative h-[3px] rounded-full bg-white/[0.06]">
-                  <div className="absolute top-0 left-0 h-full rounded-full" style={{ width: `${eraProgress * 100}%`, background: cat.color + '50' }} />
-                  <div
-                    className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full border-2"
-                    style={{ left: `${eraProgress * 100}%`, transform: `translateX(-50%) translateY(-50%)`, background: cat.color, borderColor: '#050a14' }}
-                  />
-                </div>
-              </div>
+              {/* ── Interactive Era Timeline ── */}
+              <Reveal>
+                <div className="py-8">
+                  <div className="flex items-center justify-between text-[10px] text-[#3d4f6a] uppercase tracking-wider mb-3">
+                    <span>{formatYear(era.startYear)}</span>
+                    <span className="text-[#5a6d8a]">{era.name}</span>
+                    <span>{formatYear(era.endYear)}</span>
+                  </div>
+                  <div className="relative h-[3px] rounded-full bg-white/[0.06]">
+                    {/* Fill up to current event */}
+                    <div className="absolute top-0 left-0 h-full rounded-full transition-all duration-500" style={{ width: `${eraProgress * 100}%`, background: cat.color + '40' }} />
 
-              {/* ── Media Hero (image or video or placeholder) ── */}
-              <div className="mb-10">
-                {event.imageUrl ? (
-                  <div className="rounded-2xl overflow-hidden">
-                    <img src={event.imageUrl} alt={event.title} className="w-full h-auto object-cover" style={{ maxHeight: '440px' }} />
+                    {/* Clickable dots for all events in this era */}
+                    {eraEvents.map(ee => {
+                      const pos = (ee.year - era.startYear) / (era.endYear - era.startYear);
+                      const isActive = ee.id === event.id;
+                      return (
+                        <button
+                          key={ee.id}
+                          onClick={() => selectEvent(ee.id)}
+                          className="absolute top-1/2 -translate-y-1/2 group cursor-pointer"
+                          style={{ left: `${Math.max(1, Math.min(99, pos * 100))}%` }}
+                          title={`${ee.title} (${formatYear(ee.year)})`}
+                        >
+                          <span
+                            className="block rounded-full transition-all duration-300"
+                            style={{
+                              width: isActive ? 14 : 8,
+                              height: isActive ? 14 : 8,
+                              background: isActive ? cat.color : '#3d4f6a',
+                              border: isActive ? `2px solid #050a14` : 'none',
+                              transform: 'translate(-50%, -50%)',
+                              boxShadow: isActive ? `0 0 8px ${cat.color}60` : 'none',
+                            }}
+                          />
+                          {/* Tooltip on hover */}
+                          <span className="absolute bottom-5 left-1/2 -translate-x-1/2 whitespace-nowrap px-2.5 py-1 rounded-md text-[10px] bg-[#0c1425] text-[#8b9dc3] border border-white/[0.08] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                            {ee.title}
+                          </span>
+                        </button>
+                      );
+                    })}
                   </div>
-                ) : event.videoUrl ? (
-                  <div className="rounded-2xl overflow-hidden aspect-video">
-                    <iframe src={event.videoUrl} className="w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen title={event.title} />
-                  </div>
-                ) : (
-                  /* Placeholder — visual, not empty */
-                  <div className="rounded-2xl overflow-hidden aspect-[21/9] flex items-center justify-center relative"
-                    style={{ background: cat.gradient, border: '1px solid rgba(255,255,255,0.04)' }}>
-                    <div className="absolute inset-0 opacity-[0.04]" style={{
-                      backgroundImage: `radial-gradient(circle at 30% 40%, ${cat.color}30 0%, transparent 50%), radial-gradient(circle at 70% 60%, ${cat.color}20 0%, transparent 50%)`,
-                    }} />
-                    <div className="text-center relative z-10">
-                      <div className="flex items-center justify-center gap-4 mb-3">
-                        <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                          <ImageIcon size={20} className="text-[#3d4f6a]" />
-                        </div>
-                        <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                          <Play size={20} className="text-[#3d4f6a]" />
-                        </div>
-                      </div>
-                      <p className="text-[11px] text-[#3d4f6a] tracking-wide">Media coming soon</p>
+                  {/* Era event count */}
+                  <p className="text-[10px] text-[#2a3448] mt-3">
+                    {eraEvents.length} events in this era — click any dot to explore
+                  </p>
+                </div>
+              </Reveal>
+
+              {/* ── Media Hero ── */}
+              <Reveal delay={0.05}>
+                <div className="mb-10">
+                  {event.imageUrl ? (
+                    <div className="rounded-2xl overflow-hidden">
+                      <img src={event.imageUrl} alt={event.title} className="w-full h-auto object-cover" style={{ maxHeight: '440px' }} />
                     </div>
-                  </div>
-                )}
-              </div>
+                  ) : event.videoUrl ? (
+                    <div className="rounded-2xl overflow-hidden aspect-video">
+                      <iframe src={event.videoUrl} className="w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen title={event.title} />
+                    </div>
+                  ) : (
+                    <div className="rounded-2xl overflow-hidden aspect-[21/9] flex items-center justify-center relative"
+                      style={{ background: cat.gradient, border: '1px solid rgba(255,255,255,0.04)' }}>
+                      <div className="absolute inset-0 opacity-[0.04]" style={{
+                        backgroundImage: `radial-gradient(circle at 30% 40%, ${cat.color}30 0%, transparent 50%), radial-gradient(circle at 70% 60%, ${cat.color}20 0%, transparent 50%)`,
+                      }} />
+                      <div className="text-center relative z-10">
+                        <div className="flex items-center justify-center gap-4 mb-3">
+                          <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                            <ImageIcon size={20} className="text-[#3d4f6a]" />
+                          </div>
+                          <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                            <Play size={20} className="text-[#3d4f6a]" />
+                          </div>
+                        </div>
+                        <p className="text-[11px] text-[#3d4f6a] tracking-wide">Media coming soon</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </Reveal>
 
-              {/* ── Key Facts ── */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-12">
-                <FactCard icon={<Calendar size={14} />} label="Date"
-                  value={event.endYear ? formatYearRange(event.year, event.endYear) : formatYear(event.year)} color={cat.color} />
-                {event.locationName && (
-                  <FactCard icon={<MapPin size={14} />} label="Location" value={event.locationName} color={cat.color} />
-                )}
-                <FactCard icon={<Clock size={14} />} label="Era" value={era.name} color={cat.color} />
-              </div>
+              {/* ── Key Facts (animated counters) ── */}
+              <Reveal delay={0.1}>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-12">
+                  <FactCard icon={<Calendar size={14} />} label="Date"
+                    value={event.endYear ? formatYearRange(event.year, event.endYear) : formatYear(event.year)} color={cat.color} />
+                  {event.locationName && (
+                    <FactCard icon={<MapPin size={14} />} label="Location" value={event.locationName} color={cat.color} />
+                  )}
+                  <FactCard icon={<Clock size={14} />} label="Era" value={era.name} color={cat.color} />
+                </div>
+              </Reveal>
 
               {/* ── Overview ── */}
-              <section className="mb-12">
-                <SectionLabel>Overview</SectionLabel>
-                <p className="text-[16px] sm:text-[17px] text-[#9ba8c2] leading-[1.85] font-[350]">
-                  {event.description}
-                </p>
-              </section>
+              <Reveal>
+                <section className="mb-12">
+                  <SectionLabel>Overview</SectionLabel>
+                  {event.description.split('\n\n').map((para, i) => (
+                    <Reveal key={i} delay={i * 0.08}>
+                      <p className="text-[15px] sm:text-[16px] text-[#9ba8c2] leading-[1.85] font-[350] mb-5">
+                        {para}
+                      </p>
+                    </Reveal>
+                  ))}
+                </section>
+              </Reveal>
 
               {/* ── Did You Know? ── */}
               {event.impactText && (
-                <section className="mb-12">
-                  <motion.div
-                    className="rounded-2xl p-6 sm:p-8 relative overflow-hidden"
-                    style={{ background: 'rgba(255, 255, 255, 0.02)', border: `1px solid ${cat.color}18` }}
-                  >
-                    {/* Decorative accent */}
-                    <div className="absolute top-0 left-0 w-1 h-full rounded-full" style={{ background: cat.color }} />
-                    <div className="pl-5">
-                      <div className="flex items-center gap-2 mb-3">
-                        <Lightbulb size={16} style={{ color: cat.color }} />
-                        <span className="text-[12px] font-semibold tracking-wider uppercase" style={{ color: cat.color }}>
-                          Did you know?
-                        </span>
+                <Reveal>
+                  <section className="mb-12">
+                    <motion.div
+                      className="rounded-2xl p-6 sm:p-8 relative overflow-hidden"
+                      style={{ background: 'rgba(255, 255, 255, 0.02)', border: `1px solid ${cat.color}18` }}
+                      whileHover={{ scale: 1.01 }}
+                      transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                    >
+                      <div className="absolute top-0 left-0 w-1 h-full rounded-full" style={{ background: cat.color }} />
+                      <div className="pl-5">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Lightbulb size={16} style={{ color: cat.color }} />
+                          <span className="text-[12px] font-semibold tracking-wider uppercase" style={{ color: cat.color }}>
+                            Did you know?
+                          </span>
+                        </div>
+                        <p className="text-[15px] text-[#b0bbd0] leading-[1.75]">
+                          {event.impactText}
+                        </p>
                       </div>
-                      <p className="text-[15px] text-[#b0bbd0] leading-[1.75]">
-                        {event.impactText}
-                      </p>
+                    </motion.div>
+                  </section>
+                </Reveal>
+              )}
+
+              {/* ── Gallery ── */}
+              <Reveal>
+                <section className="mb-12">
+                  <SectionLabel>Gallery</SectionLabel>
+                  {event.images && event.images.length > 0 ? (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                      {event.images.map((img, i) => (
+                        <motion.div key={i} className="rounded-xl overflow-hidden aspect-[4/3] cursor-pointer"
+                          whileHover={{ scale: 1.03 }} transition={{ type: 'spring', stiffness: 400, damping: 25 }}>
+                          <img src={img} alt={`${event.title} ${i + 1}`} className="w-full h-full object-cover" />
+                        </motion.div>
+                      ))}
                     </div>
-                  </motion.div>
+                  ) : (
+                    <div className="grid grid-cols-3 gap-3">
+                      {[0, 1, 2].map(i => (
+                        <motion.div key={i}
+                          className="aspect-[4/3] rounded-xl flex items-center justify-center"
+                          style={{ background: 'rgba(255,255,255,0.015)', border: '1px solid rgba(255,255,255,0.04)' }}
+                          whileHover={{ borderColor: `${cat.color}30`, background: `${cat.color}08` }}
+                          transition={{ duration: 0.25 }}
+                        >
+                          <ImageIcon size={20} className="text-[#1e2738]" />
+                        </motion.div>
+                      ))}
+                    </div>
+                  )}
                 </section>
-              )}
+              </Reveal>
 
-              {/* ── Image Gallery Placeholder ── */}
-              {(!event.images || event.images.length === 0) && (
-                <section className="mb-12">
-                  <SectionLabel>Gallery</SectionLabel>
-                  <div className="grid grid-cols-3 gap-3">
-                    {[0, 1, 2].map(i => (
-                      <div key={i} className="aspect-[4/3] rounded-xl flex items-center justify-center"
-                        style={{ background: 'rgba(255,255,255,0.015)', border: '1px solid rgba(255,255,255,0.04)' }}>
-                        <ImageIcon size={20} className="text-[#252d3d]" />
-                      </div>
-                    ))}
-                  </div>
-                </section>
-              )}
-
-              {/* Actual gallery when images exist */}
-              {event.images && event.images.length > 0 && (
-                <section className="mb-12">
-                  <SectionLabel>Gallery</SectionLabel>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    {event.images.map((img, i) => (
-                      <div key={i} className="rounded-xl overflow-hidden aspect-[4/3]">
-                        <img src={img} alt={`${event.title} ${i + 1}`} className="w-full h-full object-cover" />
-                      </div>
-                    ))}
-                  </div>
-                </section>
-              )}
-
-              {/* ── Video Placeholder ── */}
-              {!event.videoUrl && (
+              {/* ── Video ── */}
+              <Reveal>
                 <section className="mb-12">
                   <SectionLabel>Video</SectionLabel>
-                  <div className="aspect-video rounded-2xl flex flex-col items-center justify-center gap-3 cursor-default"
-                    style={{ background: 'rgba(255,255,255,0.015)', border: '1px solid rgba(255,255,255,0.04)' }}>
-                    <div className="w-16 h-16 rounded-full flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.04)' }}>
-                      <Play size={28} className="text-[#2a3448] ml-1" />
+                  {event.videoUrl ? (
+                    <div className="rounded-2xl overflow-hidden aspect-video">
+                      <iframe src={event.videoUrl} className="w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen title={event.title} />
                     </div>
-                    <p className="text-[12px] text-[#2a3448]">Video content coming soon</p>
-                  </div>
+                  ) : (
+                    <motion.div
+                      className="aspect-video rounded-2xl flex flex-col items-center justify-center gap-3 cursor-default relative overflow-hidden"
+                      style={{ background: 'rgba(255,255,255,0.015)', border: '1px solid rgba(255,255,255,0.04)' }}
+                      whileHover={{ borderColor: `${cat.color}30` }}
+                      transition={{ duration: 0.25 }}
+                    >
+                      <motion.div
+                        className="w-16 h-16 rounded-full flex items-center justify-center"
+                        style={{ background: 'rgba(255,255,255,0.04)' }}
+                        whileHover={{ scale: 1.1, background: `${cat.color}15` }}
+                        transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                      >
+                        <Play size={28} className="text-[#2a3448] ml-1" />
+                      </motion.div>
+                      <p className="text-[12px] text-[#2a3448]">Video content coming soon</p>
+                    </motion.div>
+                  )}
                 </section>
-              )}
+              </Reveal>
 
               {/* ── Sources ── */}
               {event.sources && event.sources.length > 0 && (
-                <section className="mb-12">
-                  <SectionLabel>Sources</SectionLabel>
-                  <div className="space-y-2">
-                    {event.sources.map((src, i) => (
-                      <a key={i} href={src} target="_blank" rel="noopener noreferrer"
-                        className="flex items-center gap-2.5 p-3 rounded-lg text-[13px] text-[#5a8fa5] hover:text-[#7bb0c4] hover:bg-white/[0.02] transition-colors"
-                        style={{ border: '1px solid rgba(255,255,255,0.04)' }}>
-                        <ExternalLink size={13} />
-                        <span className="truncate">{src}</span>
-                      </a>
-                    ))}
-                  </div>
-                </section>
+                <Reveal>
+                  <section className="mb-12">
+                    <SectionLabel>Sources</SectionLabel>
+                    <div className="space-y-2">
+                      {event.sources.map((src, i) => (
+                        <motion.a key={i} href={src} target="_blank" rel="noopener noreferrer"
+                          className="flex items-center gap-2.5 p-3 rounded-lg text-[13px] text-[#5a8fa5]"
+                          style={{ border: '1px solid rgba(255,255,255,0.04)' }}
+                          whileHover={{ backgroundColor: 'rgba(255,255,255,0.02)', borderColor: `${cat.color}20`, x: 4 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <ExternalLink size={13} />
+                          <span className="truncate">{src}</span>
+                        </motion.a>
+                      ))}
+                    </div>
+                  </section>
+                </Reveal>
               )}
 
               {/* ── Related Events ── */}
               {relatedEvents.length > 0 && (
-                <section className="mb-12">
-                  <SectionLabel>Related Events</SectionLabel>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {relatedEvents.map(re => (
-                      <RelatedCard key={re.id} event={re} onSelect={selectEvent} />
-                    ))}
-                  </div>
-                </section>
+                <Reveal>
+                  <section className="mb-12">
+                    <SectionLabel>Related Events</SectionLabel>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {relatedEvents.map((re, i) => (
+                        <Reveal key={re.id} delay={i * 0.06}>
+                          <RelatedCard event={re} onSelect={selectEvent} />
+                        </Reveal>
+                      ))}
+                    </div>
+                  </section>
+                </Reveal>
               )}
             </div>
           </motion.div>
@@ -346,14 +458,16 @@ export function EventStory() {
 function NavButton({ dir, event, onSelect }: { dir: 'left' | 'right'; event: HistoricalEvent | null; onSelect: (id: string) => void }) {
   if (!event) return <div className="w-10" />;
   return (
-    <button
+    <motion.button
       onClick={() => onSelect(event.id)}
       className="flex items-center gap-2 px-3 py-2 rounded-full bg-white/[0.05] hover:bg-white/[0.08] backdrop-blur-sm transition-colors cursor-pointer max-w-[200px]"
+      whileHover={{ scale: 1.04 }}
+      whileTap={{ scale: 0.97 }}
     >
       {dir === 'left' && <ChevronLeft size={14} className="text-[#6b7a94] shrink-0" />}
       <span className="text-[11px] text-[#6b7a94] truncate">{event.title}</span>
       {dir === 'right' && <ChevronRight size={14} className="text-[#6b7a94] shrink-0" />}
-    </button>
+    </motion.button>
   );
 }
 
@@ -367,13 +481,18 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 
 function FactCard({ icon, label, value, color }: { icon: React.ReactNode; label: string; value: string; color: string }) {
   return (
-    <div className="rounded-xl p-4" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
+    <motion.div
+      className="rounded-xl p-4"
+      style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}
+      whileHover={{ borderColor: `${color}25`, y: -2 }}
+      transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+    >
       <div className="flex items-center gap-1.5 mb-2">
         <span style={{ color: color + '80' }}>{icon}</span>
         <span className="text-[10px] font-medium uppercase tracking-wider text-[#3d4f6a]">{label}</span>
       </div>
       <p className="text-[14px] text-[#b0bbd0] font-medium">{value}</p>
-    </div>
+    </motion.div>
   );
 }
 
@@ -381,10 +500,13 @@ function RelatedCard({ event, onSelect }: { event: HistoricalEvent; onSelect: (i
   const cat = CATEGORY_META[event.category];
   const icon = EVENT_ICONS[event.id] ?? '●';
   return (
-    <button
+    <motion.button
       onClick={() => onSelect(event.id)}
-      className="flex items-center gap-4 p-4 rounded-xl text-left cursor-pointer transition-all hover:bg-white/[0.03] group"
+      className="flex items-center gap-4 p-4 rounded-xl text-left cursor-pointer group"
       style={{ border: '1px solid rgba(255,255,255,0.05)' }}
+      whileHover={{ borderColor: `${cat?.color ?? '#7a869a'}25`, backgroundColor: 'rgba(255,255,255,0.02)', x: 4 }}
+      whileTap={{ scale: 0.98 }}
+      transition={{ type: 'spring', stiffness: 400, damping: 25 }}
     >
       <span className="text-2xl w-10 h-10 flex items-center justify-center rounded-lg shrink-0"
         style={{ background: (cat?.color ?? '#7a869a') + '12' }}>
@@ -398,6 +520,6 @@ function RelatedCard({ event, onSelect }: { event: HistoricalEvent; onSelect: (i
         </p>
       </div>
       <ChevronRight size={14} className="text-[#2a3448] group-hover:text-[#3d4f6a] transition-colors shrink-0" />
-    </button>
+    </motion.button>
   );
 }
