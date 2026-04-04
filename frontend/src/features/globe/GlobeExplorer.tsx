@@ -7,6 +7,9 @@ import { EventStory } from '@/features/events/EventStory';
 import { LandmarkOverlay } from '@/features/landmarks/LandmarkOverlay';
 import { ExplorationPanel } from '@/features/exploration/ExplorationPanel';
 import { Toolbar } from '@/features/exploration/Toolbar';
+import { CategoryFilters } from '@/features/exploration/CategoryFilters';
+import { SearchOverlay } from '@/features/search/SearchOverlay';
+import { LoadingScreen } from '@/features/onboarding/LoadingScreen';
 import { useTimeStore } from '@/shared/stores/timeStore';
 
 export default function GlobeExplorer() {
@@ -47,9 +50,12 @@ export default function GlobeExplorer() {
       {/* UI Overlays */}
       <EraIndicator />
       <Toolbar />
+      <CategoryFilters />
       <ExplorationPanel />
       <EventStory />
+      <SearchOverlay />
       <TimelineScrubber />
+      <LoadingScreen />
     </div>
   );
 }
