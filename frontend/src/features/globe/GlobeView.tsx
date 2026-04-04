@@ -5,9 +5,8 @@ import { useMapStore } from '@/shared/stores/mapStore';
 import { useTimeStore } from '@/shared/stores/timeStore';
 import { useEventsStore } from '@/shared/stores/eventsStore';
 import { closestBoundaryYear } from '@/shared/utils/geo';
-import { formatYear } from '@/shared/utils/format';
 import { BOUNDARY_YEAR_MAP } from '@/shared/utils/constants';
-import { createCategoryMarker } from './categoryMarkers';
+import { createEventMarker } from './eventMarkers';
 
 // === Globe context for child components (landmarks, etc.) ===
 interface GlobeContextValue {
@@ -27,18 +26,6 @@ const ERA_HEX_COLORS: Record<string, string> = {
   renaissance: '#3b82f6',
   industrial: '#84cc16',
   modern: '#00d4ff',
-};
-
-// === Category config ===
-const CATEGORY_COLORS: Record<string, string> = {
-  war: '#ff4444', discovery: '#00e5ff', cultural: '#ffca28',
-  political: '#b388ff', construction: '#69f0ae', natural: '#ff8a65',
-};
-
-
-const CATEGORY_ICONS: Record<string, string> = {
-  war: '⚔️', discovery: '🔭', cultural: '🎭',
-  political: '👑', construction: '🏛️', natural: '🌋',
 };
 
 // === Sorted boundary years ===
@@ -180,10 +167,14 @@ export function GlobeView({ children }: GlobeViewProps) {
     return { x: coords.x, y: coords.y };
   }, []);
 
-  // Create category-specific 3D marker for each event
+  // Create per-event billboard marker (unique icon + name badge)
   const createCustomMarker = useCallback((d: any) => {
-    const color = new THREE.Color(CATEGORY_COLORS[d.category] ?? '#8b9dc3');
-    return createCategoryMarker(d.category, color);
+    return createEventMarker({
+      id: d.id,
+      title: d.title,
+      year: d.year,
+      category: d.category,
+    });
   }, []);
 
   // Update marker position using getCoords
@@ -231,7 +222,7 @@ export function GlobeView({ children }: GlobeViewProps) {
             polygonAltitude={0.001}
             polygonsTransitionDuration={600}
 
-            // 3D event markers — glowing beam + floating crystal
+            // Event markers — per-event billboard badges
             customLayerData={events}
             customThreeObject={createCustomMarker}
             customThreeObjectUpdate={updateMarkerPosition}
@@ -244,27 +235,24 @@ export function GlobeView({ children }: GlobeViewProps) {
                 );
               }
             }}
-            customLayerLabel={(d: any) => `
-              <div style="
+            customLayerLabel={(d: any) =>
+              `<div style="
                 background: rgba(12, 20, 37, 0.94);
                 backdrop-filter: blur(20px);
-                border: 1px solid ${CATEGORY_COLORS[d.category] ?? '#8b9dc3'}50;
-                border-radius: 12px;
-                padding: 12px 16px;
-                box-shadow: 0 8px 32px rgba(0,0,0,0.6), 0 0 20px ${CATEGORY_COLORS[d.category] ?? '#8b9dc3'}15;
-                max-width: 260px;
+                border-radius: 10px;
+                padding: 10px 14px;
+                max-width: 240px;
+                font-family: 'Inter', system-ui, sans-serif;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.5);
               ">
-                <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 5px;">
-                  <span style="font-size: 14px;">${CATEGORY_ICONS[d.category] ?? '●'}</span>
-                  <span style="font-size: 10px; font-weight: 600; color: ${CATEGORY_COLORS[d.category] ?? '#8b9dc3'}; text-transform: uppercase; letter-spacing: 0.06em;">
-                    ${formatYear(d.year)}
-                  </span>
-                </div>
-                <div style="font-size: 14px; font-weight: 600; color: #eef2f7; font-family: 'Inter', system-ui, sans-serif; line-height: 1.3;">
+                <div style="font-size: 13px; font-weight: 600; color: #edf1f7; margin-bottom: 4px;">
                   ${d.title}
                 </div>
-              </div>
-            `}
+                <div style="font-size: 11px; color: #8b9dc3; line-height: 1.4;">
+                  ${d.description?.slice(0, 120)}${d.description?.length > 120 ? '…' : ''}
+                </div>
+              </div>`
+            }
 
           />
         )}
