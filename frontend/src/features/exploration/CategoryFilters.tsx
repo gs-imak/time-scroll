@@ -41,22 +41,16 @@ export function CategoryFilters() {
     <motion.div
       className={
         isMobile
-          ? 'fixed top-4 left-[60px] right-3 z-30 glass rounded-xl p-2 overflow-x-auto'
-          : 'absolute top-[280px] left-[80px] z-30 glass rounded-xl p-2'
+          ? 'fixed top-4 left-[60px] right-3 z-20 glass rounded-xl p-2 overflow-x-auto'
+          : 'absolute top-4 left-[80px] z-20 glass rounded-xl p-1.5'
       }
-      initial={isMobile ? { y: -20, opacity: 0 } : { x: -40, opacity: 0 }}
-      animate={isMobile ? { y: 0, opacity: 1 } : { x: 0, opacity: 1 }}
+      initial={{ y: -20, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
       transition={{ delay: 0.6, type: 'spring', stiffness: 200, damping: 25 }}
       role="group"
       aria-label="Filter events by category"
     >
-      <div
-        className={
-          isMobile
-            ? 'flex gap-1 min-w-max'
-            : 'flex flex-col gap-1'
-        }
-      >
+      <div className="flex gap-1 min-w-max">
         {CATEGORIES.map((cat, i) => {
           const active = isActive(cat.id);
 

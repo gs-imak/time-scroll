@@ -177,7 +177,7 @@ export default function TimelineView() {
 
   return (
     <div
-      className="min-h-screen w-full overflow-x-hidden"
+      className="min-h-screen w-full overflow-x-hidden overflow-y-auto lg:pl-[64px]"
       style={{ background: '#08080c' }}
     >
       <div className="w-full max-w-[900px] mx-auto px-4 md:px-8 py-12 md:py-16">

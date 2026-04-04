@@ -7,7 +7,6 @@ import { EventStory } from '@/features/events/EventStory';
 import { LandmarkOverlay } from '@/features/landmarks/LandmarkOverlay';
 import { ExplorationPanel } from '@/features/exploration/ExplorationPanel';
 import { ProgressPanel } from '@/features/exploration/ProgressPanel';
-import { Sidebar } from '@/features/navigation/Sidebar';
 import { CategoryFilters } from '@/features/exploration/CategoryFilters';
 import { SearchOverlay } from '@/features/search/SearchOverlay';
 import { LoadingScreen } from '@/features/onboarding/LoadingScreen';
@@ -88,7 +87,6 @@ export default function GlobeExplorer() {
 
       {/* UI Overlays */}
       <EraIndicator />
-      <Sidebar />
       <CategoryFilters />
       <ExplorationPanel />
       <ProgressPanel />

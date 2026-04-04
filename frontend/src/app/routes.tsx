@@ -1,5 +1,6 @@
 import { createBrowserRouter } from 'react-router';
 import { lazy, Suspense } from 'react';
+import { AppLayout } from './AppLayout';
 
 const LandingPage = lazy(() => import('@/features/onboarding/LandingPage'));
 const Dashboard = lazy(() => import('@/features/dashboard/Dashboard'));
@@ -24,27 +25,33 @@ export const router = createBrowserRouter([
     ),
   },
   {
-    path: '/dashboard',
-    element: (
-      <Suspense fallback={<Loading />}>
-        <Dashboard />
-      </Suspense>
-    ),
-  },
-  {
-    path: '/timeline',
-    element: (
-      <Suspense fallback={<Loading />}>
-        <TimelineView />
-      </Suspense>
-    ),
-  },
-  {
-    path: '/explore/:year?/:locationId?',
-    element: (
-      <Suspense fallback={<Loading />}>
-        <GlobeExplorer />
-      </Suspense>
-    ),
+    // Shared layout with sidebar for all app pages
+    element: <AppLayout />,
+    children: [
+      {
+        path: '/dashboard',
+        element: (
+          <Suspense fallback={<Loading />}>
+            <Dashboard />
+          </Suspense>
+        ),
+      },
+      {
+        path: '/timeline',
+        element: (
+          <Suspense fallback={<Loading />}>
+            <TimelineView />
+          </Suspense>
+        ),
+      },
+      {
+        path: '/explore/:year?/:locationId?',
+        element: (
+          <Suspense fallback={<Loading />}>
+            <GlobeExplorer />
+          </Suspense>
+        ),
+      },
+    ],
   },
 ]);
