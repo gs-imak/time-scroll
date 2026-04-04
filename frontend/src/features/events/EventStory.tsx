@@ -287,60 +287,73 @@ export function EventStory() {
             <div className="hidden xl:block pointer-events-none select-none" aria-hidden="true">
               {/* Left: Large year number */}
               <motion.div
-                className="absolute left-[3%] top-[500px] z-0"
+                className="absolute left-[2%] top-[500px] z-[1]"
                 style={{ y: sideLeftY1, opacity: sideOpacity1 }}
               >
-                <span className="text-[140px] font-extralight leading-none tracking-tight"
-                  style={{ color: '#15151a', WebkitTextStroke: `1px ${cat.color}15` }}>
+                <span className="text-[160px] font-extralight leading-none tracking-tight"
+                  style={{ color: `${cat.color}12`, WebkitTextStroke: `1px ${cat.color}30` }}>
                   {Math.abs(event.year)}
                 </span>
               </motion.div>
 
               {/* Left: Coordinates */}
               <motion.div
-                className="absolute left-[4%] top-[900px] z-0"
+                className="absolute left-[3%] top-[1000px] z-[1]"
                 style={{ y: sideLeftY2, opacity: sideOpacity2 }}
               >
-                <div className="font-mono text-[11px] leading-relaxed" style={{ color: '#1a1a22' }}>
+                <div className="font-mono text-[12px] leading-relaxed" style={{ color: '#35353f' }}>
                   <div>{event.latitude.toFixed(4)}°N</div>
                   <div>{event.longitude.toFixed(4)}°E</div>
+                  <div className="mt-2 w-8 h-px" style={{ background: `${cat.color}25` }} />
                 </div>
               </motion.div>
 
               {/* Right: Era name (vertical) */}
               <motion.div
-                className="absolute right-[3%] top-[600px] z-0"
+                className="absolute right-[2%] top-[600px] z-[1]"
                 style={{ y: sideRightY1, opacity: sideOpacity1, writingMode: 'vertical-rl' }}
               >
-                <span className="text-[14px] font-light tracking-[0.3em] uppercase"
-                  style={{ color: '#15151a' }}>
+                <span className="text-[16px] font-light tracking-[0.35em] uppercase"
+                  style={{ color: '#2a2a35' }}>
                   {era.name}
                 </span>
               </motion.div>
 
               {/* Right: Category icon large */}
               <motion.div
-                className="absolute right-[5%] top-[1100px] z-0"
+                className="absolute right-[4%] top-[1200px] z-[1]"
                 style={{ y: sideRightY2, opacity: sideOpacity2 }}
               >
-                <span className="text-[80px] opacity-[0.04]">{icon}</span>
+                <span className="text-[100px]" style={{ opacity: 0.08 }}>{icon}</span>
               </motion.div>
 
-              {/* Left: Decorative line */}
+              {/* Left: Vertical decorative line */}
               <motion.div
-                className="absolute left-[6%] top-[1400px] z-0"
+                className="absolute left-[5%] top-[1500px] z-[1]"
                 style={{ y: sideLeftY1, opacity: sideOpacity2 }}
               >
-                <div className="w-px h-[200px]" style={{ background: `linear-gradient(180deg, transparent, ${cat.color}10, transparent)` }} />
+                <div className="w-px h-[250px]" style={{ background: `linear-gradient(180deg, transparent, ${cat.color}20, transparent)` }} />
               </motion.div>
 
-              {/* Right: Decorative line */}
+              {/* Right: Vertical decorative line */}
               <motion.div
-                className="absolute right-[6%] top-[800px] z-0"
+                className="absolute right-[5%] top-[850px] z-[1]"
                 style={{ y: sideRightY1, opacity: sideOpacity1 }}
               >
-                <div className="w-px h-[160px]" style={{ background: `linear-gradient(180deg, transparent, ${cat.color}10, transparent)` }} />
+                <div className="w-px h-[200px]" style={{ background: `linear-gradient(180deg, transparent, ${cat.color}20, transparent)` }} />
               </motion.div>
+
+              {/* Left: Location name */}
+              {event.locationName && (
+                <motion.div
+                  className="absolute left-[3%] top-[1800px] z-[1]"
+                  style={{ y: sideLeftY2, opacity: sideOpacity1 }}
+                >
+                  <span className="text-[13px] font-light tracking-[0.15em] uppercase" style={{ color: '#2a2a35' }}>
+                    {event.locationName}
+                  </span>
+                </motion.div>
+              )}
             </div>
 
             {/* ═══ HERO ═══ */}
@@ -438,14 +451,18 @@ export function EventStory() {
                       const isActive = ee.id === event.id;
                       return (
                         <button key={ee.id} onClick={() => selectEvent(ee.id)}
-                          className="absolute top-1/2 -translate-y-1/2 group cursor-pointer"
-                          style={{ left: `${Math.max(1, Math.min(99, pos * 100))}%` }}>
+                          className="absolute top-1/2 group cursor-pointer"
+                          style={{
+                            left: `${Math.max(1, Math.min(99, pos * 100))}%`,
+                            transform: `translate(-50%, -50%)`,
+                            width: 24, height: 24,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          }}>
                           <span className="block rounded-full transition-all duration-300"
                             style={{
-                              width: isActive ? 14 : 7, height: isActive ? 14 : 7,
+                              width: isActive ? 12 : 6, height: isActive ? 12 : 6,
                               background: isActive ? cat.color : '#3a3a4a',
                               border: isActive ? '2px solid #08080c' : 'none',
-                              transform: 'translate(-50%, -50%)',
                               boxShadow: isActive ? `0 0 10px ${cat.color}60` : 'none',
                             }} />
                           <span className="absolute bottom-5 left-1/2 -translate-x-1/2 whitespace-nowrap px-2.5 py-1 rounded-md text-[10px] bg-[#0e0e14] text-[#8a8a9a] border border-white/[0.08] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
