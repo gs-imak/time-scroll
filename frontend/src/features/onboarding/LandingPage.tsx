@@ -168,8 +168,7 @@ export default function LandingPage() {
 
   const handleExplore = () => {
     setExiting(true);
-    const year = selectedEraData ? selectedEraData.startYear : -3000;
-    setTimeout(() => navigate(`/explore/${year}`), 900);
+    setTimeout(() => navigate('/dashboard'), 900);
   };
 
   return (

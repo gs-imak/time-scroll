@@ -2,6 +2,7 @@ import { createBrowserRouter } from 'react-router';
 import { lazy, Suspense } from 'react';
 
 const LandingPage = lazy(() => import('@/features/onboarding/LandingPage'));
+const Dashboard = lazy(() => import('@/features/dashboard/Dashboard'));
 const GlobeExplorer = lazy(() => import('@/features/globe/GlobeExplorer'));
 
 function Loading() {
@@ -18,6 +19,14 @@ export const router = createBrowserRouter([
     element: (
       <Suspense fallback={<Loading />}>
         <LandingPage />
+      </Suspense>
+    ),
+  },
+  {
+    path: '/dashboard',
+    element: (
+      <Suspense fallback={<Loading />}>
+        <Dashboard />
       </Suspense>
     ),
   },
