@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, createContext, useContext, useCallback, type ReactNode } from 'react';
+import { useEffect, useRef, useState, useMemo, createContext, useContext, useCallback, type ReactNode } from 'react';
 import Globe, { type GlobeMethods } from 'react-globe.gl';
 import * as THREE from 'three';
 import { useMapStore } from '@/shared/stores/mapStore';
@@ -7,7 +7,6 @@ import { useEventsStore } from '@/shared/stores/eventsStore';
 import { closestBoundaryYear } from '@/shared/utils/geo';
 import { formatYear } from '@/shared/utils/format';
 import { BOUNDARY_YEAR_MAP } from '@/shared/utils/constants';
-import { createMarker3D } from './createMarker3D';
 
 // === Globe context for child components (landmarks, etc.) ===
 interface GlobeContextValue {
@@ -35,6 +34,15 @@ const CATEGORY_COLORS: Record<string, string> = {
   political: '#b388ff', construction: '#69f0ae', natural: '#ff8a65',
 };
 
+
+// === Hex to RGB for ring fade ===
+function hexToRgb(hex: string): string {
+  const h = hex.replace('#', '');
+  const r = parseInt(h.substring(0, 2), 16);
+  const g = parseInt(h.substring(2, 4), 16);
+  const b = parseInt(h.substring(4, 6), 16);
+  return `${r},${g},${b}`;
+}
 
 // === Sorted boundary years ===
 const SORTED_BOUNDARY_YEARS = Object.keys(BOUNDARY_YEAR_MAP).map(Number).sort((a, b) => a - b);
@@ -175,16 +183,16 @@ export function GlobeView({ children }: GlobeViewProps) {
     return { x: coords.x, y: coords.y };
   }, []);
 
-  // Cache 3D marker objects to avoid recreating on every render
-  const markerCache = useRef(new Map<string, THREE.Object3D>());
-
-  const getOrCreateMarker = useCallback((event: { id: string; category: string }) => {
-    const cached = markerCache.current.get(event.id);
-    if (cached) return cached;
-    const marker = createMarker3D(event.category);
-    markerCache.current.set(event.id, marker);
-    return marker;
-  }, []);
+  // Build rings data from events for the animated pulse effect
+  const ringsData = useMemo(
+    () =>
+      events.map((e: any) => ({
+        lat: e.latitude,
+        lng: e.longitude,
+        color: CATEGORY_COLORS[e.category] ?? '#8b9dc3',
+      })),
+    [events],
+  );
 
   return (
     <GlobeContext.Provider value={{ globeRef, getScreenCoords }}>
@@ -213,34 +221,25 @@ export function GlobeView({ children }: GlobeViewProps) {
             polygonAltitude={0.001}
             polygonsTransitionDuration={600}
 
-            // 3D event markers
-            objectsData={events}
-            objectLat={(d: any) => d.latitude}
-            objectLng={(d: any) => d.longitude}
-            objectAltitude={0.01}
-            objectThreeObject={(d: any) => getOrCreateMarker(d)}
-            objectFacesSurfaces={true}
-            onObjectClick={(obj: any) => {
-              selectEvent(obj.id);
-              if (globeRef.current) {
-                globeRef.current.pointOfView(
-                  { lat: obj.latitude, lng: obj.longitude, altitude: 0.5 },
-                  1000
-                );
-              }
-            }}
-            objectLabel={(d: any) => `
+            // Event markers — glowing vertical beams
+            pointsData={events}
+            pointLat={(d: any) => d.latitude}
+            pointLng={(d: any) => d.longitude}
+            pointColor={(d: any) => CATEGORY_COLORS[d.category] ?? '#8b9dc3'}
+            pointAltitude={0.06}
+            pointRadius={0.18}
+            pointResolution={6}
+            pointLabel={(d: any) => `
               <div style="
                 background: rgba(12, 20, 37, 0.92);
                 backdrop-filter: blur(16px);
-                border: 1px solid ${(CATEGORY_COLORS as any)[d.category] ?? '#8b9dc3'}40;
-                border-radius: 8px;
-                padding: 8px 12px;
-                box-shadow: 0 6px 20px rgba(0,0,0,0.5);
-                max-width: 220px;
-                pointer-events: none;
+                border: 1px solid ${CATEGORY_COLORS[d.category] ?? '#8b9dc3'}40;
+                border-radius: 10px;
+                padding: 10px 14px;
+                box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+                max-width: 240px;
               ">
-                <div style="font-size: 10px; font-weight: 600; color: ${(CATEGORY_COLORS as any)[d.category] ?? '#8b9dc3'}; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 3px;">
+                <div style="font-size: 10px; font-weight: 600; color: ${CATEGORY_COLORS[d.category] ?? '#8b9dc3'}; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px;">
                   ${formatYear(d.year)}
                 </div>
                 <div style="font-size: 13px; font-weight: 600; color: #eef2f7; font-family: 'Inter', system-ui, sans-serif;">
@@ -248,6 +247,26 @@ export function GlobeView({ children }: GlobeViewProps) {
                 </div>
               </div>
             `}
+            onPointClick={(_point: any) => {
+              const d = _point as any;
+              selectEvent(d.id);
+              if (globeRef.current) {
+                globeRef.current.pointOfView(
+                  { lat: d.latitude, lng: d.longitude, altitude: 0.5 },
+                  1000
+                );
+              }
+            }}
+            pointsTransitionDuration={600}
+
+            // Animated pulse rings at event locations
+            ringsData={ringsData}
+            ringLat={(d: any) => d.lat}
+            ringLng={(d: any) => d.lng}
+            ringColor={(d: any) => (t: number) => `rgba(${hexToRgb(d.color)}, ${1 - t})`}
+            ringMaxRadius={2.5}
+            ringPropagationSpeed={1.5}
+            ringRepeatPeriod={1400}
           />
         )}
         {ready && children}
