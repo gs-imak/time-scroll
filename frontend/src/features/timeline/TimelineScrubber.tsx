@@ -96,7 +96,7 @@ export function TimelineScrubber() {
 
   return (
     <motion.div
-      className="absolute inset-x-0 bottom-0 z-40 px-3 pb-3 sm:px-4 sm:pb-4 md:px-6 md:pb-5"
+      className="absolute inset-x-0 bottom-0 z-40 px-6 pb-6"
       initial={{ y: 140 }}
       animate={{ y: 0 }}
       transition={{ delay: 0.3, type: 'spring', stiffness: 140, damping: 22 }}
@@ -108,7 +108,7 @@ export function TimelineScrubber() {
         }}
       >
         {/* === Top row: era info / year / controls === */}
-        <div className="flex items-center justify-between gap-4 px-6 pt-5 pb-4 sm:px-8 sm:pt-5 sm:pb-3 md:px-8 md:pt-6 md:pb-3">
+        <div className="flex items-center justify-between gap-4 px-6 pt-5 pb-4">
           {/* LEFT column: era name + description */}
           <div className="hidden min-w-0 flex-1 sm:block">
             <div className="flex items-center gap-2.5">
@@ -155,10 +155,10 @@ export function TimelineScrubber() {
           </div>
 
           {/* RIGHT column: playback controls */}
-          <div className="flex flex-1 items-center justify-end gap-2 sm:gap-3">
+          <div className="flex flex-1 items-center justify-end gap-3">
             <button
               onClick={prevEra}
-              className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full border border-border-subtle bg-elevated/50 text-text-secondary transition-all hover:scale-105 hover:border-border-active hover:bg-elevated hover:text-text-primary active:scale-95"
+              className="flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full border border-border-subtle bg-elevated/50 text-text-secondary transition-all hover:scale-105 hover:border-border-active hover:bg-elevated hover:text-text-primary active:scale-95"
               aria-label="Previous era"
             >
               <SkipBack size={18} />
@@ -168,7 +168,7 @@ export function TimelineScrubber() {
               onClick={togglePlay}
               className={cn(
                 'flex shrink-0 cursor-pointer items-center justify-center rounded-full transition-all hover:scale-105 active:scale-95',
-                'h-12 w-12 sm:h-[52px] sm:w-[52px] md:h-14 md:w-14',
+                'h-14 w-14',
                 isPlaying
                   ? 'text-void'
                   : 'border border-white/20 text-white hover:border-white/30',
@@ -187,15 +187,15 @@ export function TimelineScrubber() {
               aria-label={isPlaying ? 'Pause' : 'Play'}
             >
               {isPlaying ? (
-                <Pause size={22} strokeWidth={2.5} />
+                <Pause size={24} strokeWidth={2.5} />
               ) : (
-                <Play size={22} strokeWidth={2.5} className="ml-0.5" />
+                <Play size={24} strokeWidth={2.5} className="ml-0.5" />
               )}
             </button>
 
             <button
               onClick={nextEra}
-              className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full border border-border-subtle bg-elevated/50 text-text-secondary transition-all hover:scale-105 hover:border-border-active hover:bg-elevated hover:text-text-primary active:scale-95"
+              className="flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full border border-border-subtle bg-elevated/50 text-text-secondary transition-all hover:scale-105 hover:border-border-active hover:bg-elevated hover:text-text-primary active:scale-95"
               aria-label="Next era"
             >
               <SkipForward size={18} />
@@ -205,7 +205,7 @@ export function TimelineScrubber() {
 
         {/* === Bottom row: era segment track + scrubber === */}
         <div
-          className="mt-2 px-6 pb-5 sm:px-8 sm:pb-5 md:px-8 md:pb-6"
+          className="mt-2 px-6 pb-5"
         >
           {/* Track wrapper: ref + pointer events live here so % maps 1:1 to track */}
           <div

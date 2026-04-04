@@ -43,8 +43,8 @@ export function EventDetailSheet() {
         <motion.div
           className={
             isMobile
-              ? 'fixed bottom-44 left-3 right-3 z-40 glass-strong rounded-xl max-h-[calc(100vh-200px)] overflow-y-auto shadow-xl'
-              : 'fixed top-5 right-5 z-40 w-[380px] glass-strong rounded-xl max-h-[85vh] overflow-y-auto shadow-xl'
+              ? 'fixed bottom-44 left-3 right-3 z-40 glass-strong rounded-2xl max-h-[calc(100vh-200px)] overflow-y-auto shadow-xl'
+              : 'fixed top-5 right-5 z-40 w-[380px] glass-strong rounded-2xl max-h-[85vh] overflow-y-auto shadow-xl'
           }
           initial={isMobile ? { y: 120, opacity: 0 } : { x: 120, opacity: 0 }}
           animate={isMobile ? { y: 0, opacity: 1 } : { x: 0, opacity: 1 }}
@@ -53,7 +53,7 @@ export function EventDetailSheet() {
         >
           {/* Category header strip */}
           <div
-            className="h-1 rounded-t-[var(--radius-xl)]"
+            className="h-1 rounded-t-2xl"
             style={{ background: `linear-gradient(90deg, ${cat.color}, ${cat.color}60)` }}
           />
 
@@ -62,7 +62,7 @@ export function EventDetailSheet() {
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <span
-                  className="w-8 h-8 rounded-lg flex items-center justify-center text-sm"
+                  className="w-9 h-9 rounded-lg flex items-center justify-center text-sm"
                   style={{ background: cat.color + '20', boxShadow: `0 0 12px ${cat.color}20` }}
                 >
                   {cat.icon}
@@ -92,7 +92,7 @@ export function EventDetailSheet() {
             {/* Actions */}
             <button
               onClick={onFlyTo}
-              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-[var(--radius-md)] text-sm font-medium transition-all cursor-pointer"
+              className="w-full flex items-center justify-center gap-2 h-11 rounded-[var(--radius-md)] text-[14px] font-medium transition-all cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
               style={{
                 background: cat.color + '15',
                 color: cat.color,
@@ -109,7 +109,7 @@ export function EventDetailSheet() {
                 {prevEvent && (
                   <button
                     onClick={() => selectEvent(prevEvent.id)}
-                    className="flex-1 text-left px-3 py-2 rounded-[var(--radius-md)] bg-elevated/40 hover:bg-elevated/70 transition-colors text-xs cursor-pointer"
+                    className="flex-1 text-left px-4 py-3 rounded-[var(--radius-md)] bg-elevated/40 hover:bg-elevated/70 transition-colors text-xs cursor-pointer"
                   >
                     <span className="text-text-muted block text-[10px]">Previous</span>
                     <span className="text-text-secondary truncate block">{prevEvent.title}</span>
@@ -118,7 +118,7 @@ export function EventDetailSheet() {
                 {nextEvent && (
                   <button
                     onClick={() => selectEvent(nextEvent.id)}
-                    className="flex-1 text-left px-3 py-2 rounded-[var(--radius-md)] bg-elevated/40 hover:bg-elevated/70 transition-colors text-xs cursor-pointer"
+                    className="flex-1 text-left px-4 py-3 rounded-[var(--radius-md)] bg-elevated/40 hover:bg-elevated/70 transition-colors text-xs cursor-pointer"
                   >
                     <span className="text-text-muted block text-[10px]">Next</span>
                     <span className="text-text-secondary truncate block">{nextEvent.title}</span>

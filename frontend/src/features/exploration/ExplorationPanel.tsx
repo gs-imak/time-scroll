@@ -39,23 +39,23 @@ export function ExplorationPanel() {
         <motion.div
           className={
             isMobile
-              ? 'fixed bottom-44 left-3 right-3 z-30 glass-strong rounded-xl max-h-[40vh] overflow-y-auto shadow-xl'
-              : 'fixed top-5 left-[88px] z-30 w-72 lg:w-80 glass-strong rounded-xl max-h-[70vh] overflow-y-auto shadow-xl'
+              ? 'fixed bottom-44 left-3 right-3 z-30 glass-strong rounded-2xl max-h-[40vh] overflow-y-auto shadow-xl'
+              : 'fixed top-5 left-[88px] z-30 w-80 lg:w-[360px] glass-strong rounded-2xl max-h-[70vh] overflow-y-auto shadow-xl'
           }
           initial={isMobile ? { y: 60, opacity: 0 } : { x: -40, opacity: 0 }}
           animate={isMobile ? { y: 0, opacity: 1 } : { x: 0, opacity: 1 }}
           exit={isMobile ? { y: 60, opacity: 0 } : { x: -40, opacity: 0 }}
           transition={{ type: 'spring', stiffness: 300, damping: 30 }}
         >
-          <div className="p-4">
+          <div className="p-5">
             {/* Header */}
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
-                {isEvents ? <Scroll size={14} className="text-accent-cyan" /> : <MapPin size={14} className="text-accent-gold" />}
-                <h3 className="font-semibold text-sm">
+                {isEvents ? <Scroll size={16} className="text-accent-cyan" /> : <MapPin size={16} className="text-accent-gold" />}
+                <h3 className="font-semibold text-[14px]">
                   {isEvents ? 'Historical Events' : 'Notable Locations'}
                 </h3>
-                <span className="text-[10px] text-text-muted font-mono bg-elevated/60 min-w-[18px] text-center px-1 py-0.5 rounded-full">
+                <span className="text-[10px] text-text-muted font-mono bg-elevated/60 min-w-[20px] text-center px-1.5 py-0.5 rounded-full">
                   {isEvents ? visibleEvents.length : LOCATIONS.filter(l => l.availableEras.includes(currentEra.id)).length}
                 </span>
               </div>
@@ -86,16 +86,16 @@ export function ExplorationPanel() {
                         flyTo(event.longitude, event.latitude, 6);
                         setActivePanel('none');
                       }}
-                      className="w-full flex items-center gap-3 p-2.5 rounded-[var(--radius-md)] hover:bg-elevated/60 transition-all text-left cursor-pointer group"
+                      className="w-full flex items-center gap-3 p-3 rounded-[var(--radius-md)] hover:bg-elevated/60 transition-all text-left cursor-pointer group"
                     >
                       <span
-                        className="w-8 h-8 rounded-lg flex items-center justify-center text-xs shrink-0"
+                        className="w-9 h-9 rounded-lg flex items-center justify-center text-xs shrink-0"
                         style={{ background: color + '18', border: `1px solid ${color}30` }}
                       >
                         {icon}
                       </span>
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium truncate group-hover:text-text-primary transition-colors">{event.title}</p>
+                        <p className="text-[14px] font-medium truncate group-hover:text-text-primary transition-colors">{event.title}</p>
                         <p className="text-[11px] text-text-muted">{formatYear(event.year)}</p>
                       </div>
                       <ChevronRight size={14} className="text-text-muted group-hover:text-text-secondary transition-colors shrink-0" />
@@ -114,13 +114,13 @@ export function ExplorationPanel() {
                       flyTo(loc.longitude, loc.latitude, loc.defaultZoom);
                       setActivePanel('none');
                     }}
-                    className="w-full flex items-center gap-3 p-2.5 rounded-[var(--radius-md)] hover:bg-elevated/60 transition-all text-left cursor-pointer group"
+                    className="w-full flex items-center gap-3 p-3 rounded-[var(--radius-md)] hover:bg-elevated/60 transition-all text-left cursor-pointer group"
                   >
-                    <span className="w-8 h-8 rounded-lg bg-accent-gold/10 border border-accent-gold/20 flex items-center justify-center shrink-0">
+                    <span className="w-9 h-9 rounded-lg bg-accent-gold/10 border border-accent-gold/20 flex items-center justify-center shrink-0">
                       <MapPin size={14} className="text-accent-gold" />
                     </span>
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium group-hover:text-text-primary transition-colors">{loc.name}</p>
+                      <p className="text-[14px] font-medium group-hover:text-text-primary transition-colors">{loc.name}</p>
                       <p className="text-[11px] text-text-muted line-clamp-1">{loc.description}</p>
                     </div>
                     <ChevronRight size={14} className="text-text-muted group-hover:text-text-secondary transition-colors shrink-0" />

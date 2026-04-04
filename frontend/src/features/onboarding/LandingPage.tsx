@@ -324,7 +324,7 @@ export default function LandingPage() {
                       aria-label={`${era.name}, ${formatYear(era.startYear)} to ${formatYear(era.endYear)}`}
                     >
                       <div
-                        className="w-10 h-1 rounded-full mb-2.5 transition-all duration-300"
+                        className="w-10 h-[3px] rounded-full mb-2.5 transition-all duration-300"
                         style={{
                           background: isSelected ? color : `${color}60`,
                           boxShadow: isSelected ? `0 0 12px ${color}90` : 'none',

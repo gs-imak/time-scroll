@@ -9,7 +9,7 @@ export function Card({ className, variant = 'glass', children, ...props }: CardP
   return (
     <div
       className={cn(
-        'rounded-[var(--radius-lg)] p-4',
+        'rounded-[var(--radius-lg)] p-5',
         variant === 'glass' ? 'glass' : 'bg-surface border border-border-subtle',
         className
       )}

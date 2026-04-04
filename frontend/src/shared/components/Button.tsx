@@ -14,9 +14,9 @@ const buttonVariants = cva(
         gold: 'bg-accent-gold text-void hover:bg-accent-gold/90 shadow-lg shadow-accent-gold/20',
       },
       size: {
-        sm: 'h-8 px-3 text-sm',
-        md: 'h-10 px-4 text-sm',
-        lg: 'h-12 px-6 text-base',
+        sm: 'h-9 px-4 text-[13px]',
+        md: 'h-11 px-5 text-[14px]',
+        lg: 'h-[52px] px-7 text-[16px]',
       },
     },
     defaultVariants: {

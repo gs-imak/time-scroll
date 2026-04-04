@@ -8,13 +8,14 @@ interface IconButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
-  ({ icon: Icon, size = 18, className, ...props }, ref) => (
+  ({ icon: Icon, size = 20, className, ...props }, ref) => (
     <button
       ref={ref}
       className={cn(
-        'flex items-center justify-center w-9 h-9 rounded-[var(--radius-md)]',
+        'flex items-center justify-center w-11 h-11 rounded-[var(--radius-md)]',
         'text-text-secondary hover:text-text-primary hover:bg-elevated/60',
-        'transition-colors duration-150 cursor-pointer',
+        'transition-all duration-150 cursor-pointer',
+        'hover:scale-105 active:scale-95',
         className
       )}
       {...props}

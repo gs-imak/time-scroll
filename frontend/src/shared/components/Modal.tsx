@@ -44,11 +44,11 @@ export function Modal({ open, onClose, children, className, title }: ModalProps)
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
             transition={{ duration: 0.2 }}
           >
-            <div className="flex items-center justify-between p-4 pb-0">
+            <div className="flex items-center justify-between p-5 pb-0">
               {title && <h2 className="text-lg font-semibold">{title}</h2>}
               <IconButton icon={X} onClick={onClose} className="ml-auto" />
             </div>
-            <div className="p-4">{children}</div>
+            <div className="p-5">{children}</div>
           </motion.div>
         </>
       )}

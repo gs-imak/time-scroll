@@ -25,7 +25,7 @@ function ToolButton({ icon: Icon, label, active, onClick }: ToolButtonProps) {
         onMouseLeave={() => setHovered(false)}
         className={cn(
           'flex items-center justify-center w-11 h-11 rounded-xl',
-          'transition-all duration-200 cursor-pointer',
+          'transition-all duration-200 cursor-pointer hover:scale-105 active:scale-95',
           active
             ? 'bg-accent-cyan/20 text-accent-cyan shadow-[0_0_12px_rgba(0,212,255,0.2)]'
             : 'text-text-secondary hover:text-text-primary hover:bg-elevated/60'
@@ -60,7 +60,7 @@ export function Toolbar() {
       transition={{ delay: 0.4, type: 'spring', stiffness: 200, damping: 25 }}
     >
       {/* Home button */}
-      <div className="glass-strong rounded-xl p-1.5">
+      <div className="glass-strong rounded-xl p-2">
         <ToolButton
           icon={Home}
           label="Back to home"
@@ -69,7 +69,7 @@ export function Toolbar() {
       </div>
 
       {/* Navigation tools */}
-      <div className="glass-strong rounded-xl p-1.5 flex flex-col gap-1">
+      <div className="glass-strong rounded-xl p-2 flex flex-col gap-1">
         <ToolButton
           icon={MapPin}
           label="Explore locations"
