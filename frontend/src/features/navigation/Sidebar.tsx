@@ -12,6 +12,7 @@ interface NavItemConfig {
   label: string;
   panel?: Panel;
   action?: () => void;
+  tourId?: string;
 }
 
 const SIDEBAR_COLLAPSED = 64;
@@ -23,11 +24,13 @@ function NavItem({
   active,
   expanded,
   onClick,
+  tourId,
 }: {
   icon: LucideIcon;
   label: string;
   active: boolean;
   expanded: boolean;
+  tourId?: string;
   onClick: () => void;
 }) {
   const [hovered, setHovered] = useState(false);
@@ -51,6 +54,7 @@ function NavItem({
         style={{ paddingLeft: 12, paddingRight: 12 }}
         aria-label={label}
         aria-current={active ? 'page' : undefined}
+        data-tour={tourId}
       >
         {active && (
           <motion.span
@@ -146,15 +150,14 @@ function DesktopSidebar() {
   }, []);
 
   const handleSettings = useCallback(() => {
-    // Placeholder — show a brief toast-like log
     console.info('[Time Scroll] Settings coming soon');
   }, []);
 
   const navItems: NavItemConfig[] = [
-    { icon: Globe, label: 'Explore', panel: 'exploration' },
-    { icon: Scroll, label: 'Events', panel: 'events' },
-    { icon: Search, label: 'Search', action: dispatchSearch },
-    { icon: Trophy, label: 'Progress', panel: 'progress' },
+    { icon: Globe, label: 'Explore', panel: 'exploration', tourId: 'explore' },
+    { icon: Scroll, label: 'Events', panel: 'events', tourId: 'events' },
+    { icon: Search, label: 'Search', action: dispatchSearch, tourId: 'search' },
+    { icon: Trophy, label: 'Progress', panel: 'progress', tourId: 'progress' },
   ];
 
   const bottomItems: NavItemConfig[] = [
@@ -248,6 +251,7 @@ function DesktopSidebar() {
             active={isActive(item)}
             expanded={expanded}
             onClick={() => handleClick(item)}
+            tourId={item.tourId}
           />
         ))}
 

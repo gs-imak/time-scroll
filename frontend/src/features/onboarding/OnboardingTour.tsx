@@ -29,18 +29,16 @@ const STEPS: TourStep[] = [
     message:
       'Drag the timeline at the bottom to scrub through history. Watch civilizations rise and fall in real time.',
     getTarget: () => {
-      const el =
-        document.querySelector('[data-tour="timeline"]') ??
-        document.querySelector('.timeline-scrubber') ??
-        // Fallback: bottom 120px strip of the viewport
-        null;
+      const el = document.querySelector('[data-tour="timeline"]');
       if (el) return el.getBoundingClientRect();
+      // Fallback: bottom strip accounting for sidebar
       const w = window.innerWidth;
       const h = window.innerHeight;
-      return new DOMRect(24, h - 140, w - 48, 116);
+      const sidebarW = w >= 1024 ? 64 : 0;
+      return new DOMRect(sidebarW + 24, h - 160, w - sidebarW - 48, 136);
     },
     placement: 'above',
-    padding: 8,
+    padding: 12,
     borderRadius: 16,
   },
   {
@@ -50,10 +48,12 @@ const STEPS: TourStep[] = [
     getTarget: () => {
       const w = window.innerWidth;
       const h = window.innerHeight;
-      const size = Math.min(w, h) * 0.35;
+      const sidebarW = w >= 1024 ? 64 : 0;
+      const globeCenterX = sidebarW + (w - sidebarW) / 2;
+      const size = Math.min(w - sidebarW, h) * 0.3;
       return new DOMRect(
-        w / 2 - size / 2,
-        h / 2 - size / 2 - 20,
+        globeCenterX - size / 2,
+        h / 2 - size / 2 - 30,
         size,
         size,
       );
@@ -67,36 +67,26 @@ const STEPS: TourStep[] = [
     message:
       'Use search to find any event, era, or civilization instantly. You can also press Ctrl+K.',
     getTarget: () => {
-      // Target the Search nav item in the sidebar
-      const buttons = document.querySelectorAll('nav button');
-      for (const btn of buttons) {
-        if (btn.getAttribute('aria-label') === 'Search') {
-          return btn.getBoundingClientRect();
-        }
-      }
-      // Fallback: sidebar area
+      const el = document.querySelector('[data-tour="search"]');
+      if (el) return el.getBoundingClientRect();
       return new DOMRect(8, 180, 48, 44);
     },
     placement: 'right',
-    padding: 6,
-    borderRadius: 10,
+    padding: 8,
+    borderRadius: 12,
   },
   {
     title: 'Track Your Progress',
     message:
       'Earn achievements as you explore. See how many events you have discovered and keep your streak alive.',
     getTarget: () => {
-      const buttons = document.querySelectorAll('nav button');
-      for (const btn of buttons) {
-        if (btn.getAttribute('aria-label') === 'Progress') {
-          return btn.getBoundingClientRect();
-        }
-      }
+      const el = document.querySelector('[data-tour="progress"]');
+      if (el) return el.getBoundingClientRect();
       return new DOMRect(8, 224, 48, 44);
     },
     placement: 'right',
-    padding: 6,
-    borderRadius: 10,
+    padding: 8,
+    borderRadius: 12,
   },
 ];
 
