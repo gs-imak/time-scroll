@@ -225,7 +225,7 @@ export function SearchOverlay() {
               WebkitBackdropFilter: 'blur(24px)',
               border: '1px solid rgba(255, 255, 255, 0.07)',
               borderRadius: '16px',
-              boxShadow: '0 24px 80px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.03) inset',
+              boxShadow: '0 24px 80px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255,255,255,0.03)',
             }}
             initial={{ opacity: 0, scale: 0.97, y: -8 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -301,7 +301,7 @@ export function SearchOverlay() {
                         {eventGroup.map(result => {
                           const idx = flatIndex++;
                           const isActive = idx === activeIndex;
-                          const dotColor = CATEGORY_COLORS[result.category] ?? '#7a869a';
+                          const dotColor = CATEGORY_COLORS[result.category] ?? '#8a8a9a';
                           return (
                             <button
                               key={`event-${result.id}`}
@@ -311,7 +311,7 @@ export function SearchOverlay() {
                               data-active={isActive}
                               onClick={() => handleSelect(result)}
                               onMouseEnter={() => setActiveIndex(idx)}
-                              className="w-full flex items-center gap-3 rounded-[10px] text-left cursor-pointer transition-colors"
+                              className="w-full flex items-center gap-3 rounded-[10px] text-left cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold/50"
                               style={{
                                 padding: '10px 12px',
                                 background: isActive ? 'rgba(255, 255, 255, 0.04)' : 'transparent',
@@ -370,7 +370,7 @@ export function SearchOverlay() {
                               data-active={isActive}
                               onClick={() => handleSelect(result)}
                               onMouseEnter={() => setActiveIndex(idx)}
-                              className="w-full flex items-center gap-3 rounded-[10px] text-left cursor-pointer transition-colors"
+                              className="w-full flex items-center gap-3 rounded-[10px] text-left cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold/50"
                               style={{
                                 padding: '10px 12px',
                                 background: isActive ? 'rgba(255, 255, 255, 0.04)' : 'transparent',

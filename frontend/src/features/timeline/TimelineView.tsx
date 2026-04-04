@@ -120,7 +120,7 @@ function EventCard({ id, title, year, category, icon, viewed, side, index }: {
         {/* Text */}
         <div className="flex-1 min-w-0">
           <span
-            className="block truncate group-hover:text-[#e0e0e6] transition-colors"
+            className="block truncate group-hover:text-white transition-colors"
             style={{
               fontFamily: "'Space Grotesk', sans-serif",
               fontSize: '14px', fontWeight: 500, color: '#e0e0e6',

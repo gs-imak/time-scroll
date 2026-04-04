@@ -439,7 +439,7 @@ export function EventStory() {
                 className="absolute left-[3%] top-[1000px] z-[1]"
                 style={{ y: sideLeftY2, opacity: sideOpacity2 }}
               >
-                <div className="font-mono text-[12px] leading-relaxed" style={{ color: '#35353f' }}>
+                <div className="font-mono text-[12px] leading-relaxed" style={{ color: '#3a3a4a' }}>
                   <div>{event.latitude.toFixed(4)}°N</div>
                   <div>{event.longitude.toFixed(4)}°E</div>
                   <div className="mt-2 w-8 h-px" style={{ background: `${cat.color}25` }} />
@@ -452,7 +452,7 @@ export function EventStory() {
                 style={{ y: sideRightY1, opacity: sideOpacity1, writingMode: 'vertical-rl' }}
               >
                 <span className="text-[16px] font-light tracking-[0.35em] uppercase"
-                  style={{ color: '#2a2a35' }}>
+                  style={{ color: '#28282f' }}>
                   {era.name}
                 </span>
               </motion.div>
@@ -487,7 +487,7 @@ export function EventStory() {
                   className="absolute left-[3%] top-[1800px] z-[1]"
                   style={{ y: sideLeftY2, opacity: sideOpacity1 }}
                 >
-                  <span className="text-[13px] font-light tracking-[0.15em] uppercase" style={{ color: '#2a2a35' }}>
+                  <span className="text-[13px] font-light tracking-[0.15em] uppercase" style={{ color: '#28282f' }}>
                     {event.locationName}
                   </span>
                 </motion.div>
@@ -520,7 +520,7 @@ export function EventStory() {
                     <Heart
                       size={15}
                       fill={isFavorited ? '#c49a44' : 'none'}
-                      stroke={isFavorited ? '#c49a44' : '#606070'}
+                      stroke={isFavorited ? '#c49a44' : '#55556a'}
                       aria-hidden="true"
                     />
                   </motion.button>
@@ -528,7 +528,7 @@ export function EventStory() {
                     className="w-10 h-10 rounded-full flex items-center justify-center bg-white/[0.06] hover:bg-white/[0.1] transition-colors cursor-pointer backdrop-blur-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5a9aaa] focus-visible:ring-offset-2 focus-visible:ring-offset-[#08080c]"
                     whileTap={{ scale: 0.9 }}
                     aria-label={copied ? 'Copied to clipboard' : 'Share this event'}>
-                    <Share2 size={15} className="text-[#606070]" aria-hidden="true" />
+                    <Share2 size={15} className="text-[#55556a]" aria-hidden="true" />
                   </motion.button>
                   <button onClick={onClose}
                     className="w-10 h-10 rounded-full flex items-center justify-center bg-white/[0.06] hover:bg-white/[0.1] transition-colors cursor-pointer backdrop-blur-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5a9aaa] focus-visible:ring-offset-2 focus-visible:ring-offset-[#08080c]"
@@ -543,7 +543,7 @@ export function EventStory() {
               <AnimatePresence>
                 {copied && (
                   <motion.div className="absolute top-16 left-1/2 -translate-x-1/2 z-20 px-4 py-2 rounded-full text-[11px] text-[#8a8a9a]"
-                    style={{ background: 'rgba(10,16,28,0.9)', border: '1px solid rgba(255,255,255,0.08)' }}
+                    style={{ background: 'rgba(14, 14, 20, 0.92)', border: '1px solid rgba(255,255,255,0.08)' }}
                     initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
                     Copied to clipboard
                   </motion.div>
@@ -564,7 +564,7 @@ export function EventStory() {
                 </h1>
 
                 {/* Animated year display */}
-                <div className="text-[28px] sm:text-[36px] font-light text-[#454555] mb-4 tabular-nums">
+                <div className="text-[28px] sm:text-[36px] font-light text-[#3a3a4a] mb-4 tabular-nums">
                   <AnimatedYear year={event.year} />
                 </div>
 
@@ -700,12 +700,12 @@ export function EventStory() {
                 </Reveal>
                 {event.description.split('\n\n').map((para, i) => (
                   <Reveal key={i} delay={i * 0.06}>
-                    <p className="text-[15px] sm:text-[16px] text-[#95959f] leading-[1.9] mb-6">{para}</p>
+                    <p className="text-[15px] sm:text-[16px] text-[#8a8a9a] leading-[1.9] mb-6">{para}</p>
                     {/* Pull-quote after first paragraph */}
                     {i === 0 && pullQuote && (
                       <Reveal delay={0.1}>
                         <blockquote className="my-10 py-6 px-8 border-l-[3px] rounded-r-xl" style={{ borderColor: cat.color, background: `${cat.color}06` }}>
-                          <p className="text-[18px] sm:text-[20px] text-[#a8a8b4] leading-[1.7] italic font-light">
+                          <p className="text-[18px] sm:text-[20px] text-[#8a8a9a] leading-[1.7] italic font-light">
                             "{pullQuote}"
                           </p>
                         </blockquote>
@@ -739,23 +739,23 @@ export function EventStory() {
                             onClick={() => selectEvent(ce.id)}
                             className="flex items-start gap-4 p-5 rounded-xl text-left cursor-pointer group w-full"
                             style={{ border: '1px solid rgba(255,255,255,0.05)' }}
-                            whileHover={{ borderColor: `${ceCat?.color ?? '#7a869a'}25`, backgroundColor: 'rgba(255,255,255,0.02)', x: 4 }}
+                            whileHover={{ borderColor: `${ceCat?.color ?? '#8a8a9a'}25`, backgroundColor: 'rgba(255,255,255,0.02)', x: 4 }}
                             whileTap={{ scale: 0.98 }}
                           >
                             <div className="mt-0.5 shrink-0">
                               <span
                                 className="block w-2.5 h-2.5 rounded-full"
-                                style={{ background: ceCat?.color ?? '#7a869a' }}
+                                style={{ background: ceCat?.color ?? '#8a8a9a' }}
                               />
                             </div>
                             <div className="min-w-0 flex-1">
-                              <p className="text-[13px] font-medium text-[#95959f] group-hover:text-[#c0c0c8] transition-colors truncate">
+                              <p className="text-[13px] font-medium text-[#8a8a9a] group-hover:text-[#e0e0e6] transition-colors truncate">
                                 {ce.title}
                               </p>
                               <p className="text-[11px] text-[#3a3a4a] mt-1">
                                 {formatYear(ce.year)}{ce.locationName && ` · ${ce.locationName}`}
                               </p>
-                              <p className="text-[10px] mt-1.5" style={{ color: ceCat?.color ?? '#7a869a' }}>
+                              <p className="text-[10px] mt-1.5" style={{ color: ceCat?.color ?? '#8a8a9a' }}>
                                 {diffLabel}
                               </p>
                             </div>
@@ -781,7 +781,7 @@ export function EventStory() {
                           <Lightbulb size={16} style={{ color: cat.color }} />
                           <span className="text-[12px] font-semibold tracking-wider uppercase" style={{ color: cat.color }}>Did you know?</span>
                         </div>
-                        <p className="text-[16px] text-[#a8a8b4] leading-[1.8]">{event.impactText}</p>
+                        <p className="text-[16px] text-[#8a8a9a] leading-[1.8]">{event.impactText}</p>
                       </div>
                     </motion.div>
                   </Reveal>
@@ -843,7 +843,7 @@ export function EventStory() {
                         <motion.div key={i} className="aspect-[4/3] rounded-xl flex items-center justify-center"
                           style={{ background: 'rgba(255,255,255,0.015)', border: '1px solid rgba(255,255,255,0.04)' }}
                           whileHover={{ borderColor: `${cat.color}30`, background: `${cat.color}06` }}>
-                          <ImageIcon size={20} className="text-[#1a1a22]" />
+                          <ImageIcon size={20} className="text-[#28282f]" />
                         </motion.div>
                       ))}
                     </div>
@@ -925,9 +925,9 @@ function NavButton({ dir, event, onSelect }: { dir: 'left' | 'right'; event: His
       className="flex items-center gap-2 px-3 py-2 rounded-full bg-white/[0.05] hover:bg-white/[0.08] backdrop-blur-sm transition-colors cursor-pointer max-w-[200px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5a9aaa] focus-visible:ring-offset-2 focus-visible:ring-offset-[#08080c]"
       aria-label={dir === 'left' ? `Previous event: ${event.title}` : `Next event: ${event.title}`}
       whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
-      {dir === 'left' && <ChevronLeft size={14} className="text-[#606070] shrink-0" aria-hidden="true" />}
-      <span className="text-[11px] text-[#606070] truncate" aria-hidden="true">{event.title}</span>
-      {dir === 'right' && <ChevronRight size={14} className="text-[#606070] shrink-0" aria-hidden="true" />}
+      {dir === 'left' && <ChevronLeft size={14} className="text-[#55556a] shrink-0" aria-hidden="true" />}
+      <span className="text-[11px] text-[#55556a] truncate" aria-hidden="true">{event.title}</span>
+      {dir === 'right' && <ChevronRight size={14} className="text-[#55556a] shrink-0" aria-hidden="true" />}
     </motion.button>
   );
 }
@@ -944,7 +944,7 @@ function FactCard({ icon, label, value, color }: { icon: React.ReactNode; label:
         <span style={{ color: color + '80' }}>{icon}</span>
         <span className="text-[10px] font-medium uppercase tracking-wider text-[#3a3a4a]">{label}</span>
       </div>
-      <p className="text-[14px] text-[#a8a8b4] font-medium">{value}</p>
+      <p className="text-[14px] text-[#8a8a9a] font-medium">{value}</p>
     </motion.div>
   );
 }
@@ -960,7 +960,7 @@ function DiveLink({ emoji, title, subtitle, href, color }: { emoji: string; titl
         <span className="text-lg">{emoji}</span>
       </div>
       <div>
-        <p className="text-[13px] font-medium text-[#95959f]">{title}</p>
+        <p className="text-[13px] font-medium text-[#8a8a9a]">{title}</p>
         <p className="text-[11px] text-[#3a3a4a]">{subtitle}</p>
       </div>
       <ExternalLink size={14} className="text-[#3a3a4a] ml-auto shrink-0" />
@@ -975,12 +975,12 @@ function RelatedCard({ event, onSelect }: { event: HistoricalEvent; onSelect: (i
     <motion.button onClick={() => onSelect(event.id)}
       className="flex items-center gap-4 p-5 rounded-xl text-left cursor-pointer group"
       style={{ border: '1px solid rgba(255,255,255,0.05)' }}
-      whileHover={{ borderColor: `${cat?.color ?? '#7a869a'}25`, backgroundColor: 'rgba(255,255,255,0.02)', x: 4 }}
+      whileHover={{ borderColor: `${cat?.color ?? '#8a8a9a'}25`, backgroundColor: 'rgba(255,255,255,0.02)', x: 4 }}
       whileTap={{ scale: 0.98 }}>
       <span className="text-2xl w-11 h-11 flex items-center justify-center rounded-lg shrink-0"
-        style={{ background: (cat?.color ?? '#7a869a') + '12' }}>{icon}</span>
+        style={{ background: (cat?.color ?? '#8a8a9a') + '12' }}>{icon}</span>
       <div className="min-w-0 flex-1">
-        <p className="text-[13px] font-medium text-[#95959f] group-hover:text-[#c0c0c8] transition-colors truncate">{event.title}</p>
+        <p className="text-[13px] font-medium text-[#8a8a9a] group-hover:text-[#e0e0e6] transition-colors truncate">{event.title}</p>
         <p className="text-[11px] text-[#3a3a4a] mt-1">
           {formatYear(event.year)}{event.locationName && ` · ${event.locationName}`}
         </p>

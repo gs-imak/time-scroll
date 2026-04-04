@@ -70,7 +70,7 @@ export function EventQuiz({ eventId, eventTitle, categoryColor, onComplete }: Ev
         </p>
         <motion.button
           onClick={() => setStarted(true)}
-          className="px-6 py-3 rounded-xl text-[13px] font-semibold cursor-pointer"
+          className="px-6 py-3 rounded-xl text-[13px] font-semibold cursor-pointer transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-void"
           style={{ background: categoryColor + '20', color: categoryColor, border: `1px solid ${categoryColor}30` }}
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.97 }}
@@ -119,7 +119,7 @@ export function EventQuiz({ eventId, eventTitle, categoryColor, onComplete }: Ev
         <div className="flex items-center justify-center gap-3">
           <motion.button
             onClick={handleRestart}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-[12px] font-medium cursor-pointer"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-[12px] font-medium cursor-pointer transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-void"
             style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#8a8a9a' }}
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
@@ -136,7 +136,7 @@ export function EventQuiz({ eventId, eventTitle, categoryColor, onComplete }: Ev
     <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.06)' }}>
       {/* Progress header */}
       <div className="px-6 py-4 flex items-center justify-between" style={{ background: 'rgba(255,255,255,0.02)' }}>
-        <span className="text-[11px] font-semibold tracking-wider uppercase text-[#3a3a4a]">
+        <span className="text-[11px] font-semibold tracking-wider uppercase text-[#55556a]">
           Question {currentQ + 1} of {total}
         </span>
         <div className="flex gap-1.5">
@@ -173,7 +173,7 @@ export function EventQuiz({ eventId, eventTitle, categoryColor, onComplete }: Ev
                 const isRight = i === question.correctIndex;
                 let bg = 'rgba(255,255,255,0.02)';
                 let border = 'rgba(255,255,255,0.06)';
-                let textColor = '#95959f';
+                let textColor = '#8a8a9a';
 
                 if (answered) {
                   if (isRight) {
@@ -196,7 +196,7 @@ export function EventQuiz({ eventId, eventTitle, categoryColor, onComplete }: Ev
                     key={i}
                     onClick={() => handleSelect(i)}
                     disabled={answered}
-                    className="w-full flex items-center gap-3 p-4 rounded-xl text-left transition-all cursor-pointer"
+                    className="w-full flex items-center gap-3 p-4 rounded-xl text-left transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-void"
                     style={{ background: bg, border: `1px solid ${border}` }}
                     whileHover={!answered ? { scale: 1.01, borderColor: `${categoryColor}40` } : {}}
                     whileTap={!answered ? { scale: 0.99 } : {}}
@@ -240,7 +240,7 @@ export function EventQuiz({ eventId, eventTitle, categoryColor, onComplete }: Ev
             >
               <motion.button
                 onClick={handleNext}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-[13px] font-medium cursor-pointer"
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-[13px] font-medium cursor-pointer transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-void"
                 style={{ background: categoryColor + '18', color: categoryColor, border: `1px solid ${categoryColor}25` }}
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}

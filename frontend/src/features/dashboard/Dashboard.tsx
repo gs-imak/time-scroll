@@ -70,11 +70,12 @@ function ProgressRing({ progress, size = 80, stroke = 6 }: { progress: number; s
 function GlassCard({ children, className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={cn('rounded-[12px]', className)}
+      className={cn('rounded-[12px] transition-all duration-200', className)}
       style={{
         background: 'rgba(14, 14, 20, 0.6)',
         backdropFilter: 'blur(24px)',
         border: '1px solid rgba(255, 255, 255, 0.06)',
+        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.03)',
       }}
       {...props}
     >
@@ -269,7 +270,7 @@ export default function Dashboard() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.4 + i * 0.08, ease: EASE }}
                   >
-                    <GlassCard className="group overflow-hidden cursor-pointer transition-all duration-200 hover:border-white/[0.14]"
+                    <GlassCard className="group overflow-hidden cursor-pointer transition-all duration-200 hover:border-white/[0.14] hover:translate-y-[-2px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-void active:scale-[0.97]"
                       style={{ border: '1px solid rgba(255,255,255,0.06)' }}
                       onClick={() => navigate(`/explore/${event.year}/${event.id}`)}
                       role="button"
@@ -336,7 +337,7 @@ export default function Dashboard() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.4 + i * 0.08, ease: EASE }}
                   >
-                    <GlassCard className="group overflow-hidden cursor-pointer transition-all duration-200 hover:border-white/[0.14]"
+                    <GlassCard className="group overflow-hidden cursor-pointer transition-all duration-200 hover:border-white/[0.14] hover:translate-y-[-2px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-void active:scale-[0.97]"
                       style={{ border: '1px solid rgba(255,255,255,0.06)' }}
                       onClick={() => navigate(`/explore/${event.year}/${event.id}`)}
                       role="button"
@@ -392,7 +393,7 @@ export default function Dashboard() {
                   transition={{ duration: 0.5, delay: 0.5 + i * 0.06, ease: EASE }}
                 >
                   <GlassCard
-                    className="group px-5 py-4 cursor-pointer transition-all duration-200 hover:border-white/[0.14]"
+                    className="group px-5 py-4 cursor-pointer transition-all duration-200 hover:border-white/[0.14] hover:translate-y-[-2px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-void active:scale-[0.97]"
                     style={{ border: '1px solid rgba(255,255,255,0.06)' }}
                     onClick={() => navigate(`/explore/${era.startYear}`)}
                     role="button"
@@ -440,7 +441,7 @@ export default function Dashboard() {
                   <button
                     key={event.id}
                     onClick={() => navigate(`/explore/${event.year}/${event.id}`)}
-                    className="w-full flex items-center gap-3 px-5 py-3 text-left cursor-pointer hover:bg-white/[0.03] transition-colors"
+                    className="w-full flex items-center gap-3 px-5 py-3 text-left cursor-pointer hover:bg-white/[0.03] transition-colors active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-void"
                   >
                     <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: catColor }} />
                     <span

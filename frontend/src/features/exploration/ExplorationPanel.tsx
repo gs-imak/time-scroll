@@ -71,7 +71,7 @@ export function ExplorationPanel() {
                   </div>
                 )}
                 {visibleEvents.map(event => {
-                  const color = CATEGORY_COLORS[event.category] ?? '#7a869a';
+                  const color = CATEGORY_COLORS[event.category] ?? '#8a8a9a';
                   return (
                     <button
                       key={event.id}

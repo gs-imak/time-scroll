@@ -46,6 +46,7 @@ function NavItem({
           'relative flex items-center w-full h-11 rounded-[10px]',
           'transition-all duration-200 cursor-pointer',
           'active:scale-[0.97]',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-void',
           active
             ? 'text-text-primary'
             : 'text-text-secondary hover:text-text-primary',
@@ -120,6 +121,7 @@ function MobileNavItem({
         'relative flex items-center w-full h-11 rounded-[10px] px-3 gap-3',
         'transition-all duration-200 cursor-pointer',
         'active:scale-[0.97]',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-void',
         active
           ? 'text-text-primary bg-[rgba(255,255,255,0.04)]'
           : 'text-text-secondary hover:text-text-primary hover:bg-[rgba(255,255,255,0.04)]',
