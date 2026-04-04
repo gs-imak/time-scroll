@@ -87,8 +87,7 @@ export function GlobeView({ children }: GlobeViewProps) {
       // Configure controls
       const controls = globeRef.current.controls();
       if (controls) {
-        controls.autoRotate = true;
-        controls.autoRotateSpeed = 0.3;
+        controls.autoRotate = false;
         controls.enableDamping = true;
         controls.dampingFactor = 0.1;
       }
