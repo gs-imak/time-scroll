@@ -16,6 +16,8 @@ interface ProgressState {
   unlockedAchievements: string[];
   currentStreak: number;
   lastVisitDate: string | null;
+  favoriteEvents: string[];
+  eventNotes: Record<string, string>;
 }
 
 interface ProgressActions {
@@ -24,6 +26,8 @@ interface ProgressActions {
   checkAndUnlockAchievements: () => string[];
   updateStreak: () => void;
   totalEventsExplored: () => number;
+  toggleFavorite: (id: string) => void;
+  setEventNote: (id: string, note: string) => void;
 }
 
 type ProgressStore = ProgressState & ProgressActions;
@@ -141,6 +145,8 @@ export const useProgressStore = create<ProgressStore>()(
       unlockedAchievements: [],
       currentStreak: 0,
       lastVisitDate: null,
+      favoriteEvents: [],
+      eventNotes: {},
 
       totalEventsExplored: () => get().viewedEvents.length,
 
@@ -197,6 +203,26 @@ export const useProgressStore = create<ProgressStore>()(
 
         get().checkAndUnlockAchievements();
       },
+
+      toggleFavorite: (id: string) => {
+        const state = get();
+        const isFav = state.favoriteEvents.includes(id);
+        set({
+          favoriteEvents: isFav
+            ? state.favoriteEvents.filter(fid => fid !== id)
+            : [...state.favoriteEvents, id],
+        });
+      },
+
+      setEventNote: (id: string, note: string) => {
+        const state = get();
+        if (note.trim() === '') {
+          const { [id]: _, ...rest } = state.eventNotes;
+          set({ eventNotes: rest });
+        } else {
+          set({ eventNotes: { ...state.eventNotes, [id]: note } });
+        }
+      },
     }),
     {
       name: 'time-scroll-progress',
@@ -206,6 +232,8 @@ export const useProgressStore = create<ProgressStore>()(
         unlockedAchievements: state.unlockedAchievements,
         currentStreak: state.currentStreak,
         lastVisitDate: state.lastVisitDate,
+        favoriteEvents: state.favoriteEvents,
+        eventNotes: state.eventNotes,
       }),
     },
   ),

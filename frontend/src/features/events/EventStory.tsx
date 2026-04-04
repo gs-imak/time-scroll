@@ -1,9 +1,10 @@
 import { useEffect, useCallback, useMemo, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router';
 import { AnimatePresence, motion, useScroll, useTransform, useMotionValueEvent, useInView } from 'framer-motion';
 import {
   X, MapPin, Calendar, Clock, ChevronLeft, ChevronRight,
   Lightbulb, ExternalLink, Play, Image as ImageIcon, Globe,
-  Share2, ArrowUp,
+  Share2, ArrowUp, Heart,
 } from 'lucide-react';
 import { useEventsStore } from '@/shared/stores/eventsStore';
 import { useProgressStore } from '@/shared/stores/progressStore';
@@ -62,9 +63,9 @@ const EVENT_ICONS: Record<string, string> = {
 };
 
 // Section IDs for side navigation
-const SECTIONS = ['overview', 'impact', 'deeper', 'gallery', 'video', 'related'] as const;
+const SECTIONS = ['overview', 'around-the-world', 'impact', 'deeper', 'gallery', 'video', 'related'] as const;
 const SECTION_LABELS: Record<string, string> = {
-  overview: 'Overview', impact: 'Impact', deeper: 'Explore',
+  overview: 'Overview', 'around-the-world': 'World', impact: 'Impact', deeper: 'Explore',
   gallery: 'Gallery', video: 'Video', related: 'Related',
 };
 
@@ -116,11 +117,41 @@ export function EventStory() {
   const selectedEventId = useEventsStore(s => s.selectedEventId);
   const events = useEventsStore(s => s.events);
   const selectEvent = useEventsStore(s => s.selectEvent);
+  const [, setSearchParams] = useSearchParams();
 
   const event = events.find(e => e.id === selectedEventId);
   const era = event ? ERAS.find(e => e.id === event.eraId) : null;
   const cat = event ? CATEGORY_META[event.category] : null;
   const icon = event ? EVENT_ICONS[event.id] ?? '●' : '●';
+
+  const favoriteEvents = useProgressStore(s => s.favoriteEvents);
+  const toggleFavorite = useProgressStore(s => s.toggleFavorite);
+  const eventNotes = useProgressStore(s => s.eventNotes);
+  const setEventNote = useProgressStore(s => s.setEventNote);
+
+  const isFavorited = event ? favoriteEvents.includes(event.id) : false;
+  const currentNote = event ? (eventNotes[event.id] ?? '') : '';
+  const [noteText, setNoteText] = useState(currentNote);
+  const noteTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Sync noteText when switching events
+  useEffect(() => {
+    setNoteText(currentNote);
+  }, [currentNote, event?.id]);
+
+  const handleNoteChange = useCallback((value: string) => {
+    if (value.length > 500) return;
+    setNoteText(value);
+    if (noteTimerRef.current) clearTimeout(noteTimerRef.current);
+    noteTimerRef.current = setTimeout(() => {
+      if (event) setEventNote(event.id, value);
+    }, 1000);
+  }, [event, setEventNote]);
+
+  const handleNoteBlur = useCallback(() => {
+    if (noteTimerRef.current) clearTimeout(noteTimerRef.current);
+    if (event) setEventNote(event.id, noteText);
+  }, [event, noteText, setEventNote]);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -180,6 +211,34 @@ export function EventStory() {
       .slice(0, 4);
   }, [event, events]);
 
+  // "Around the World" — events happening around the same time
+  const contemporaryEvents = useMemo(() => {
+    if (!event) return [];
+    // Use wider window for ancient events (year < -500) since events are more spread out
+    const range = event.year < -500 ? 200 : 100;
+    return events
+      .filter(e => e.id !== event.id && Math.abs(e.year - event.year) <= range)
+      .sort((a, b) => Math.abs(a.year - event.year) - Math.abs(b.year - event.year))
+      .slice(0, 4);
+  }, [event, events]);
+
+  // Sync URL search param with selected event
+  useEffect(() => {
+    setSearchParams(prev => {
+      const next = new URLSearchParams(prev);
+      if (event) {
+        next.set('event', event.id);
+      } else {
+        next.delete('event');
+      }
+      // Only update if actually changed to avoid unnecessary history entries
+      if (prev.get('event') !== next.get('event')) {
+        return next;
+      }
+      return prev;
+    }, { replace: true });
+  }, [event?.id, setSearchParams]);
+
   const eraEvents = useMemo(() => {
     if (!event) return [];
     return events.filter(e => e.eraId === event.eraId).sort((a, b) => a.year - b.year);
@@ -213,11 +272,12 @@ export function EventStory() {
   }, []);
   const onShare = useCallback(async () => {
     if (!event) return;
+    const url = `${window.location.origin}/explore?event=${event.id}`;
     const text = `${event.title} (${formatYear(event.year)}) — Time Scroll`;
     if (navigator.share) {
-      await navigator.share({ title: event.title, text });
+      await navigator.share({ title: event.title, text, url });
     } else {
-      await navigator.clipboard.writeText(text);
+      await navigator.clipboard.writeText(url);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
@@ -452,6 +512,18 @@ export function EventStory() {
               <div className="absolute top-0 inset-x-0 z-10 flex items-center justify-between px-5 py-4">
                 <NavButton dir="left" event={prev} onSelect={selectEvent} />
                 <div className="flex items-center gap-2">
+                  <motion.button
+                    onClick={() => event && toggleFavorite(event.id)}
+                    className="w-10 h-10 rounded-full flex items-center justify-center bg-white/[0.06] hover:bg-white/[0.1] transition-colors cursor-pointer backdrop-blur-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5a9aaa] focus-visible:ring-offset-2 focus-visible:ring-offset-[#08080c]"
+                    whileTap={{ scale: 0.9 }}
+                    aria-label={isFavorited ? 'Remove from favorites' : 'Add to favorites'}>
+                    <Heart
+                      size={15}
+                      fill={isFavorited ? '#c49a44' : 'none'}
+                      stroke={isFavorited ? '#c49a44' : '#606070'}
+                      aria-hidden="true"
+                    />
+                  </motion.button>
                   <motion.button onClick={onShare}
                     className="w-10 h-10 rounded-full flex items-center justify-center bg-white/[0.06] hover:bg-white/[0.1] transition-colors cursor-pointer backdrop-blur-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5a9aaa] focus-visible:ring-offset-2 focus-visible:ring-offset-[#08080c]"
                     whileTap={{ scale: 0.9 }}
@@ -643,6 +715,59 @@ export function EventStory() {
                 ))}
               </section>
 
+              {/* Around the World — contemporary events */}
+              {contemporaryEvents.length > 0 && (
+                <section id="around-the-world" ref={setSectionRef('around-the-world')} className="mb-20">
+                  <Reveal>
+                    <div className="flex items-center gap-2 mb-6">
+                      <Globe size={14} style={{ color: cat.color }} />
+                      <h2 className="text-[11px] font-semibold tracking-[0.14em] uppercase" style={{ color: cat.color }}>Around the World</h2>
+                    </div>
+                  </Reveal>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {contemporaryEvents.map((ce, i) => {
+                      const ceCat = CATEGORY_META[ce.category];
+                      const diff = ce.year - event.year;
+                      const diffLabel = diff === 0
+                        ? 'Same year'
+                        : diff > 0
+                          ? `${Math.abs(diff)} year${Math.abs(diff) !== 1 ? 's' : ''} after`
+                          : `${Math.abs(diff)} year${Math.abs(diff) !== 1 ? 's' : ''} before`;
+                      return (
+                        <Reveal key={ce.id} delay={i * 0.06}>
+                          <motion.button
+                            onClick={() => selectEvent(ce.id)}
+                            className="flex items-start gap-4 p-5 rounded-xl text-left cursor-pointer group w-full"
+                            style={{ border: '1px solid rgba(255,255,255,0.05)' }}
+                            whileHover={{ borderColor: `${ceCat?.color ?? '#7a869a'}25`, backgroundColor: 'rgba(255,255,255,0.02)', x: 4 }}
+                            whileTap={{ scale: 0.98 }}
+                          >
+                            <div className="mt-0.5 shrink-0">
+                              <span
+                                className="block w-2.5 h-2.5 rounded-full"
+                                style={{ background: ceCat?.color ?? '#7a869a' }}
+                              />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-[13px] font-medium text-[#95959f] group-hover:text-[#c0c0c8] transition-colors truncate">
+                                {ce.title}
+                              </p>
+                              <p className="text-[11px] text-[#3a3a4a] mt-1">
+                                {formatYear(ce.year)}{ce.locationName && ` · ${ce.locationName}`}
+                              </p>
+                              <p className="text-[10px] mt-1.5" style={{ color: ceCat?.color ?? '#7a869a' }}>
+                                {diffLabel}
+                              </p>
+                            </div>
+                            <ChevronRight size={14} className="text-[#28282f] group-hover:text-[#3a3a4a] transition-colors shrink-0 mt-1" />
+                          </motion.button>
+                        </Reveal>
+                      );
+                    })}
+                  </div>
+                </section>
+              )}
+
               {/* Did You Know */}
               {event.impactText && (
                 <section id="impact" ref={setSectionRef('impact')} className="mb-20">
@@ -672,6 +797,17 @@ export function EventStory() {
                     eventTitle={event.title}
                     categoryColor={cat.color}
                   />
+                </section>
+              </Reveal>
+
+              {/* Your Notes */}
+              <Reveal>
+                <section className="mb-20">
+                  <SectionLabel>Your Notes</SectionLabel>
+                  <div className="rounded-2xl p-6 relative" style={{ background: 'rgba(14, 14, 20, 0.6)', backdropFilter: 'blur(24px)', border: '1px solid rgba(255, 255, 255, 0.06)' }}>
+                    <textarea value={noteText} onChange={e => handleNoteChange(e.target.value)} onBlur={handleNoteBlur} maxLength={500} rows={4} placeholder="Write your notes about this event..." className="notes-textarea w-full bg-transparent resize-none outline-none text-[14px] leading-[1.8]" style={{ color: '#e0e0e6', fontFamily: "'Space Grotesk', sans-serif" }} />
+                    <div className="flex justify-end mt-2 text-[11px]" style={{ fontFamily: "'JetBrains Mono', monospace", color: noteText.length >= 450 ? '#b85454' : '#3a3a4a' }}>{noteText.length}/500</div>
+                  </div>
                 </section>
               </Reveal>
 

@@ -4,6 +4,7 @@ import { lazy, Suspense } from 'react';
 const LandingPage = lazy(() => import('@/features/onboarding/LandingPage'));
 const Dashboard = lazy(() => import('@/features/dashboard/Dashboard'));
 const GlobeExplorer = lazy(() => import('@/features/globe/GlobeExplorer'));
+const TimelineView = lazy(() => import('@/features/timeline/TimelineView'));
 
 function Loading() {
   return (
@@ -27,6 +28,14 @@ export const router = createBrowserRouter([
     element: (
       <Suspense fallback={<Loading />}>
         <Dashboard />
+      </Suspense>
+    ),
+  },
+  {
+    path: '/timeline',
+    element: (
+      <Suspense fallback={<Loading />}>
+        <TimelineView />
       </Suspense>
     ),
   },

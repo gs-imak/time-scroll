@@ -111,6 +111,11 @@ html, body, #root {
   filter: invert(1) brightness(0.8);
 }
 
+/* === Notes textarea placeholder === */
+.notes-textarea::placeholder {
+  color: #3a3a4a;
+}
+
 /* === Scrollbar === */
 ::-webkit-scrollbar {
   width: 6px;

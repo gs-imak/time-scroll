@@ -7,7 +7,7 @@ import * as THREE from 'three';
  */
 
 // ── Per-event icon mapping ─────────────────────────────────────────
-const EVENT_ICONS: Record<string, string> = {
+export const EVENT_ICONS: Record<string, string> = {
   // Ancient
   'great-pyramid': '△',
   'indus-valley': '🏗️',

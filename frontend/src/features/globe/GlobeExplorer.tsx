@@ -1,6 +1,6 @@
-import { useEffect } from 'react';
-import { useParams } from 'react-router';
-import { GlobeView } from './GlobeView';
+import { useEffect, useRef } from 'react';
+import { useParams, useSearchParams } from 'react-router';
+import { GlobeView, useGlobe } from './GlobeView';
 import { TimelineScrubber } from '@/features/timeline/TimelineScrubber';
 import { EraIndicator } from '@/features/timeline/EraIndicator';
 import { EventStory } from '@/features/events/EventStory';
@@ -14,6 +14,40 @@ import { LoadingScreen } from '@/features/onboarding/LoadingScreen';
 import { OnboardingTour } from '@/features/onboarding/OnboardingTour';
 import { AchievementToast } from '@/shared/components/AchievementToast';
 import { useTimeStore } from '@/shared/stores/timeStore';
+import { useEventsStore } from '@/shared/stores/eventsStore';
+
+/** Reads ?event= search param on mount and opens + flies to that event */
+function EventUrlHandler() {
+  const [searchParams] = useSearchParams();
+  const events = useEventsStore(s => s.events);
+  const selectEvent = useEventsStore(s => s.selectEvent);
+  const { globeRef } = useGlobe();
+  const hasHandled = useRef(false);
+
+  useEffect(() => {
+    if (hasHandled.current) return;
+    const eventParam = searchParams.get('event');
+    if (!eventParam) return;
+
+    const target = events.find(e => e.id === eventParam);
+    if (!target) return;
+
+    hasHandled.current = true;
+    // Delay to let the globe finish initializing
+    const timer = setTimeout(() => {
+      selectEvent(target.id);
+      if (globeRef?.current) {
+        globeRef.current.pointOfView(
+          { lat: target.latitude, lng: target.longitude, altitude: 0.4 },
+          1200,
+        );
+      }
+    }, 800);
+    return () => clearTimeout(timer);
+  }, [searchParams, events, selectEvent, globeRef]);
+
+  return null;
+}
 
 export default function GlobeExplorer() {
   const { year } = useParams();
@@ -28,6 +62,7 @@ export default function GlobeExplorer() {
       {/* 3D Globe — react-globe.gl with Three.js rendering */}
       <GlobeView>
         <LandmarkOverlay />
+        <EventUrlHandler />
       </GlobeView>
 
       {/* Top cinematic gradient */}

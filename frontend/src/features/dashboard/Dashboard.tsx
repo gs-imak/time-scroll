@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router';
 import { motion } from 'framer-motion';
 import {
   Flame, Globe, Dices, Brain, Trophy, ArrowRight,
-  Compass, Sparkles,
+  Compass, Sparkles, Heart,
 } from 'lucide-react';
 import { useProgressStore, ACHIEVEMENTS } from '@/shared/stores/progressStore';
 import { useEventsStore } from '@/shared/stores/eventsStore';
@@ -91,6 +91,7 @@ export default function Dashboard() {
   const unlockedAchievements = useProgressStore(s => s.unlockedAchievements);
   const currentStreak = useProgressStore(s => s.currentStreak);
   const updateStreak = useProgressStore(s => s.updateStreak);
+  const favoriteEvents = useProgressStore(s => s.favoriteEvents);
 
   const events = useEventsStore(s => s.events);
 
@@ -113,6 +114,11 @@ export default function Dashboard() {
     const shuffled = [...unexplored].sort(() => Math.random() - 0.5);
     return shuffled.slice(0, 4);
   }, [unexplored]);
+
+  const favoritedEvents = useMemo(
+    () => favoriteEvents.map(id => events.find(e => e.id === id)).filter(Boolean),
+    [favoriteEvents, events],
+  );
 
   const recentEvents = useMemo(() => {
     const last5 = viewedEvents.slice(-5).reverse();
@@ -309,6 +315,67 @@ export default function Dashboard() {
             </GlassCard>
           )}
         </motion.section>
+
+        {/* ── Favorites ── */}
+        {favoritedEvents.length > 0 && (
+          <motion.section className="mb-12" {...section(0.35)}>
+            <SectionLabel>
+              <span className="inline-flex items-center gap-2">
+                <Heart size={13} fill="#c49a44" stroke="#c49a44" />
+                Favorites
+              </span>
+            </SectionLabel>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              {favoritedEvents.map((event, i) => {
+                if (!event) return null;
+                const catColor = CATEGORY_COLORS[event.category] ?? '#8a8a9a';
+                return (
+                  <motion.div
+                    key={event.id}
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.4 + i * 0.08, ease: EASE }}
+                  >
+                    <GlassCard className="group overflow-hidden cursor-pointer transition-all duration-200 hover:border-white/[0.14]"
+                      style={{ border: '1px solid rgba(255,255,255,0.06)' }}
+                      onClick={() => navigate(`/explore/${event.year}/${event.id}`)}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={e => e.key === 'Enter' && navigate(`/explore/${event.year}/${event.id}`)}
+                    >
+                      <div
+                        className="w-full aspect-[16/10] relative overflow-hidden"
+                        style={{
+                          background: event.imageUrl
+                            ? `url(${event.imageUrl}) center/cover`
+                            : `linear-gradient(135deg, ${catColor}30, ${catColor}10)`,
+                        }}
+                      >
+                        <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(14,14,20,0.9) 0%, transparent 60%)' }} />
+                        <div
+                          className="absolute top-3 left-3 w-2.5 h-2.5 rounded-full"
+                          style={{ background: catColor, boxShadow: `0 0 8px ${catColor}60` }}
+                        />
+                        <Heart size={14} fill="#c49a44" stroke="#c49a44" className="absolute top-3 right-3" />
+                      </div>
+                      <div className="px-4 py-3">
+                        <h3
+                          className="text-text-primary group-hover:text-[#c49a44] transition-colors truncate"
+                          style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '15px', fontWeight: 500 }}
+                        >
+                          {event.title}
+                        </h3>
+                        <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: '#55556a' }}>
+                          {formatYear(event.year)}
+                        </span>
+                      </div>
+                    </GlassCard>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </motion.section>
+        )}
 
         {/* ── Era Breakdown ── */}
         <motion.section className="mb-12" {...section(0.4)}>
