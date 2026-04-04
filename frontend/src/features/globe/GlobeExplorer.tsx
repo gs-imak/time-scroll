@@ -3,7 +3,7 @@ import { useParams } from 'react-router';
 import { GlobeView } from './GlobeView';
 import { TimelineScrubber } from '@/features/timeline/TimelineScrubber';
 import { EraIndicator } from '@/features/timeline/EraIndicator';
-import { EventDetailSheet } from '@/features/events/EventDetailSheet';
+import { EventStory } from '@/features/events/EventStory';
 import { LandmarkOverlay } from '@/features/landmarks/LandmarkOverlay';
 import { ExplorationPanel } from '@/features/exploration/ExplorationPanel';
 import { Toolbar } from '@/features/exploration/Toolbar';
@@ -48,7 +48,7 @@ export default function GlobeExplorer() {
       <EraIndicator />
       <Toolbar />
       <ExplorationPanel />
-      <EventDetailSheet />
+      <EventStory />
       <TimelineScrubber />
     </div>
   );

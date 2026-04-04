@@ -11,5 +11,9 @@ export interface HistoricalEvent {
   longitude: number;
   category: EventCategory;
   imageUrl?: string;
+  videoUrl?: string;
+  images?: string[];
+  impactText?: string;
+  locationName?: string;
   sources?: string[];
 }
