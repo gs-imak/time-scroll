@@ -25,15 +25,40 @@ const CATEGORY_META: Record<string, { color: string; label: string; gradient: st
 };
 
 const EVENT_ICONS: Record<string, string> = {
-  'great-pyramid': '△', 'code-hammurabi': '📜', 'trojan-war': '⚔️',
-  'founding-rome': '🐺', 'democracy-athens': '🏛️', 'roman-forum': '🎭',
-  'alexander-empire': '🦅', 'great-wall-begin': '🧱', 'julius-caesar': '🗡️',
-  'colosseum': '🏟️', 'fall-of-rome': '💀', 'hagia-sophia': '��',
-  'viking-expansion': '🪓', 'genghis-khan': '🏹', 'black-death': '☠️',
-  'gutenberg-press': '📖', 'columbus-americas': '⛵', 'manhattan-purchase': '📋',
-  'french-revolution': '⚜️', 'steam-locomotive': '🚂', 'suez-canal': '🚢',
-  'eiffel-tower': '🗼', 'ww1': '💣', 'ww2': '✈️',
-  'moon-landing': '🚀', 'berlin-wall': '🔨', 'www-invention': '💻',
+  // Ancient
+  'great-pyramid': '△', 'indus-valley': '🏗️', 'code-hammurabi': '📜',
+  'shang-oracle-bones': '🦴', 'phoenician-alphabet': '🔤', 'kingdom-of-kush': '👑',
+  'trojan-war': '⚔️',
+  // Classical
+  'persian-empire-cyrus': '🦁', 'birth-of-buddhism': '🧘', 'battle-of-marathon': '🏃',
+  'founding-rome': '🐺', 'democracy-athens': '🏛️', 'parthenon-construction': '🔱',
+  'library-of-alexandria': '📚', 'roman-forum': '🎭', 'alexander-empire': '🦅',
+  'great-wall-begin': '🧱', 'construction-of-petra': '🏜️', 'maurya-ashoka': '☸️',
+  'rosetta-stone': '🪨', 'julius-caesar': '🗡️', 'silk-road': '🐫',
+  'teotihuacan-founded': '🔺', 'colosseum': '🏟️', 'pompeii-destroyed': '🌋',
+  'fall-of-rome': '💀',
+  // Medieval
+  'hagia-sophia': '🕌', 'house-of-wisdom': '📐', 'viking-expansion': '🪓',
+  'song-dynasty-movable-type': '🖨️', 'battle-of-hastings': '🎯', 'first-crusade': '🛡️',
+  'angkor-wat': '🕉️', 'genghis-khan': '🏹', 'magna-carta': '🏰',
+  'mansa-musa': '💰', 'aztec-tenochtitlan': '🗿', 'black-death': '☠️',
+  'hundred-years-war': '🏴', 'zheng-he-voyages': '🧭', 'machu-picchu': '⛰️',
+  'fall-of-constantinople': '💥', 'gutenberg-press': '📖',
+  // Renaissance & Exploration
+  'spanish-inquisition': '⛪', 'columbus-americas': '⛵', 'reformation-luther': '📝',
+  'copernicus-heliocentric': '☀️', 'edo-period-japan': '🏯', 'galileo-telescope': '🔭',
+  'taj-mahal': '💎', 'manhattan-purchase': '📋', 'french-revolution': '⚜️',
+  // Industrial Age
+  'steam-locomotive': '🚂', 'emancipation-proclamation': '✊', 'origin-of-species': '🦎',
+  'suez-canal': '🚢', 'meiji-restoration': '🎌', 'telephone-invention': '📞',
+  'light-bulb': '💡', 'eiffel-tower': '🗼',
+  // Modern Era
+  'panama-canal': '⛴️', 'ww1': '💣', 'russian-revolution': '⚒️',
+  'penicillin-discovery': '💊', 'ww2': '✈️', 'indian-independence': '🕊️',
+  'chinese-revolution': '⭐', 'dna-structure': '🧬', 'cuban-missile-crisis': '☢️',
+  'civil-rights-act': '⚖️', 'moon-landing': '🚀', 'chernobyl-disaster': '🏭',
+  'berlin-wall': '🔨', 'mandela-freed': '🔓', 'www-invention': '💻',
+  'human-genome-project': '🔬', 'fukushima-disaster': '🌊', 'mars-perseverance': '🛸',
 };
 
 // Section IDs for side navigation
