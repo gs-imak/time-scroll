@@ -15,27 +15,27 @@
   --color-text-secondary: #8b9dc3;
   --color-text-muted: #5a6d8a;
 
-  /* === Accents === */
-  --color-accent-gold: #f5a623;
-  --color-accent-cyan: #00d4ff;
-  --color-accent-rose: #ff4d6a;
+  /* === Accents — desaturated, cinematic ===  */
+  --color-accent-gold: #c49a44;
+  --color-accent-cyan: #5a9aaa;
+  --color-accent-rose: #b85454;
 
-  /* === Category colors (bright & saturated for dark backgrounds) === */
-  --color-cat-war: #ff4444;
-  --color-cat-discovery: #00e5ff;
-  --color-cat-cultural: #ffca28;
-  --color-cat-political: #b388ff;
-  --color-cat-construction: #69f0ae;
-  --color-cat-natural: #ff8a65;
+  /* === Category colors — muted jewel tones for dark backgrounds === */
+  --color-cat-war: #b85454;
+  --color-cat-discovery: #5a8fa5;
+  --color-cat-cultural: #c49a44;
+  --color-cat-political: #8b80b0;
+  --color-cat-construction: #6d9476;
+  --color-cat-natural: #b87a60;
 
-  /* === Era colors (bolder) === */
+  /* === Era colors — muted, cinematic === */
   --color-era-prehistory: #8d7b68;
-  --color-era-ancient: #f5a623;
-  --color-era-classical: #ef4444;
-  --color-era-medieval: #9b59b6;
-  --color-era-renaissance: #3b82f6;
-  --color-era-industrial: #84cc16;
-  --color-era-modern: #00d4ff;
+  --color-era-ancient: #c49a44;
+  --color-era-classical: #b85454;
+  --color-era-medieval: #8b6faa;
+  --color-era-renaissance: #5a7fb5;
+  --color-era-industrial: #7a9e5a;
+  --color-era-modern: #5a9aaa;
 
   /* === Fonts === */
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;

@@ -7,13 +7,7 @@ import { useEventsStore } from '@/shared/stores/eventsStore';
 import { closestBoundaryYear } from '@/shared/utils/geo';
 import { formatYear } from '@/shared/utils/format';
 import { BOUNDARY_YEAR_MAP } from '@/shared/utils/constants';
-import { createEventMarker } from './eventMarkers';
-
-// === Category colors for tooltip accent ===
-const CATEGORY_COLORS: Record<string, string> = {
-  war: '#ff4444', discovery: '#00e5ff', cultural: '#ffca28',
-  political: '#b388ff', construction: '#69f0ae', natural: '#ff8a65',
-};
+import { createEventMarker, CATEGORY_COLORS } from './eventMarkers';
 
 // === Globe context for child components (landmarks, etc.) ===
 interface GlobeContextValue {
@@ -24,15 +18,15 @@ interface GlobeContextValue {
 const GlobeContext = createContext<GlobeContextValue>({ globeRef: null, getScreenCoords: () => null });
 export const useGlobe = () => useContext(GlobeContext);
 
-// === Era hex colors (WebGL needs real hex, not CSS variables) ===
+// === Era hex colors — muted, cinematic tones (WebGL needs real hex) ===
 const ERA_HEX_COLORS: Record<string, string> = {
   prehistory: '#8d7b68',
-  ancient: '#f5a623',
-  classical: '#ef4444',
-  medieval: '#9b59b6',
-  renaissance: '#3b82f6',
-  industrial: '#84cc16',
-  modern: '#00d4ff',
+  ancient: '#c49a44',
+  classical: '#b85454',
+  medieval: '#8b6faa',
+  renaissance: '#5a7fb5',
+  industrial: '#7a9e5a',
+  modern: '#5a9aaa',
 };
 
 // === Sorted boundary years ===

@@ -2,8 +2,8 @@ import * as THREE from 'three';
 
 /**
  * Per-event compact pin markers.
- * Small circular badge with event-specific emoji, always faces camera.
- * Detail shown via hover tooltip (handled by GlobeView).
+ * Muted, desaturated color palette — cinematic, not neon.
+ * Small circular badge with event-specific icon, always faces camera.
  */
 
 // ── Per-event icon mapping ─────────────────────────────────────────
@@ -12,13 +12,13 @@ const EVENT_ICONS: Record<string, string> = {
   'code-hammurabi': '📜',
   'trojan-war': '⚔️',
   'founding-rome': '🐺',
-  'democracy-athens': '🗳️',
-  'roman-forum': '🏛️',
+  'democracy-athens': '🏛️',
+  'roman-forum': '🎭',
   'alexander-empire': '🦅',
   'great-wall-begin': '🧱',
   'julius-caesar': '🗡️',
   'colosseum': '🏟️',
-  'fall-of-rome': '⚡',
+  'fall-of-rome': '💀',
   'hagia-sophia': '🕌',
   'viking-expansion': '🪓',
   'genghis-khan': '🏹',
@@ -26,7 +26,7 @@ const EVENT_ICONS: Record<string, string> = {
   'gutenberg-press': '📖',
   'columbus-americas': '⛵',
   'manhattan-purchase': '📋',
-  'french-revolution': '🔥',
+  'french-revolution': '⚜️',
   'steam-locomotive': '🚂',
   'suez-canal': '🚢',
   'eiffel-tower': '🗼',
@@ -37,15 +37,20 @@ const EVENT_ICONS: Record<string, string> = {
   'www-invention': '💻',
 };
 
-// ── Category colors ────────────────────────────────────────────────
+// ── Muted category palette — desaturated jewel tones ───────────────
+// Inspired by cartographic best practices (Imhof, ColorBrewer Dark2)
+// and premium dark UI (Apple, Stripe). No neon. No Material defaults.
 const CATEGORY_COLORS: Record<string, string> = {
-  war: '#ff4444',
-  discovery: '#00e5ff',
-  cultural: '#ffca28',
-  political: '#b388ff',
-  construction: '#69f0ae',
-  natural: '#ff8a65',
+  war: '#b85454',        // desaturated crimson — old battle flags
+  discovery: '#5a8fa5',  // muted steel blue — ocean exploration
+  cultural: '#c49a44',   // warm amber — aged parchment
+  political: '#8b80b0',  // soft lavender — faded royal cloth
+  construction: '#6d9476', // sage green — natural stone
+  natural: '#b87a60',    // terracotta — earth and clay
 };
+
+// Export for use in GlobeView tooltip
+export { CATEGORY_COLORS };
 
 // ── Render compact circular pin ────────────────────────────────────
 
@@ -61,35 +66,35 @@ function renderPinCanvas(icon: string, color: string): HTMLCanvasElement {
 
   const cx = size / 2;
   const cy = size / 2;
-  const r = 28;
+  const r = 26;
 
-  // Outer glow
-  const glow = ctx.createRadialGradient(cx, cy, r - 2, cx, cy, r + 6);
-  glow.addColorStop(0, color + '40');
+  // Subtle outer glow — very faint, not neon
+  const glow = ctx.createRadialGradient(cx, cy, r, cx, cy, r + 5);
+  glow.addColorStop(0, color + '20');
   glow.addColorStop(1, color + '00');
   ctx.beginPath();
-  ctx.arc(cx, cy, r + 6, 0, Math.PI * 2);
+  ctx.arc(cx, cy, r + 5, 0, Math.PI * 2);
   ctx.fillStyle = glow;
   ctx.fill();
 
   // Dark circle background
   ctx.beginPath();
   ctx.arc(cx, cy, r, 0, Math.PI * 2);
-  ctx.fillStyle = 'rgba(8, 14, 28, 0.92)';
+  ctx.fillStyle = 'rgba(12, 18, 32, 0.94)';
   ctx.fill();
 
-  // Color border
+  // Thin border — subtle, not heavy
   ctx.beginPath();
   ctx.arc(cx, cy, r, 0, Math.PI * 2);
-  ctx.strokeStyle = color;
-  ctx.lineWidth = 2.5;
+  ctx.strokeStyle = color + '90';
+  ctx.lineWidth = 1.5;
   ctx.stroke();
 
   // Icon
-  ctx.font = '24px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif';
+  ctx.font = '22px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillStyle = '#ffffff';
+  ctx.fillStyle = '#d8dce4';
   ctx.fillText(icon, cx, cy + 1);
 
   return canvas;
@@ -104,31 +109,22 @@ export function createEventMarker(event: {
   category: string;
 }): THREE.Group {
   const group = new THREE.Group();
-  const colorHex = CATEGORY_COLORS[event.category] ?? '#8b9dc3';
+  const colorHex = CATEGORY_COLORS[event.category] ?? '#7a869a';
   const color = new THREE.Color(colorHex);
   const icon = EVENT_ICONS[event.id] ?? '●';
 
-  // ── Surface dot ──
+  // ── Small surface dot ──
   const dot = new THREE.Mesh(
-    new THREE.SphereGeometry(0.4, 10, 8),
-    new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.9 }),
+    new THREE.SphereGeometry(0.35, 8, 6),
+    new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.7 }),
   );
   group.add(dot);
 
-  // Soft surface glow
-  const glowMat = new THREE.MeshBasicMaterial({
-    color,
-    transparent: true,
-    opacity: 0.12,
-    depthWrite: false,
-  });
-  group.add(new THREE.Mesh(new THREE.SphereGeometry(1.2, 10, 8), glowMat));
-
-  // ── Pin line ──
-  const pinH = 4;
+  // ── Faint pin line ──
+  const pinH = 3.5;
   const pin = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.04, 0.04, pinH, 4),
-    new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.3 }),
+    new THREE.CylinderGeometry(0.03, 0.03, pinH, 4),
+    new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.2 }),
   );
   pin.position.y = pinH / 2;
   group.add(pin);
@@ -147,9 +143,9 @@ export function createEventMarker(event: {
       sizeAttenuation: true,
     }),
   );
-  const badgeSize = 3.5;
+  const badgeSize = 3.2;
   sprite.scale.set(badgeSize, badgeSize, 1);
-  sprite.position.y = pinH + badgeSize / 2 + 0.2;
+  sprite.position.y = pinH + badgeSize / 2 + 0.15;
   group.add(sprite);
 
   return group;
