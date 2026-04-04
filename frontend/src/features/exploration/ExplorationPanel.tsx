@@ -9,13 +9,8 @@ import { formatYear } from '@/shared/utils/format';
 import { IconButton } from '@/shared/components';
 
 const CATEGORY_COLORS: Record<string, string> = {
-  war: '#ff4444', discovery: '#00e5ff', cultural: '#ffca28',
-  political: '#b388ff', construction: '#69f0ae', natural: '#ff8a65',
-};
-
-const CATEGORY_ICONS: Record<string, string> = {
-  war: '⚔', discovery: '🔭', cultural: '🎭',
-  political: '👑', construction: '🏛', natural: '🌋',
+  war: '#b85454', discovery: '#5a8fa5', cultural: '#c49a44',
+  political: '#8b80b0', construction: '#6d9476', natural: '#b87a60',
 };
 
 export function ExplorationPanel() {
@@ -76,8 +71,7 @@ export function ExplorationPanel() {
                   </div>
                 )}
                 {visibleEvents.map(event => {
-                  const color = CATEGORY_COLORS[event.category] ?? '#8b9dc3';
-                  const icon = CATEGORY_ICONS[event.category] ?? '●';
+                  const color = CATEGORY_COLORS[event.category] ?? '#7a869a';
                   return (
                     <button
                       key={event.id}
@@ -86,14 +80,12 @@ export function ExplorationPanel() {
                         flyTo(event.longitude, event.latitude, 6);
                         setActivePanel('none');
                       }}
-                      className="w-full flex items-center gap-3 p-3 rounded-[var(--radius-md)] hover:bg-elevated/60 transition-all text-left cursor-pointer group"
+                      className="w-full flex items-center gap-3 p-3 rounded-[var(--radius-md)] hover:bg-white/[0.04] transition-all text-left cursor-pointer group"
                     >
                       <span
-                        className="w-9 h-9 rounded-lg flex items-center justify-center text-xs shrink-0"
-                        style={{ background: color + '18', border: `1px solid ${color}30` }}
-                      >
-                        {icon}
-                      </span>
+                        className="w-2.5 h-2.5 rounded-full shrink-0"
+                        style={{ background: color }}
+                      />
                       <div className="min-w-0 flex-1">
                         <p className="text-[14px] font-medium truncate group-hover:text-text-primary transition-colors">{event.title}</p>
                         <p className="text-[11px] text-text-muted">{formatYear(event.year)}</p>
@@ -116,9 +108,7 @@ export function ExplorationPanel() {
                     }}
                     className="w-full flex items-center gap-3 p-3 rounded-[var(--radius-md)] hover:bg-elevated/60 transition-all text-left cursor-pointer group"
                   >
-                    <span className="w-9 h-9 rounded-lg bg-accent-gold/10 border border-accent-gold/20 flex items-center justify-center shrink-0">
-                      <MapPin size={14} className="text-accent-gold" />
-                    </span>
+                    <span className="w-2.5 h-2.5 rounded-full bg-accent-gold shrink-0" />
                     <div className="min-w-0 flex-1">
                       <p className="text-[14px] font-medium group-hover:text-text-primary transition-colors">{loc.name}</p>
                       <p className="text-[11px] text-text-muted line-clamp-1">{loc.description}</p>

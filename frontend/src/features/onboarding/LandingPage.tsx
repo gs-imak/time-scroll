@@ -7,12 +7,12 @@ import { cn } from '@/shared/utils/cn';
 
 const ERA_COLORS: Record<string, string> = {
   prehistory: '#8d7b68',
-  ancient: '#f5a623',
-  classical: '#ef4444',
-  medieval: '#9b59b6',
-  renaissance: '#3b82f6',
-  industrial: '#84cc16',
-  modern: '#00d4ff',
+  ancient: '#c49a44',
+  classical: '#b85454',
+  medieval: '#8b6faa',
+  renaissance: '#5a7fb5',
+  industrial: '#7a9e5a',
+  modern: '#5a9aaa',
 };
 
 function formatYear(year: number): string {
@@ -184,7 +184,7 @@ export default function LandingPage() {
   const [exiting, setExiting] = useState(false);
 
   const selectedEraData = ERAS.find((e) => e.id === selectedEra);
-  const accentColor = selectedEra ? ERA_COLORS[selectedEra] ?? '#00d4ff' : '#00d4ff';
+  const accentColor = selectedEra ? ERA_COLORS[selectedEra] ?? '#5a9aaa' : '#5a9aaa';
 
   const handleExplore = () => {
     setExiting(true);
@@ -255,7 +255,7 @@ export default function LandingPage() {
               <span
                 className="block text-7xl sm:text-8xl md:text-9xl font-bold bg-clip-text text-transparent"
                 style={{
-                  backgroundImage: 'linear-gradient(135deg, #00d4ff 0%, #3b82f6 50%, #9b59b6 100%)',
+                  backgroundImage: 'linear-gradient(135deg, #5a9aaa 0%, #5a7fb5 50%, #8b6faa 100%)',
                   fontWeight: 700,
                 }}
               >
@@ -293,7 +293,7 @@ export default function LandingPage() {
               <div className="flex flex-wrap justify-center gap-3">
                 {ERAS.map((era, i) => {
                   const isSelected = selectedEra === era.id;
-                  const color = ERA_COLORS[era.id] ?? '#00d4ff';
+                  const color = ERA_COLORS[era.id] ?? '#5a9aaa';
 
                   return (
                     <motion.button

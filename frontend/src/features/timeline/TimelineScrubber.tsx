@@ -9,12 +9,12 @@ import { cn } from '@/shared/utils/cn';
 
 const ERA_HEX: Record<string, string> = {
   prehistory: '#8d7b68',
-  ancient: '#f5a623',
-  classical: '#ef4444',
-  medieval: '#9b59b6',
-  renaissance: '#3b82f6',
-  industrial: '#84cc16',
-  modern: '#00d4ff',
+  ancient: '#c49a44',
+  classical: '#b85454',
+  medieval: '#8b6faa',
+  renaissance: '#5a7fb5',
+  industrial: '#7a9e5a',
+  modern: '#5a9aaa',
 };
 
 const TOTAL_RANGE = MAX_YEAR - MIN_YEAR;
