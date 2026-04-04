@@ -1,0 +1,469 @@
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useMapStore } from '@/shared/stores/mapStore';
+
+const STORAGE_KEY = 'time-scroll-onboarding-complete';
+const EASE_OUT: [number, number, number, number] = [0.16, 1, 0.3, 1];
+
+interface TourStep {
+  title: string;
+  message: string;
+  getTarget: () => DOMRect | null;
+  placement: 'center' | 'above' | 'below' | 'right';
+  padding: number;
+  borderRadius: number;
+}
+
+const STEPS: TourStep[] = [
+  {
+    title: 'Welcome to Time Scroll',
+    message:
+      'Explore 12,000 years of human civilization on an interactive 3D globe. Let us show you around.',
+    getTarget: () => null,
+    placement: 'center',
+    padding: 0,
+    borderRadius: 0,
+  },
+  {
+    title: 'Travel Through Time',
+    message:
+      'Drag the timeline at the bottom to scrub through history. Watch civilizations rise and fall in real time.',
+    getTarget: () => {
+      const el =
+        document.querySelector('[data-tour="timeline"]') ??
+        document.querySelector('.timeline-scrubber') ??
+        // Fallback: bottom 120px strip of the viewport
+        null;
+      if (el) return el.getBoundingClientRect();
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      return new DOMRect(24, h - 140, w - 48, 116);
+    },
+    placement: 'above',
+    padding: 8,
+    borderRadius: 16,
+  },
+  {
+    title: 'Explore Events',
+    message:
+      'Click any glowing marker on the globe to dive into a historical event with images, stories, and quizzes.',
+    getTarget: () => {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      const size = Math.min(w, h) * 0.35;
+      return new DOMRect(
+        w / 2 - size / 2,
+        h / 2 - size / 2 - 20,
+        size,
+        size,
+      );
+    },
+    placement: 'below',
+    padding: 0,
+    borderRadius: 999,
+  },
+  {
+    title: 'Search Events',
+    message:
+      'Use search to find any event, era, or civilization instantly. You can also press Ctrl+K.',
+    getTarget: () => {
+      // Target the Search nav item in the sidebar
+      const buttons = document.querySelectorAll('nav button');
+      for (const btn of buttons) {
+        if (btn.getAttribute('aria-label') === 'Search') {
+          return btn.getBoundingClientRect();
+        }
+      }
+      // Fallback: sidebar area
+      return new DOMRect(8, 180, 48, 44);
+    },
+    placement: 'right',
+    padding: 6,
+    borderRadius: 10,
+  },
+  {
+    title: 'Track Your Progress',
+    message:
+      'Earn achievements as you explore. See how many events you have discovered and keep your streak alive.',
+    getTarget: () => {
+      const buttons = document.querySelectorAll('nav button');
+      for (const btn of buttons) {
+        if (btn.getAttribute('aria-label') === 'Progress') {
+          return btn.getBoundingClientRect();
+        }
+      }
+      return new DOMRect(8, 224, 48, 44);
+    },
+    placement: 'right',
+    padding: 6,
+    borderRadius: 10,
+  },
+];
+
+function getTooltipPosition(
+  step: TourStep,
+  target: DOMRect | null,
+): { top: number; left: number; transformOrigin: string } {
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+
+  if (!target || step.placement === 'center') {
+    return {
+      top: vh / 2,
+      left: vw / 2,
+      transformOrigin: 'center center',
+    };
+  }
+
+  const cx = target.left + target.width / 2;
+  const cy = target.top + target.height / 2;
+
+  switch (step.placement) {
+    case 'above':
+      return {
+        top: target.top - step.padding - 16,
+        left: Math.min(Math.max(cx, 180), vw - 180),
+        transformOrigin: 'bottom center',
+      };
+    case 'below':
+      return {
+        top: target.bottom + step.padding + 16,
+        left: Math.min(Math.max(cx, 180), vw - 180),
+        transformOrigin: 'top center',
+      };
+    case 'right':
+      return {
+        top: cy,
+        left: target.right + step.padding + 16,
+        transformOrigin: 'left center',
+      };
+    default:
+      return { top: vh / 2, left: vw / 2, transformOrigin: 'center center' };
+  }
+}
+
+export function OnboardingTour() {
+  const mapReady = useMapStore((s) => s.mapReady);
+  const [active, setActive] = useState(false);
+  const [currentStep, setCurrentStep] = useState(0);
+  const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
+  const rafRef = useRef(0);
+
+  // Determine if the tour should show
+  useEffect(() => {
+    if (localStorage.getItem(STORAGE_KEY) === 'true') return;
+    if (!mapReady) return;
+
+    // Small delay so the loading screen exit animation finishes
+    const timer = setTimeout(() => setActive(true), 1000);
+    return () => clearTimeout(timer);
+  }, [mapReady]);
+
+  // Track target rectangle for the current step
+  const updateRect = useCallback(() => {
+    const step = STEPS[currentStep];
+    if (!step) return;
+    const rect = step.getTarget();
+    setTargetRect(rect);
+    rafRef.current = requestAnimationFrame(updateRect);
+  }, [currentStep]);
+
+  useEffect(() => {
+    if (!active) return;
+    rafRef.current = requestAnimationFrame(updateRect);
+    return () => cancelAnimationFrame(rafRef.current);
+  }, [active, updateRect]);
+
+  const completeTour = useCallback(() => {
+    setActive(false);
+    localStorage.setItem(STORAGE_KEY, 'true');
+  }, []);
+
+  const handleNext = useCallback(() => {
+    if (currentStep >= STEPS.length - 1) {
+      completeTour();
+    } else {
+      setCurrentStep((s) => s + 1);
+    }
+  }, [currentStep, completeTour]);
+
+  const handleSkip = useCallback(() => {
+    completeTour();
+  }, [completeTour]);
+
+  // Keyboard navigation
+  useEffect(() => {
+    if (!active) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        completeTour();
+      } else if (e.key === 'Enter' || e.key === 'ArrowRight') {
+        handleNext();
+      }
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [active, handleNext, completeTour]);
+
+  const step = STEPS[currentStep];
+  if (!step) return null;
+
+  const isCentered = step.placement === 'center';
+  const tooltipPos = getTooltipPosition(step, targetRect);
+  const isLastStep = currentStep === STEPS.length - 1;
+
+  return (
+    <AnimatePresence>
+      {active && (
+        <motion.div
+          className="fixed inset-0 z-50"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.4, ease: EASE_OUT }}
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Onboarding tour - Step ${currentStep + 1} of ${STEPS.length}`}
+        >
+          {/* Dark overlay with spotlight cutout */}
+          <svg
+            className="absolute inset-0 w-full h-full"
+            style={{ pointerEvents: 'none' }}
+            aria-hidden="true"
+          >
+            <defs>
+              <mask id="onboarding-spotlight">
+                <rect width="100%" height="100%" fill="white" />
+                <AnimatePresence mode="wait">
+                  {targetRect && !isCentered && (
+                    <motion.rect
+                      key={currentStep}
+                      fill="black"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.35, ease: EASE_OUT }}
+                      x={targetRect.left - step.padding}
+                      y={targetRect.top - step.padding}
+                      width={targetRect.width + step.padding * 2}
+                      height={targetRect.height + step.padding * 2}
+                      rx={step.borderRadius}
+                      ry={step.borderRadius}
+                    />
+                  )}
+                </AnimatePresence>
+              </mask>
+            </defs>
+            <rect
+              width="100%"
+              height="100%"
+              fill="rgba(8, 8, 12, 0.85)"
+              mask="url(#onboarding-spotlight)"
+            />
+          </svg>
+
+          {/* Spotlight border ring */}
+          <AnimatePresence mode="wait">
+            {targetRect && !isCentered && (
+              <motion.div
+                key={`ring-${currentStep}`}
+                className="absolute pointer-events-none"
+                initial={{ opacity: 0, scale: 0.92 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.92 }}
+                transition={{ duration: 0.35, ease: EASE_OUT }}
+                style={{
+                  left: targetRect.left - step.padding - 2,
+                  top: targetRect.top - step.padding - 2,
+                  width: targetRect.width + step.padding * 2 + 4,
+                  height: targetRect.height + step.padding * 2 + 4,
+                  borderRadius: step.borderRadius + 2,
+                  border: '1.5px solid rgba(196, 154, 68, 0.35)',
+                  boxShadow: '0 0 24px 2px rgba(196, 154, 68, 0.08)',
+                }}
+              />
+            )}
+          </AnimatePresence>
+
+          {/* Click-to-advance backdrop (covers non-spotlight areas) */}
+          <div
+            className="absolute inset-0"
+            style={{ pointerEvents: 'auto' }}
+            onClick={handleNext}
+            aria-hidden="true"
+          />
+
+          {/* Tooltip card */}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentStep}
+              className="absolute pointer-events-auto"
+              style={{
+                top: tooltipPos.top,
+                left: tooltipPos.left,
+                transform: isCentered
+                  ? 'translate(-50%, -50%)'
+                  : step.placement === 'above'
+                    ? 'translate(-50%, -100%)'
+                    : step.placement === 'below'
+                      ? 'translate(-50%, 0%)'
+                      : 'translate(0%, -50%)',
+                transformOrigin: tooltipPos.transformOrigin,
+                zIndex: 51,
+              }}
+              initial={{ opacity: 0, scale: 0.92, y: isCentered ? 12 : 0 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.92 }}
+              transition={{ duration: 0.35, ease: EASE_OUT }}
+            >
+              <div
+                className="flex flex-col"
+                style={{
+                  width: isCentered ? 380 : 320,
+                  background: 'rgba(14, 14, 20, 0.92)',
+                  backdropFilter: 'blur(24px)',
+                  WebkitBackdropFilter: 'blur(24px)',
+                  border: '1px solid rgba(255, 255, 255, 0.07)',
+                  borderRadius: 16,
+                  padding: 24,
+                  boxShadow:
+                    '0 20px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(196, 154, 68, 0.04)',
+                }}
+              >
+                {/* Step counter */}
+                <div
+                  className="flex items-center gap-2 mb-3"
+                  style={{ height: 20 }}
+                >
+                  {STEPS.map((_, i) => (
+                    <div
+                      key={i}
+                      style={{
+                        width: i === currentStep ? 20 : 6,
+                        height: 3,
+                        borderRadius: 2,
+                        background:
+                          i === currentStep
+                            ? '#c49a44'
+                            : i < currentStep
+                              ? 'rgba(196, 154, 68, 0.35)'
+                              : 'rgba(255, 255, 255, 0.1)',
+                        transition: 'all 300ms cubic-bezier(0.16, 1, 0.3, 1)',
+                      }}
+                    />
+                  ))}
+                  <span
+                    className="ml-auto"
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 500,
+                      color: '#55556a',
+                      letterSpacing: '0.04em',
+                    }}
+                  >
+                    {currentStep + 1}/{STEPS.length}
+                  </span>
+                </div>
+
+                {/* Title */}
+                <h2
+                  style={{
+                    fontSize: isCentered ? 22 : 16,
+                    fontWeight: 600,
+                    color: '#e0e0e6',
+                    lineHeight: 1.2,
+                    margin: 0,
+                    marginBottom: 8,
+                  }}
+                >
+                  {step.title}
+                </h2>
+
+                {/* Message */}
+                <p
+                  style={{
+                    fontSize: 14,
+                    fontWeight: 400,
+                    color: '#8a8a9a',
+                    lineHeight: 1.6,
+                    margin: 0,
+                    marginBottom: 20,
+                  }}
+                >
+                  {step.message}
+                </p>
+
+                {/* Actions */}
+                <div className="flex items-center justify-between">
+                  <button
+                    onClick={handleSkip}
+                    className="cursor-pointer"
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      padding: '8px 0',
+                      fontSize: 13,
+                      fontWeight: 400,
+                      color: '#55556a',
+                      transition: 'color 200ms',
+                    }}
+                    onMouseEnter={(e) => {
+                      (e.target as HTMLButtonElement).style.color = '#8a8a9a';
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.target as HTMLButtonElement).style.color = '#55556a';
+                    }}
+                    aria-label="Skip tour"
+                  >
+                    Skip tour
+                  </button>
+
+                  <button
+                    onClick={handleNext}
+                    className="cursor-pointer"
+                    style={{
+                      background:
+                        'linear-gradient(135deg, #c49a44, #a97e2e)',
+                      border: 'none',
+                      borderRadius: 10,
+                      padding: '10px 24px',
+                      fontSize: 14,
+                      fontWeight: 600,
+                      color: '#08080c',
+                      letterSpacing: '0.01em',
+                      transition: 'all 200ms cubic-bezier(0.16, 1, 0.3, 1)',
+                      boxShadow: '0 2px 12px rgba(196, 154, 68, 0.2)',
+                    }}
+                    onMouseEnter={(e) => {
+                      const btn = e.target as HTMLButtonElement;
+                      btn.style.transform = 'scale(1.04)';
+                      btn.style.boxShadow =
+                        '0 4px 20px rgba(196, 154, 68, 0.35)';
+                    }}
+                    onMouseLeave={(e) => {
+                      const btn = e.target as HTMLButtonElement;
+                      btn.style.transform = 'scale(1)';
+                      btn.style.boxShadow =
+                        '0 2px 12px rgba(196, 154, 68, 0.2)';
+                    }}
+                    onMouseDown={(e) => {
+                      (e.target as HTMLButtonElement).style.transform =
+                        'scale(0.97)';
+                    }}
+                    onMouseUp={(e) => {
+                      (e.target as HTMLButtonElement).style.transform =
+                        'scale(1.04)';
+                    }}
+                    aria-label={isLastStep ? 'Start exploring' : 'Next step'}
+                  >
+                    {isLastStep ? 'Start Exploring' : 'Next'}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </AnimatePresence>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}

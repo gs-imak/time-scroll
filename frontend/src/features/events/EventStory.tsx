@@ -98,6 +98,8 @@ export function EventStory() {
   const icon = event ? EVENT_ICONS[event.id] ?? '●' : '●';
 
   const scrollRef = useRef<HTMLDivElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
   const { scrollYProgress } = useScroll({ container: scrollRef });
   const [progress, setProgress] = useState(0);
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -196,12 +198,41 @@ export function EventStory() {
     }
   }, [event]);
 
+  // Focus management — move focus into dialog on open, restore on close
+  useEffect(() => {
+    if (!event) return;
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+    // Move focus to the close button once the dialog is mounted
+    requestAnimationFrame(() => closeButtonRef.current?.focus());
+    return () => {
+      previouslyFocused?.focus();
+    };
+  }, [event?.id]);
+
+  // Keyboard: Escape / arrow navigation + focus trap
   useEffect(() => {
     if (!event) return;
     const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-      if (e.key === 'ArrowLeft' && prev) selectEvent(prev.id);
-      if (e.key === 'ArrowRight' && next) selectEvent(next.id);
+      if (e.key === 'Escape') { onClose(); return; }
+      if (e.key === 'ArrowLeft' && prev) { selectEvent(prev.id); return; }
+      if (e.key === 'ArrowRight' && next) { selectEvent(next.id); return; }
+
+      // Focus trap — keep Tab inside the dialog
+      if (e.key === 'Tab' && dialogRef.current) {
+        const focusable = Array.from(
+          dialogRef.current.querySelectorAll<HTMLElement>(
+            'a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex="-1"])'
+          )
+        ).filter(el => !el.closest('[aria-hidden="true"]'));
+        if (focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (e.shiftKey) {
+          if (document.activeElement === first) { e.preventDefault(); last?.focus(); }
+        } else {
+          if (document.activeElement === last) { e.preventDefault(); first?.focus(); }
+        }
+      }
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
@@ -229,12 +260,15 @@ export function EventStory() {
       {event && cat && era && (
         <motion.div
           className="fixed inset-0 z-50"
+          role="dialog"
+          aria-modal="true"
+          aria-label={event.title}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.35 }}
         >
-          <div className="absolute inset-0 bg-[#08080c]" onClick={onClose} />
+          <div className="absolute inset-0 bg-[#08080c]" onClick={onClose} aria-hidden="true" />
 
           {/* ── Progress Bar (fixed to viewport top) ── */}
           <div className="absolute top-0 left-0 right-0 h-[3px] z-40 overflow-hidden">
@@ -249,13 +283,14 @@ export function EventStory() {
           </div>
 
           {/* ── Side Section Nav (desktop only) ── */}
-          <div className="hidden lg:flex fixed right-6 top-1/2 -translate-y-1/2 z-40 flex-col items-center gap-3">
+          <div className="hidden lg:flex fixed right-6 top-1/2 -translate-y-1/2 z-40 flex-col items-center gap-3" role="navigation" aria-label="Page sections">
             {SECTIONS.map(s => (
               <button
                 key={s}
                 onClick={() => scrollToSection(s)}
-                className="group flex items-center gap-2 cursor-pointer"
-                title={SECTION_LABELS[s]}
+                className="group flex items-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5a9aaa] focus-visible:ring-offset-2 focus-visible:ring-offset-[#08080c] rounded-full"
+                aria-label={`Scroll to ${SECTION_LABELS[s]} section`}
+                aria-current={activeSection === s ? 'true' : undefined}
               >
                 <span className="text-[9px] font-medium tracking-wider uppercase opacity-0 group-hover:opacity-100 transition-opacity text-[#55556a] translate-x-1 group-hover:translate-x-0">
                   {SECTION_LABELS[s]}
@@ -278,15 +313,16 @@ export function EventStory() {
             {showScrollTop && (
               <motion.button
                 onClick={scrollToTop}
-                className="fixed bottom-8 right-8 z-40 w-11 h-11 rounded-full flex items-center justify-center cursor-pointer"
+                className="fixed bottom-8 right-8 z-40 w-11 h-11 rounded-full flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5a9aaa] focus-visible:ring-offset-2 focus-visible:ring-offset-[#08080c]"
                 style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(12px)' }}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 20 }}
                 whileHover={{ scale: 1.1, backgroundColor: 'rgba(255,255,255,0.1)' }}
                 whileTap={{ scale: 0.95 }}
+                aria-label="Scroll to top"
               >
-                <ArrowUp size={16} className="text-[#8a8a9a]" />
+                <ArrowUp size={16} className="text-[#8a8a9a]" aria-hidden="true" />
               </motion.button>
             )}
           </AnimatePresence>
@@ -392,13 +428,15 @@ export function EventStory() {
                 <NavButton dir="left" event={prev} onSelect={selectEvent} />
                 <div className="flex items-center gap-2">
                   <motion.button onClick={onShare}
-                    className="w-10 h-10 rounded-full flex items-center justify-center bg-white/[0.06] hover:bg-white/[0.1] transition-colors cursor-pointer backdrop-blur-sm"
-                    whileTap={{ scale: 0.9 }}>
-                    <Share2 size={15} className="text-[#606070]" />
+                    className="w-10 h-10 rounded-full flex items-center justify-center bg-white/[0.06] hover:bg-white/[0.1] transition-colors cursor-pointer backdrop-blur-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5a9aaa] focus-visible:ring-offset-2 focus-visible:ring-offset-[#08080c]"
+                    whileTap={{ scale: 0.9 }}
+                    aria-label={copied ? 'Copied to clipboard' : 'Share this event'}>
+                    <Share2 size={15} className="text-[#606070]" aria-hidden="true" />
                   </motion.button>
                   <button onClick={onClose}
-                    className="w-10 h-10 rounded-full flex items-center justify-center bg-white/[0.06] hover:bg-white/[0.1] transition-colors cursor-pointer backdrop-blur-sm">
-                    <X size={18} className="text-[#8a8a9a]" />
+                    className="w-10 h-10 rounded-full flex items-center justify-center bg-white/[0.06] hover:bg-white/[0.1] transition-colors cursor-pointer backdrop-blur-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5a9aaa] focus-visible:ring-offset-2 focus-visible:ring-offset-[#08080c]"
+                    aria-label="Close event story">
+                    <X size={18} className="text-[#8a8a9a]" aria-hidden="true" />
                   </button>
                 </div>
                 <NavButton dir="right" event={next} onSelect={selectEvent} />
@@ -468,7 +506,9 @@ export function EventStory() {
                       const isActive = ee.id === event.id;
                       return (
                         <button key={ee.id} onClick={() => selectEvent(ee.id)}
-                          className="absolute top-1/2 group cursor-pointer"
+                          className="absolute top-1/2 group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5a9aaa] rounded-full"
+                          aria-label={`Go to ${ee.title} (${formatYear(ee.year)})`}
+                          aria-current={isActive ? 'true' : undefined}
                           style={{
                             left: `${Math.max(1, Math.min(99, pos * 100))}%`,
                             transform: `translate(-50%, -50%)`,
@@ -718,20 +758,21 @@ export function EventStory() {
 // ── Sub-components ──
 
 function NavButton({ dir, event, onSelect }: { dir: 'left' | 'right'; event: HistoricalEvent | null; onSelect: (id: string) => void }) {
-  if (!event) return <div className="w-10" />;
+  if (!event) return <div className="w-10" aria-hidden="true" />;
   return (
     <motion.button onClick={() => onSelect(event.id)}
-      className="flex items-center gap-2 px-3 py-2 rounded-full bg-white/[0.05] hover:bg-white/[0.08] backdrop-blur-sm transition-colors cursor-pointer max-w-[200px]"
+      className="flex items-center gap-2 px-3 py-2 rounded-full bg-white/[0.05] hover:bg-white/[0.08] backdrop-blur-sm transition-colors cursor-pointer max-w-[200px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5a9aaa] focus-visible:ring-offset-2 focus-visible:ring-offset-[#08080c]"
+      aria-label={dir === 'left' ? `Previous event: ${event.title}` : `Next event: ${event.title}`}
       whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
-      {dir === 'left' && <ChevronLeft size={14} className="text-[#606070] shrink-0" />}
-      <span className="text-[11px] text-[#606070] truncate">{event.title}</span>
-      {dir === 'right' && <ChevronRight size={14} className="text-[#606070] shrink-0" />}
+      {dir === 'left' && <ChevronLeft size={14} className="text-[#606070] shrink-0" aria-hidden="true" />}
+      <span className="text-[11px] text-[#606070] truncate" aria-hidden="true">{event.title}</span>
+      {dir === 'right' && <ChevronRight size={14} className="text-[#606070] shrink-0" aria-hidden="true" />}
     </motion.button>
   );
 }
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
-  return <h3 className="text-[11px] font-semibold tracking-[0.14em] uppercase text-[#3a3a4a] mb-6">{children}</h3>;
+  return <h2 className="text-[11px] font-semibold tracking-[0.14em] uppercase text-[#3a3a4a] mb-6">{children}</h2>;
 }
 
 function FactCard({ icon, label, value, color }: { icon: React.ReactNode; label: string; value: string; color: string }) {

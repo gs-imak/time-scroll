@@ -11,6 +11,7 @@ import { Sidebar } from '@/features/navigation/Sidebar';
 import { CategoryFilters } from '@/features/exploration/CategoryFilters';
 import { SearchOverlay } from '@/features/search/SearchOverlay';
 import { LoadingScreen } from '@/features/onboarding/LoadingScreen';
+import { OnboardingTour } from '@/features/onboarding/OnboardingTour';
 import { AchievementToast } from '@/shared/components/AchievementToast';
 import { useTimeStore } from '@/shared/stores/timeStore';
 
@@ -60,6 +61,7 @@ export default function GlobeExplorer() {
       <SearchOverlay />
       <TimelineScrubber />
       <LoadingScreen />
+      <OnboardingTour />
     </div>
   );
 }
