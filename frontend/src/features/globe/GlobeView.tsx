@@ -7,6 +7,7 @@ import { useEventsStore } from '@/shared/stores/eventsStore';
 import { closestBoundaryYear } from '@/shared/utils/geo';
 import { formatYear } from '@/shared/utils/format';
 import { BOUNDARY_YEAR_MAP } from '@/shared/utils/constants';
+import { createMarker3D } from './createMarker3D';
 
 // === Globe context for child components (landmarks, etc.) ===
 interface GlobeContextValue {
@@ -34,10 +35,6 @@ const CATEGORY_COLORS: Record<string, string> = {
   political: '#b388ff', construction: '#69f0ae', natural: '#ff8a65',
 };
 
-const CATEGORY_ICONS: Record<string, string> = {
-  war: '⚔', discovery: '🔭', cultural: '🎭',
-  political: '👑', construction: '🏛', natural: '🌋',
-};
 
 // === Sorted boundary years ===
 const SORTED_BOUNDARY_YEARS = Object.keys(BOUNDARY_YEAR_MAP).map(Number).sort((a, b) => a - b);
@@ -178,95 +175,16 @@ export function GlobeView({ children }: GlobeViewProps) {
     return { x: coords.x, y: coords.y };
   }, []);
 
-  // Create HTML marker element for events
-  const createMarkerElement = useCallback((event: { id: string; title: string; year: number; category: string }) => {
-    const color = CATEGORY_COLORS[event.category] ?? '#8b9dc3';
-    const icon = CATEGORY_ICONS[event.category] ?? '●';
+  // Cache 3D marker objects to avoid recreating on every render
+  const markerCache = useRef(new Map<string, THREE.Object3D>());
 
-    const el = document.createElement('div');
-    el.style.cssText = `
-      position: relative;
-      cursor: pointer;
-      transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-    `;
-    el.innerHTML = `
-      <div style="
-        position: relative;
-        width: 40px;
-        height: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      ">
-        <div style="
-          position: absolute;
-          inset: 0;
-          border-radius: 50%;
-          background: radial-gradient(circle, ${color}35 0%, ${color}08 60%, transparent 70%);
-          animation: pulse-ring 2.5s ease-out infinite;
-        "></div>
-        <div style="
-          position: relative;
-          width: 26px;
-          height: 26px;
-          border-radius: 50%;
-          background: ${color}25;
-          border: 2px solid ${color};
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 12px;
-          line-height: 1;
-          box-shadow: 0 0 10px ${color}60, inset 0 0 6px ${color}15;
-        ">${icon}</div>
-      </div>
-      <div style="
-        position: absolute;
-        bottom: calc(100% + 6px);
-        left: 50%;
-        transform: translateX(-50%);
-        white-space: nowrap;
-        pointer-events: none;
-        opacity: 0;
-        transition: opacity 0.15s;
-        z-index: 100;
-      " class="marker-tooltip">
-        <div style="
-          background: rgba(12, 20, 37, 0.92);
-          backdrop-filter: blur(16px);
-          border: 1px solid ${color}40;
-          border-radius: 8px;
-          padding: 6px 10px;
-          box-shadow: 0 6px 20px rgba(0,0,0,0.5);
-          max-width: 200px;
-        ">
-          <div style="font-size: 10px; font-weight: 600; color: ${color}; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px;">
-            ${formatYear(event.year)}
-          </div>
-          <div style="font-size: 12px; font-weight: 600; color: #eef2f7; font-family: 'Inter', system-ui, sans-serif;">
-            ${event.title}
-          </div>
-        </div>
-      </div>
-    `;
-
-    el.addEventListener('mouseenter', () => {
-      el.style.transform = 'scale(1.3)';
-      const tooltip = el.querySelector('.marker-tooltip') as HTMLElement;
-      if (tooltip) tooltip.style.opacity = '1';
-    });
-    el.addEventListener('mouseleave', () => {
-      el.style.transform = 'scale(1)';
-      const tooltip = el.querySelector('.marker-tooltip') as HTMLElement;
-      if (tooltip) tooltip.style.opacity = '0';
-    });
-    el.addEventListener('click', (e) => {
-      e.stopPropagation();
-      selectEvent(event.id);
-    });
-
-    return el;
-  }, [selectEvent]);
+  const getOrCreateMarker = useCallback((event: { id: string; category: string }) => {
+    const cached = markerCache.current.get(event.id);
+    if (cached) return cached;
+    const marker = createMarker3D(event.category);
+    markerCache.current.set(event.id, marker);
+    return marker;
+  }, []);
 
   return (
     <GlobeContext.Provider value={{ globeRef, getScreenCoords }}>
@@ -295,13 +213,41 @@ export function GlobeView({ children }: GlobeViewProps) {
             polygonAltitude={0.001}
             polygonsTransitionDuration={600}
 
-            // Event markers (HTML elements in 3D space)
-            htmlElementsData={events}
-            htmlLat={(d: any) => d.latitude}
-            htmlLng={(d: any) => d.longitude}
-            htmlAltitude={0.02}
-            htmlElement={(d: any) => createMarkerElement(d)}
-            htmlTransitionDuration={300}
+            // 3D event markers
+            objectsData={events}
+            objectLat={(d: any) => d.latitude}
+            objectLng={(d: any) => d.longitude}
+            objectAltitude={0.01}
+            objectThreeObject={(d: any) => getOrCreateMarker(d)}
+            objectFacesSurfaces={true}
+            onObjectClick={(obj: any) => {
+              selectEvent(obj.id);
+              if (globeRef.current) {
+                globeRef.current.pointOfView(
+                  { lat: obj.latitude, lng: obj.longitude, altitude: 0.5 },
+                  1000
+                );
+              }
+            }}
+            objectLabel={(d: any) => `
+              <div style="
+                background: rgba(12, 20, 37, 0.92);
+                backdrop-filter: blur(16px);
+                border: 1px solid ${(CATEGORY_COLORS as any)[d.category] ?? '#8b9dc3'}40;
+                border-radius: 8px;
+                padding: 8px 12px;
+                box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+                max-width: 220px;
+                pointer-events: none;
+              ">
+                <div style="font-size: 10px; font-weight: 600; color: ${(CATEGORY_COLORS as any)[d.category] ?? '#8b9dc3'}; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 3px;">
+                  ${formatYear(d.year)}
+                </div>
+                <div style="font-size: 13px; font-weight: 600; color: #eef2f7; font-family: 'Inter', system-ui, sans-serif;">
+                  ${d.title}
+                </div>
+              </div>
+            `}
           />
         )}
         {ready && children}
