@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Globe, Scroll, Search, Trophy, Settings, Menu, X } from 'lucide-react';
+import { Globe, Scroll, Search, Trophy, Settings, Menu, X, LayoutDashboard } from 'lucide-react';
+import { useNavigate } from 'react-router';
 import { useUIStore } from '@/shared/stores/uiStore';
 import { cn } from '@/shared/utils/cn';
 import type { LucideIcon } from 'lucide-react';
@@ -142,6 +143,7 @@ function DesktopSidebar() {
   const [expanded, setExpanded] = useState(false);
   const activePanel = useUIStore(s => s.activePanel);
   const togglePanel = useUIStore(s => s.togglePanel);
+  const navigate = useNavigate();
 
   const dispatchSearch = useCallback(() => {
     window.dispatchEvent(
@@ -149,11 +151,16 @@ function DesktopSidebar() {
     );
   }, []);
 
+  const goToDashboard = useCallback(() => {
+    navigate('/dashboard');
+  }, [navigate]);
+
   const handleSettings = useCallback(() => {
     console.info('[Time Scroll] Settings coming soon');
   }, []);
 
   const navItems: NavItemConfig[] = [
+    { icon: LayoutDashboard, label: 'Dashboard', action: goToDashboard, tourId: 'dashboard' },
     { icon: Globe, label: 'Explore', panel: 'exploration', tourId: 'explore' },
     { icon: Scroll, label: 'Events', panel: 'events', tourId: 'events' },
     { icon: Search, label: 'Search', action: dispatchSearch, tourId: 'search' },
@@ -284,6 +291,7 @@ function MobileDrawer() {
   const [open, setOpen] = useState(false);
   const activePanel = useUIStore(s => s.activePanel);
   const togglePanel = useUIStore(s => s.togglePanel);
+  const navigate = useNavigate();
 
   const dispatchSearch = useCallback(() => {
     window.dispatchEvent(
@@ -291,11 +299,16 @@ function MobileDrawer() {
     );
   }, []);
 
+  const goToDashboard = useCallback(() => {
+    navigate('/dashboard');
+  }, [navigate]);
+
   const handleSettings = useCallback(() => {
     console.info('[Time Scroll] Settings coming soon');
   }, []);
 
   const navItems: NavItemConfig[] = [
+    { icon: LayoutDashboard, label: 'Dashboard', action: goToDashboard },
     { icon: Globe, label: 'Explore', panel: 'exploration' },
     { icon: Scroll, label: 'Events', panel: 'events' },
     { icon: Search, label: 'Search', action: dispatchSearch },
