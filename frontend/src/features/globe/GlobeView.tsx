@@ -7,6 +7,7 @@ import { useEventsStore } from '@/shared/stores/eventsStore';
 import { closestBoundaryYear } from '@/shared/utils/geo';
 import { formatYear } from '@/shared/utils/format';
 import { BOUNDARY_YEAR_MAP } from '@/shared/utils/constants';
+import { createCategoryMarker } from './categoryMarkers';
 
 // === Globe context for child components (landmarks, etc.) ===
 interface GlobeContextValue {
@@ -199,73 +200,10 @@ export function GlobeView({ children }: GlobeViewProps) {
     [events],
   );
 
-  // Create custom 3D marker mesh for each event
+  // Create category-specific 3D marker for each event
   const createCustomMarker = useCallback((d: any) => {
     const color = new THREE.Color(CATEGORY_COLORS[d.category] ?? '#8b9dc3');
-    const group = new THREE.Group();
-
-    // Outer glow cone — translucent, large
-    const glowGeo = new THREE.ConeGeometry(3.5, 14, 16, 1, true);
-    const glowMat = new THREE.MeshBasicMaterial({
-      color,
-      transparent: true,
-      opacity: 0.08,
-      side: THREE.DoubleSide,
-      depthWrite: false,
-    });
-    const glow = new THREE.Mesh(glowGeo, glowMat);
-    glow.position.y = 7;
-    group.add(glow);
-
-    // Inner beam — bright, thin cone
-    const beamGeo = new THREE.ConeGeometry(0.8, 12, 8, 1, true);
-    const beamMat = new THREE.MeshBasicMaterial({
-      color,
-      transparent: true,
-      opacity: 0.5,
-    });
-    const beam = new THREE.Mesh(beamGeo, beamMat);
-    beam.position.y = 6;
-    group.add(beam);
-
-    // Core line — very thin, bright
-    const coreGeo = new THREE.CylinderGeometry(0.15, 0.15, 12, 4);
-    const coreMat = new THREE.MeshBasicMaterial({
-      color: 0xffffff,
-      transparent: true,
-      opacity: 0.7,
-    });
-    const core = new THREE.Mesh(coreGeo, coreMat);
-    core.position.y = 6;
-    group.add(core);
-
-    // Top diamond — floating crystal
-    const diamondGeo = new THREE.OctahedronGeometry(1.8, 0);
-    const diamondMat = new THREE.MeshPhongMaterial({
-      color,
-      emissive: color,
-      emissiveIntensity: 0.6,
-      transparent: true,
-      opacity: 0.9,
-      shininess: 80,
-    });
-    const diamond = new THREE.Mesh(diamondGeo, diamondMat);
-    diamond.position.y = 13.5;
-    group.add(diamond);
-
-    // Diamond glow halo
-    const haloGeo = new THREE.SphereGeometry(3, 12, 8);
-    const haloMat = new THREE.MeshBasicMaterial({
-      color,
-      transparent: true,
-      opacity: 0.1,
-      depthWrite: false,
-    });
-    const halo = new THREE.Mesh(haloGeo, haloMat);
-    halo.position.y = 13.5;
-    group.add(halo);
-
-    return group;
+    return createCategoryMarker(d.category, color);
   }, []);
 
   // Update marker position using getCoords
