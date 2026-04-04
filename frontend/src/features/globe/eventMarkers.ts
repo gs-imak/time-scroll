@@ -218,24 +218,39 @@ export function createEventMarker(event: {
   const icon = EVENT_ICONS[event.id] ?? '●';
   const shape = CATEGORY_SHAPES[event.category] ?? 'circle';
 
-  // ── Surface ring (more visible than a dot from far away) ──
-  const ringGeo = new THREE.RingGeometry(0.5, 0.8, 16);
-  const ringMat = new THREE.MeshBasicMaterial({
-    color,
-    transparent: true,
-    opacity: 0.6,
-    side: THREE.DoubleSide,
-    depthWrite: false,
-  });
-  const ring = new THREE.Mesh(ringGeo, ringMat);
+  // ── Surface glow disc (soft landing pad visible from far away) ──
+  const glowDisc = new THREE.Mesh(
+    new THREE.CircleGeometry(2.2, 24),
+    new THREE.MeshBasicMaterial({
+      color,
+      transparent: true,
+      opacity: 0.18,
+      side: THREE.DoubleSide,
+      depthWrite: false,
+    }),
+  );
+  glowDisc.rotation.x = -Math.PI / 2;
+  group.add(glowDisc);
+
+  // ── Surface ring (bright, clearly marks the location) ──
+  const ring = new THREE.Mesh(
+    new THREE.RingGeometry(1.0, 1.5, 24),
+    new THREE.MeshBasicMaterial({
+      color,
+      transparent: true,
+      opacity: 0.85,
+      side: THREE.DoubleSide,
+      depthWrite: false,
+    }),
+  );
   ring.rotation.x = -Math.PI / 2;
   group.add(ring);
 
   // ── Pin line ──
   const pinH = 3.5;
   const pin = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.04, 0.04, pinH, 4),
-    new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.25 }),
+    new THREE.CylinderGeometry(0.06, 0.06, pinH, 4),
+    new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.4 }),
   );
   pin.position.y = pinH / 2;
   group.add(pin);
