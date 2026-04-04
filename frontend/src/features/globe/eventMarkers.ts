@@ -1,9 +1,9 @@
 import * as THREE from 'three';
 
 /**
- * Per-event billboard markers rendered as canvas sprites.
- * Each event gets a unique icon + name badge that always faces the camera.
- * Inspired by Google Earth placemarks, Cesium billboards, and Shopify BFCM globe.
+ * Per-event compact pin markers.
+ * Small circular badge with event-specific emoji, always faces camera.
+ * Detail shown via hover tooltip (handled by GlobeView).
  */
 
 // ── Per-event icon mapping ─────────────────────────────────────────
@@ -37,7 +37,7 @@ const EVENT_ICONS: Record<string, string> = {
   'www-invention': '💻',
 };
 
-// ── Category colors (must match GlobeView) ─────────────────────────
+// ── Category colors ────────────────────────────────────────────────
 const CATEGORY_COLORS: Record<string, string> = {
   war: '#ff4444',
   discovery: '#00e5ff',
@@ -47,86 +47,55 @@ const CATEGORY_COLORS: Record<string, string> = {
   natural: '#ff8a65',
 };
 
-// ── Format year for display ────────────────────────────────────────
-function fmtYear(year: number): string {
-  if (year < 0) return `${Math.abs(year).toLocaleString()} BCE`;
-  if (year === 0) return '1 BCE';
-  return `${year.toLocaleString()} CE`;
-}
+// ── Render compact circular pin ────────────────────────────────────
 
-// ── Canvas rendering ─────────────��─────────────────────────────────
-
-function renderBadgeCanvas(
-  icon: string,
-  title: string,
-  year: number,
-  color: string,
-): HTMLCanvasElement {
+function renderPinCanvas(icon: string, color: string): HTMLCanvasElement {
   const dpr = 2;
-  const w = 300;
-  const h = 68;
+  const size = 64;
 
   const canvas = document.createElement('canvas');
-  canvas.width = w * dpr;
-  canvas.height = h * dpr;
+  canvas.width = size * dpr;
+  canvas.height = size * dpr;
   const ctx = canvas.getContext('2d')!;
   ctx.scale(dpr, dpr);
 
-  const r = 14;
+  const cx = size / 2;
+  const cy = size / 2;
+  const r = 28;
 
-  // ── Background ──
+  // Outer glow
+  const glow = ctx.createRadialGradient(cx, cy, r - 2, cx, cy, r + 6);
+  glow.addColorStop(0, color + '40');
+  glow.addColorStop(1, color + '00');
   ctx.beginPath();
-  ctx.roundRect(2, 2, w - 4, h - 4, r);
+  ctx.arc(cx, cy, r + 6, 0, Math.PI * 2);
+  ctx.fillStyle = glow;
+  ctx.fill();
+
+  // Dark circle background
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
   ctx.fillStyle = 'rgba(8, 14, 28, 0.92)';
   ctx.fill();
 
-  // ── Outer glow border ���─
+  // Color border
   ctx.beginPath();
-  ctx.roundRect(2, 2, w - 4, h - 4, r);
-  ctx.strokeStyle = color + '55';
-  ctx.lineWidth = 1.5;
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2.5;
   ctx.stroke();
 
-  // ── Left accent bar ──
-  ctx.save();
-  ctx.beginPath();
-  ctx.roundRect(2, 2, w - 4, h - 4, r);
-  ctx.clip();
-  ctx.fillStyle = color;
-  ctx.fillRect(2, 2, 4, h - 4);
-  ctx.restore();
-
-  // ── Icon ──
-  ctx.font = '22px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif';
-  ctx.textAlign = 'left';
+  // Icon
+  ctx.font = '24px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif';
+  ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText(icon, 16, h / 2);
-
-  // ── Title text ──
-  ctx.font = '600 14px Inter, -apple-system, system-ui, sans-serif';
-  ctx.fillStyle = '#edf1f7';
-  ctx.textBaseline = 'bottom';
-
-  // Truncate long titles
-  let displayTitle = title;
-  const maxTitleWidth = w - 60;
-  while (ctx.measureText(displayTitle).width > maxTitleWidth && displayTitle.length > 3) {
-    displayTitle = displayTitle.slice(0, -1);
-  }
-  if (displayTitle !== title) displayTitle += '…';
-
-  ctx.fillText(displayTitle, 48, h / 2 + 1);
-
-  // ── Year subtitle ──
-  ctx.font = '500 10px Inter, -apple-system, system-ui, sans-serif';
-  ctx.fillStyle = color;
-  ctx.textBaseline = 'top';
-  ctx.fillText(fmtYear(year), 48, h / 2 + 4);
+  ctx.fillStyle = '#ffffff';
+  ctx.fillText(icon, cx, cy + 1);
 
   return canvas;
 }
 
-// ── 3D marker construction ──────────��──────────────────────────────
+// ── 3D marker construction ─────────────────────────────────────────
 
 export function createEventMarker(event: {
   id: string;
@@ -139,56 +108,48 @@ export function createEventMarker(event: {
   const color = new THREE.Color(colorHex);
   const icon = EVENT_ICONS[event.id] ?? '●';
 
-  // ── 1. Surface dot (glowing point at the location) ──
-  const dotMat = new THREE.MeshBasicMaterial({
-    color,
-    transparent: true,
-    opacity: 0.9,
-  });
-  const dot = new THREE.Mesh(new THREE.SphereGeometry(0.5, 10, 8), dotMat);
+  // ── Surface dot ──
+  const dot = new THREE.Mesh(
+    new THREE.SphereGeometry(0.4, 10, 8),
+    new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.9 }),
+  );
   group.add(dot);
 
-  // Soft glow around dot
+  // Soft surface glow
   const glowMat = new THREE.MeshBasicMaterial({
     color,
     transparent: true,
-    opacity: 0.15,
+    opacity: 0.12,
     depthWrite: false,
   });
-  const glow = new THREE.Mesh(new THREE.SphereGeometry(1.5, 10, 8), glowMat);
-  group.add(glow);
+  group.add(new THREE.Mesh(new THREE.SphereGeometry(1.2, 10, 8), glowMat));
 
-  // ── 2. Pin line (thin vertical connector) ──
-  const pinHeight = 5;
-  const pinGeo = new THREE.CylinderGeometry(0.06, 0.06, pinHeight, 4);
-  const pinMat = new THREE.MeshBasicMaterial({
-    color,
-    transparent: true,
-    opacity: 0.35,
-  });
-  const pin = new THREE.Mesh(pinGeo, pinMat);
-  pin.position.y = pinHeight / 2;
+  // ── Pin line ──
+  const pinH = 4;
+  const pin = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.04, 0.04, pinH, 4),
+    new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.3 }),
+  );
+  pin.position.y = pinH / 2;
   group.add(pin);
 
-  // ── 3. Badge sprite (canvas billboard, always faces camera) ──
-  const canvas = renderBadgeCanvas(icon, event.title, event.year, colorHex);
+  // ── Compact circular badge sprite ──
+  const canvas = renderPinCanvas(icon, colorHex);
   const texture = new THREE.CanvasTexture(canvas);
   texture.minFilter = THREE.LinearFilter;
   texture.magFilter = THREE.LinearFilter;
 
-  const spriteMat = new THREE.SpriteMaterial({
-    map: texture,
-    transparent: true,
-    depthWrite: false,
-    sizeAttenuation: true,
-  });
-  const sprite = new THREE.Sprite(spriteMat);
-
-  // Scale to match canvas aspect ratio (300:68 ≈ 4.4:1)
-  const spriteHeight = 3.2;
-  const spriteWidth = spriteHeight * (300 / 68);
-  sprite.scale.set(spriteWidth, spriteHeight, 1);
-  sprite.position.y = pinHeight + spriteHeight / 2 + 0.3;
+  const sprite = new THREE.Sprite(
+    new THREE.SpriteMaterial({
+      map: texture,
+      transparent: true,
+      depthWrite: false,
+      sizeAttenuation: true,
+    }),
+  );
+  const badgeSize = 3.5;
+  sprite.scale.set(badgeSize, badgeSize, 1);
+  sprite.position.y = pinH + badgeSize / 2 + 0.2;
   group.add(sprite);
 
   return group;

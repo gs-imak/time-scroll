@@ -5,8 +5,15 @@ import { useMapStore } from '@/shared/stores/mapStore';
 import { useTimeStore } from '@/shared/stores/timeStore';
 import { useEventsStore } from '@/shared/stores/eventsStore';
 import { closestBoundaryYear } from '@/shared/utils/geo';
+import { formatYear } from '@/shared/utils/format';
 import { BOUNDARY_YEAR_MAP } from '@/shared/utils/constants';
 import { createEventMarker } from './eventMarkers';
+
+// === Category colors for tooltip accent ===
+const CATEGORY_COLORS: Record<string, string> = {
+  war: '#ff4444', discovery: '#00e5ff', cultural: '#ffca28',
+  political: '#b388ff', construction: '#69f0ae', natural: '#ff8a65',
+};
 
 // === Globe context for child components (landmarks, etc.) ===
 interface GlobeContextValue {
@@ -235,24 +242,30 @@ export function GlobeView({ children }: GlobeViewProps) {
                 );
               }
             }}
-            customLayerLabel={(d: any) =>
-              `<div style="
-                background: rgba(12, 20, 37, 0.94);
+            customLayerLabel={(d: any) => {
+              const c = CATEGORY_COLORS[d.category] ?? '#8b9dc3';
+              return `<div style="
+                background: rgba(10, 16, 30, 0.95);
                 backdrop-filter: blur(20px);
+                border: 1px solid ${c}40;
+                border-left: 3px solid ${c};
                 border-radius: 10px;
                 padding: 10px 14px;
-                max-width: 240px;
+                max-width: 260px;
                 font-family: 'Inter', system-ui, sans-serif;
-                box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+                box-shadow: 0 4px 24px rgba(0,0,0,0.6);
               ">
-                <div style="font-size: 13px; font-weight: 600; color: #edf1f7; margin-bottom: 4px;">
+                <div style="font-size: 13px; font-weight: 600; color: #edf1f7; margin-bottom: 2px;">
                   ${d.title}
                 </div>
-                <div style="font-size: 11px; color: #8b9dc3; line-height: 1.4;">
-                  ${d.description?.slice(0, 120)}${d.description?.length > 120 ? '…' : ''}
+                <div style="font-size: 10px; font-weight: 500; color: ${c}; margin-bottom: 6px;">
+                  ${formatYear(d.year)} · ${d.category}
                 </div>
-              </div>`
-            }
+                <div style="font-size: 11px; color: #8b9dc3; line-height: 1.45;">
+                  ${d.description?.slice(0, 140)}${d.description?.length > 140 ? '…' : ''}
+                </div>
+              </div>`;
+            }}
 
           />
         )}
