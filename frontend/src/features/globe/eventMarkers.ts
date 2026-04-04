@@ -1,9 +1,9 @@
 import * as THREE from 'three';
 
 /**
- * Per-event compact pin markers.
- * Muted, desaturated color palette — cinematic, not neon.
- * Small circular badge with event-specific icon, always faces camera.
+ * Per-event pin markers with category-specific shapes.
+ * Each category has a unique shape (diamond, hexagon, shield, etc.)
+ * so markers are distinguishable by silhouette from any distance.
  */
 
 // ── Per-event icon mapping ─────────────────────────────────────────
@@ -37,26 +37,122 @@ const EVENT_ICONS: Record<string, string> = {
   'www-invention': '💻',
 };
 
-// ── Muted category palette — desaturated jewel tones ───────────────
-// Inspired by cartographic best practices (Imhof, ColorBrewer Dark2)
-// and premium dark UI (Apple, Stripe). No neon. No Material defaults.
+// ── Muted category palette ─────────────────────────────────────────
 const CATEGORY_COLORS: Record<string, string> = {
-  war: '#b85454',        // desaturated crimson — old battle flags
-  discovery: '#5a8fa5',  // muted steel blue — ocean exploration
-  cultural: '#c49a44',   // warm amber — aged parchment
-  political: '#8b80b0',  // soft lavender — faded royal cloth
-  construction: '#6d9476', // sage green — natural stone
-  natural: '#b87a60',    // terracotta — earth and clay
+  war: '#b85454',
+  discovery: '#5a8fa5',
+  cultural: '#c49a44',
+  political: '#8b80b0',
+  construction: '#6d9476',
+  natural: '#b87a60',
 };
-
-// Export for use in GlobeView tooltip
 export { CATEGORY_COLORS };
 
-// ── Render compact circular pin ────────────────────────────────────
+// ── Category shapes — distinct silhouettes per category ────────────
+type MarkerShape = 'diamond' | 'hexagon' | 'circle' | 'shield' | 'square' | 'triangle';
 
-function renderPinCanvas(icon: string, color: string): HTMLCanvasElement {
+const CATEGORY_SHAPES: Record<string, MarkerShape> = {
+  war: 'diamond',
+  discovery: 'hexagon',
+  cultural: 'circle',
+  political: 'shield',
+  construction: 'square',
+  natural: 'triangle',
+};
+
+// ── Shape path drawing helpers ─────────────────────────────────────
+
+function drawShapePath(
+  ctx: CanvasRenderingContext2D,
+  shape: MarkerShape,
+  cx: number,
+  cy: number,
+  r: number,
+) {
+  ctx.beginPath();
+  switch (shape) {
+    case 'circle':
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      break;
+
+    case 'diamond': {
+      // Rotated square
+      ctx.moveTo(cx, cy - r);
+      ctx.lineTo(cx + r, cy);
+      ctx.lineTo(cx, cy + r);
+      ctx.lineTo(cx - r, cy);
+      ctx.closePath();
+      break;
+    }
+
+    case 'hexagon': {
+      for (let i = 0; i < 6; i++) {
+        const angle = (Math.PI / 3) * i - Math.PI / 6;
+        const px = cx + r * Math.cos(angle);
+        const py = cy + r * Math.sin(angle);
+        if (i === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      }
+      ctx.closePath();
+      break;
+    }
+
+    case 'shield': {
+      // Rounded top, pointed bottom — heraldic crest
+      const w = r * 0.9;
+      const top = cy - r * 0.85;
+      const mid = cy + r * 0.3;
+      const bot = cy + r;
+      ctx.moveTo(cx - w, top + 4);
+      ctx.quadraticCurveTo(cx - w, top, cx - w + 4, top);
+      ctx.lineTo(cx + w - 4, top);
+      ctx.quadraticCurveTo(cx + w, top, cx + w, top + 4);
+      ctx.lineTo(cx + w, mid);
+      ctx.quadraticCurveTo(cx + w, bot - 4, cx, bot);
+      ctx.quadraticCurveTo(cx - w, bot - 4, cx - w, mid);
+      ctx.closePath();
+      break;
+    }
+
+    case 'square': {
+      // Rounded square
+      const half = r * 0.82;
+      const rr = 5;
+      ctx.roundRect(cx - half, cy - half, half * 2, half * 2, rr);
+      break;
+    }
+
+    case 'triangle': {
+      // Equilateral triangle pointing up
+      const h = r * 1.0;
+      ctx.moveTo(cx, cy - h);
+      ctx.lineTo(cx + r * 0.9, cy + h * 0.65);
+      ctx.lineTo(cx - r * 0.9, cy + h * 0.65);
+      ctx.closePath();
+      break;
+    }
+  }
+}
+
+// ── Parse hex to RGB components ────────────────────────────────────
+function hexToRgb(hex: string): [number, number, number] {
+  const h = hex.replace('#', '');
+  return [
+    parseInt(h.substring(0, 2), 16),
+    parseInt(h.substring(2, 4), 16),
+    parseInt(h.substring(4, 6), 16),
+  ];
+}
+
+// ── Render shaped pin canvas ───────────────────────────────────────
+
+function renderPinCanvas(
+  icon: string,
+  color: string,
+  shape: MarkerShape,
+): HTMLCanvasElement {
   const dpr = 2;
-  const size = 64;
+  const size = 72;
 
   const canvas = document.createElement('canvas');
   canvas.width = size * dpr;
@@ -66,35 +162,43 @@ function renderPinCanvas(icon: string, color: string): HTMLCanvasElement {
 
   const cx = size / 2;
   const cy = size / 2;
-  const r = 26;
+  const r = 28;
+  const [cr, cg, cb] = hexToRgb(color);
 
-  // Subtle outer glow — very faint, not neon
-  const glow = ctx.createRadialGradient(cx, cy, r, cx, cy, r + 5);
-  glow.addColorStop(0, color + '20');
-  glow.addColorStop(1, color + '00');
-  ctx.beginPath();
-  ctx.arc(cx, cy, r + 5, 0, Math.PI * 2);
+  // ── Outer glow bloom ──
+  const glow = ctx.createRadialGradient(cx, cy, r - 4, cx, cy, r + 8);
+  glow.addColorStop(0, `rgba(${cr},${cg},${cb}, 0.18)`);
+  glow.addColorStop(1, `rgba(${cr},${cg},${cb}, 0)`);
   ctx.fillStyle = glow;
+  ctx.fillRect(0, 0, size, size);
+
+  // ── Shape: color-tinted fill ──
+  drawShapePath(ctx, shape, cx, cy, r);
+  ctx.fillStyle = `rgba(${cr},${cg},${cb}, 0.18)`;
   ctx.fill();
 
-  // Dark circle background
-  ctx.beginPath();
-  ctx.arc(cx, cy, r, 0, Math.PI * 2);
-  ctx.fillStyle = 'rgba(12, 18, 32, 0.94)';
+  // ── Shape: dark inner fill (layered) ──
+  drawShapePath(ctx, shape, cx, cy, r);
+  ctx.fillStyle = 'rgba(10, 16, 28, 0.78)';
   ctx.fill();
 
-  // Thin border — subtle, not heavy
-  ctx.beginPath();
-  ctx.arc(cx, cy, r, 0, Math.PI * 2);
-  ctx.strokeStyle = color + '90';
-  ctx.lineWidth = 1.5;
+  // ── Border ──
+  drawShapePath(ctx, shape, cx, cy, r);
+  ctx.strokeStyle = `rgba(${cr},${cg},${cb}, 0.7)`;
+  ctx.lineWidth = 2;
   ctx.stroke();
 
-  // Icon
-  ctx.font = '22px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif';
+  // ── Inner accent line (subtle) ──
+  drawShapePath(ctx, shape, cx, cy, r - 3);
+  ctx.strokeStyle = `rgba(${cr},${cg},${cb}, 0.12)`;
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  // ── Icon ──
+  ctx.font = '24px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillStyle = '#d8dce4';
+  ctx.fillStyle = '#dde1e8';
   ctx.fillText(icon, cx, cy + 1);
 
   return canvas;
@@ -112,25 +216,32 @@ export function createEventMarker(event: {
   const colorHex = CATEGORY_COLORS[event.category] ?? '#7a869a';
   const color = new THREE.Color(colorHex);
   const icon = EVENT_ICONS[event.id] ?? '●';
+  const shape = CATEGORY_SHAPES[event.category] ?? 'circle';
 
-  // ── Small surface dot ──
-  const dot = new THREE.Mesh(
-    new THREE.SphereGeometry(0.35, 8, 6),
-    new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.7 }),
-  );
-  group.add(dot);
+  // ── Surface ring (more visible than a dot from far away) ──
+  const ringGeo = new THREE.RingGeometry(0.5, 0.8, 16);
+  const ringMat = new THREE.MeshBasicMaterial({
+    color,
+    transparent: true,
+    opacity: 0.6,
+    side: THREE.DoubleSide,
+    depthWrite: false,
+  });
+  const ring = new THREE.Mesh(ringGeo, ringMat);
+  ring.rotation.x = -Math.PI / 2;
+  group.add(ring);
 
-  // ── Faint pin line ──
+  // ── Pin line ──
   const pinH = 3.5;
   const pin = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.03, 0.03, pinH, 4),
-    new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.2 }),
+    new THREE.CylinderGeometry(0.04, 0.04, pinH, 4),
+    new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.25 }),
   );
   pin.position.y = pinH / 2;
   group.add(pin);
 
-  // ── Compact circular badge sprite ──
-  const canvas = renderPinCanvas(icon, colorHex);
+  // ── Shaped badge sprite ──
+  const canvas = renderPinCanvas(icon, colorHex, shape);
   const texture = new THREE.CanvasTexture(canvas);
   texture.minFilter = THREE.LinearFilter;
   texture.magFilter = THREE.LinearFilter;
@@ -143,9 +254,9 @@ export function createEventMarker(event: {
       sizeAttenuation: true,
     }),
   );
-  const badgeSize = 3.2;
+  const badgeSize = 3.8;
   sprite.scale.set(badgeSize, badgeSize, 1);
-  sprite.position.y = pinH + badgeSize / 2 + 0.15;
+  sprite.position.y = pinH + badgeSize / 2 + 0.2;
   group.add(sprite);
 
   return group;
