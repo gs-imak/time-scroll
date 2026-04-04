@@ -106,7 +106,7 @@ export function ExplorationPanel() {
                       flyTo(loc.longitude, loc.latitude, loc.defaultZoom);
                       setActivePanel('none');
                     }}
-                    className="w-full flex items-center gap-3 p-3 rounded-[var(--radius-md)] hover:bg-elevated/60 transition-all text-left cursor-pointer group"
+                    className="w-full flex items-center gap-3 p-3 rounded-[var(--radius-md)] hover:bg-white/[0.04] transition-all text-left cursor-pointer group"
                   >
                     <span className="w-2.5 h-2.5 rounded-full bg-accent-gold shrink-0" />
                     <div className="min-w-0 flex-1">

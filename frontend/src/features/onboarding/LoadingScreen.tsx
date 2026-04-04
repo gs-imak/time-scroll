@@ -132,7 +132,7 @@ export function LoadingScreen() {
                 fontSize: '42px',
                 fontWeight: 300,
                 letterSpacing: '0.3em',
-                color: '#e8ecf2',
+                color: '#e0e0e6',
                 lineHeight: 1,
                 textIndent: '0.3em',
               }}
@@ -150,7 +150,7 @@ export function LoadingScreen() {
                 fontSize: '14px',
                 fontWeight: 400,
                 letterSpacing: '0.08em',
-                color: '#5a6d8a',
+                color: '#55556a',
                 lineHeight: 1.5,
               }}
               initial={{ opacity: 0, y: 12 }}

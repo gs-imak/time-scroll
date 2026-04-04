@@ -47,7 +47,7 @@ export function EventDetailSheet() {
               : 'fixed top-5 right-5 z-40 w-[380px] rounded-2xl max-h-[85vh] overflow-y-auto'
           }
           style={{
-            background: 'rgba(10, 16, 28, 0.92)',
+            background: 'rgba(14, 14, 20, 0.92)',
             backdropFilter: 'blur(24px)',
             WebkitBackdropFilter: 'blur(24px)',
             border: '1px solid rgba(255, 255, 255, 0.07)',
@@ -73,11 +73,11 @@ export function EventDetailSheet() {
                   className="w-2 h-2 rounded-full shrink-0"
                   style={{ background: cat.color }}
                 />
-                <span className="text-[11px] font-medium tracking-wide text-[#8b9dc3] uppercase">
+                <span className="text-[11px] font-medium tracking-wide text-[#8a8a9a] uppercase">
                   {cat.label}
                 </span>
-                <span className="text-[11px] text-[#5a6d8a]">·</span>
-                <span className="flex items-center gap-1 text-[11px] text-[#5a6d8a]">
+                <span className="text-[11px] text-[#55556a]">·</span>
+                <span className="flex items-center gap-1 text-[11px] text-[#55556a]">
                   <Calendar size={11} />
                   {formatYear(event.year)}
                 </span>
@@ -86,20 +86,20 @@ export function EventDetailSheet() {
             </div>
 
             {/* Title */}
-            <h2 className="text-[18px] font-semibold leading-snug text-[#e8ecf2] mb-1.5">
+            <h2 className="text-[18px] font-semibold leading-snug text-[#e0e0e6] mb-1.5">
               {event.title}
             </h2>
 
             {/* Era tag */}
             {era && (
-              <p className="text-[11px] text-[#5a6d8a] mb-4">{era.name}</p>
+              <p className="text-[11px] text-[#55556a] mb-4">{era.name}</p>
             )}
 
             {/* Divider */}
             <div className="h-px bg-white/[0.06] mb-4" />
 
             {/* Description */}
-            <p className="text-[13px] text-[#9ba8c2] leading-[1.65] mb-5">
+            <p className="text-[13px] text-[#8a8a9a] leading-[1.65] mb-5">
               {event.description}
             </p>
 
@@ -110,7 +110,7 @@ export function EventDetailSheet() {
               style={{
                 background: 'rgba(255, 255, 255, 0.04)',
                 border: '1px solid rgba(255, 255, 255, 0.08)',
-                color: '#b0bbd0',
+                color: '#8a8a9a',
               }}
             >
               <Navigation size={13} />
@@ -126,10 +126,10 @@ export function EventDetailSheet() {
                     className="flex-1 flex items-center gap-2 px-3 py-2.5 rounded-lg transition-colors text-left cursor-pointer hover:bg-white/[0.04]"
                     style={{ border: '1px solid rgba(255, 255, 255, 0.05)' }}
                   >
-                    <ChevronLeft size={12} className="text-[#5a6d8a] shrink-0" />
+                    <ChevronLeft size={12} className="text-[#55556a] shrink-0" />
                     <div className="min-w-0">
-                      <span className="text-[10px] text-[#5a6d8a] block">Previous</span>
-                      <span className="text-[11px] text-[#8b9dc3] truncate block">{prevEvent.title}</span>
+                      <span className="text-[10px] text-[#55556a] block">Previous</span>
+                      <span className="text-[11px] text-[#8a8a9a] truncate block">{prevEvent.title}</span>
                     </div>
                   </button>
                 )}
@@ -140,10 +140,10 @@ export function EventDetailSheet() {
                     style={{ border: '1px solid rgba(255, 255, 255, 0.05)' }}
                   >
                     <div className="min-w-0 flex-1">
-                      <span className="text-[10px] text-[#5a6d8a] block text-right">Next</span>
-                      <span className="text-[11px] text-[#8b9dc3] truncate block text-right">{nextEvent.title}</span>
+                      <span className="text-[10px] text-[#55556a] block text-right">Next</span>
+                      <span className="text-[11px] text-[#8a8a9a] truncate block text-right">{nextEvent.title}</span>
                     </div>
-                    <ChevronRight size={12} className="text-[#5a6d8a] shrink-0" />
+                    <ChevronRight size={12} className="text-[#55556a] shrink-0" />
                   </button>
                 )}
               </div>

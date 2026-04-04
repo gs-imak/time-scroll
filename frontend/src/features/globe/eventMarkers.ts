@@ -179,7 +179,7 @@ function renderPinCanvas(
 
   // ── Shape: dark inner fill (layered) ──
   drawShapePath(ctx, shape, cx, cy, r);
-  ctx.fillStyle = 'rgba(10, 16, 28, 0.78)';
+  ctx.fillStyle = 'rgba(14, 14, 20, 0.78)';
   ctx.fill();
 
   // ── Border ──

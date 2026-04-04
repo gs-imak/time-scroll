@@ -56,7 +56,7 @@ export function EraIndicator() {
             <motion.h1
               className="text-5xl sm:text-6xl md:text-8xl font-bold tracking-tight"
               style={{
-                color: '#edf1f7',
+                color: '#e0e0e6',
                 textShadow: '0 2px 30px rgba(0, 0, 0, 0.7), 0 0 80px rgba(0, 0, 0, 0.4)',
               }}
               initial={{ opacity: 0, y: 30, scale: 0.92 }}
@@ -80,7 +80,7 @@ export function EraIndicator() {
             {/* Description */}
             <motion.p
               className="mt-4 text-[15px] max-w-lg mx-auto leading-relaxed"
-              style={{ color: '#8b9dc3' }}
+              style={{ color: '#8a8a9a' }}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}

@@ -139,7 +139,7 @@ export function TimelineScrubber() {
             <span
               className="font-mono text-3xl font-bold tracking-widest tabular-nums sm:text-4xl md:text-5xl"
               style={{
-                color: '#eef2f7',
+                color: '#e0e0e6',
                 textShadow: `0 0 24px ${eraHex}40`,
               }}
             >
@@ -286,7 +286,7 @@ export function TimelineScrubber() {
                 className="relative h-[22px] w-4 rounded-full border-[2.5px]"
                 style={{
                   backgroundColor: eraHex,
-                  borderColor: 'rgba(238,242,247,0.9)',
+                  borderColor: 'rgba(224,224,230,0.9)',
                   boxShadow: `0 0 12px ${eraHex}80, 0 2px 6px rgba(0,0,0,0.5)`,
                 }}
               />
