@@ -349,6 +349,56 @@ export function EventStory() {
                 </Reveal>
               )}
 
+              {/* ── Dive Deeper ── */}
+              <Reveal>
+                <section className="mb-12">
+                  <SectionLabel>Dive Deeper</SectionLabel>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {/* Wikipedia link */}
+                    <motion.a
+                      href={`https://en.wikipedia.org/wiki/${encodeURIComponent(event.title.replace(/ /g, '_'))}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-4 p-5 rounded-xl cursor-pointer"
+                      style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}
+                      whileHover={{ borderColor: `${cat.color}30`, backgroundColor: 'rgba(255,255,255,0.03)', x: 4 }}
+                      transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                    >
+                      <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
+                        style={{ background: 'rgba(255,255,255,0.04)' }}>
+                        <span className="text-lg">📚</span>
+                      </div>
+                      <div>
+                        <p className="text-[13px] font-medium text-[#9ba8c2]">Read full article</p>
+                        <p className="text-[11px] text-[#3d4f6a]">Wikipedia</p>
+                      </div>
+                      <ExternalLink size={14} className="text-[#3d4f6a] ml-auto shrink-0" />
+                    </motion.a>
+
+                    {/* Google search */}
+                    <motion.a
+                      href={`https://www.google.com/search?q=${encodeURIComponent(event.title + ' history')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-4 p-5 rounded-xl cursor-pointer"
+                      style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}
+                      whileHover={{ borderColor: `${cat.color}30`, backgroundColor: 'rgba(255,255,255,0.03)', x: 4 }}
+                      transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                    >
+                      <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
+                        style={{ background: 'rgba(255,255,255,0.04)' }}>
+                        <span className="text-lg">🔍</span>
+                      </div>
+                      <div>
+                        <p className="text-[13px] font-medium text-[#9ba8c2]">Explore more</p>
+                        <p className="text-[11px] text-[#3d4f6a]">Search the web</p>
+                      </div>
+                      <ExternalLink size={14} className="text-[#3d4f6a] ml-auto shrink-0" />
+                    </motion.a>
+                  </div>
+                </section>
+              </Reveal>
+
               {/* ── Gallery ── */}
               <Reveal>
                 <section className="mb-12">

@@ -221,7 +221,7 @@ export function GlobeView({ children }: GlobeViewProps) {
             polygonSideColor={() => 'rgba(0, 0, 0, 0)'}
             polygonStrokeColor={() => ERA_HEX_COLORS[currentEra.id] ?? '#ffffff'}
             polygonAltitude={0.001}
-            polygonsTransitionDuration={600}
+            polygonsTransitionDuration={1800}
 
             // Event markers — per-event billboard badges
             customLayerData={events}
