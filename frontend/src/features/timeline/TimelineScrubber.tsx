@@ -96,7 +96,7 @@ export function TimelineScrubber() {
 
   return (
     <motion.div
-      className="absolute inset-x-0 bottom-0 z-40 px-6 pb-6"
+      className="absolute bottom-0 right-0 z-40 px-6 pb-6 left-0 lg:left-[64px]"
       initial={{ y: 140 }}
       animate={{ y: 0 }}
       transition={{ delay: 0.3, type: 'spring', stiffness: 140, damping: 22 }}

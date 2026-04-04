@@ -175,7 +175,7 @@ function DesktopSidebar() {
 
   return (
     <motion.nav
-      className="fixed top-0 left-0 z-30 h-full flex flex-col"
+      className="fixed top-0 left-0 z-50 h-full flex flex-col"
       style={{
         background: 'rgba(14, 14, 20, 0.85)',
         backdropFilter: 'blur(20px)',

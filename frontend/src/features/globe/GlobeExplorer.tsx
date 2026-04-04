@@ -42,7 +42,7 @@ export default function GlobeExplorer() {
 
       {/* Bottom cinematic gradient */}
       <div
-        className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-[200px]"
+        className="pointer-events-none absolute bottom-0 right-0 left-0 lg:left-[64px] z-10 h-[200px]"
         style={{
           background:
             'linear-gradient(0deg, rgba(8,8,12,0.85) 0%, rgba(8,8,12,0.4) 40%, transparent 100%)',
