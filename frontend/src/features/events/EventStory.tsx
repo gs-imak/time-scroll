@@ -15,7 +15,7 @@ import { ERAS } from '@/shared/utils/constants';
 import type { HistoricalEvent } from '@/shared/types/events';
 import { EventQuiz } from './EventQuiz';
 import { EventMapVisual } from './EventMapVisual';
-import { getEventIllustrations } from '@/shared/data/civilizationAssets';
+import { getEventIllustrations, getCivImageUrl } from '@/shared/data/civilizationAssets';
 import { useMonumentViewer } from '@/features/monuments/useMonumentViewer';
 
 // ── Category visuals ──
@@ -497,6 +497,32 @@ export function EventStory() {
                   </span>
                 </motion.div>
               )}
+
+              {/* Civilization illustration parallax accents */}
+              {civIllustrations && (
+                <>
+                  <motion.div
+                    className="absolute right-[2%] top-[1400px] z-[1]"
+                    style={{ y: sideRightY2, opacity: sideOpacity2 }}
+                  >
+                    <img
+                      src={getCivImageUrl(civIllustrations.slug, Math.min(5, civIllustrations.totalImages))}
+                      alt="" className="w-[120px] opacity-40 drop-shadow-lg" loading="lazy"
+                      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                    />
+                  </motion.div>
+                  <motion.div
+                    className="absolute left-[2%] top-[2200px] z-[1]"
+                    style={{ y: sideLeftY1, opacity: sideOpacity1 }}
+                  >
+                    <img
+                      src={getCivImageUrl(civIllustrations.slug, Math.min(15, civIllustrations.totalImages))}
+                      alt="" className="w-[100px] opacity-30 drop-shadow-lg" loading="lazy"
+                      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                    />
+                  </motion.div>
+                </>
+              )}
             </div>
 
             {/* ═══ HERO ═══ */}
@@ -728,22 +754,62 @@ export function EventStory() {
               {/* Interactive Map Visual */}
               <EventMapVisual eventId={event.id} />
 
-              {/* Overview */}
+              {/* Overview — with floating civilization illustrations */}
               <section id="overview" ref={setSectionRef('overview')} className="mb-20">
                 <Reveal>
                   <SectionLabel>Overview</SectionLabel>
                 </Reveal>
+
                 {event.description.split('\n\n').map((para, i) => (
                   <Reveal key={i} delay={i * 0.06}>
-                    <p className="text-[15px] sm:text-[16px] text-[#8a8a9a] leading-[1.9] mb-6">{para}</p>
+                    <div className="relative">
+                      {/* Float a civilization illustration next to the 1st and 3rd paragraphs */}
+                      {civIllustrations && i === 0 && (
+                        <img
+                          src={civIllustrations.hero}
+                          alt={`${civIllustrations.name} illustration`}
+                          className="hidden sm:block float-right ml-6 mb-4 w-[160px] md:w-[200px] opacity-80 drop-shadow-lg"
+                          style={{ shapeOutside: 'margin-box' }}
+                          loading="lazy"
+                          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                        />
+                      )}
+                      {civIllustrations && i === 2 && (
+                        <img
+                          src={getCivImageUrl(civIllustrations.slug, Math.min(11, civIllustrations.totalImages))}
+                          alt={`${civIllustrations.name} illustration`}
+                          className="hidden sm:block float-left mr-6 mb-4 w-[140px] md:w-[180px] opacity-70 drop-shadow-lg"
+                          style={{ shapeOutside: 'margin-box' }}
+                          loading="lazy"
+                          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                        />
+                      )}
+                      <p className="text-[15px] sm:text-[16px] text-[#8a8a9a] leading-[1.9] mb-6">{para}</p>
+                    </div>
+
                     {/* Pull-quote after first paragraph */}
                     {i === 0 && pullQuote && (
                       <Reveal delay={0.1}>
-                        <blockquote className="my-10 py-6 px-8 border-l-[3px] rounded-r-xl" style={{ borderColor: cat.color, background: `${cat.color}06` }}>
+                        <blockquote className="my-10 py-6 px-8 border-l-[3px] rounded-r-xl clear-both" style={{ borderColor: cat.color, background: `${cat.color}06` }}>
                           <p className="text-[18px] sm:text-[20px] text-[#8a8a9a] leading-[1.7] italic font-light">
                             "{pullQuote}"
                           </p>
                         </blockquote>
+                      </Reveal>
+                    )}
+
+                    {/* Section divider illustration between paragraphs 1 and 2 */}
+                    {civIllustrations && i === 1 && (
+                      <Reveal>
+                        <div className="flex justify-center my-8 opacity-50">
+                          <img
+                            src={getCivImageUrl(civIllustrations.slug, Math.min(7, civIllustrations.totalImages))}
+                            alt=""
+                            className="h-[80px] md:h-[100px] object-contain"
+                            loading="lazy"
+                            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                          />
+                        </div>
                       </Reveal>
                     )}
                   </Reveal>
@@ -859,28 +925,11 @@ export function EventStory() {
                 </Reveal>
               </section>
 
-              {/* Gallery — civilization illustrations or event images */}
-              <section id="gallery" ref={setSectionRef('gallery')} className="mb-20">
-                <Reveal>
-                  <SectionLabel>
-                    {civIllustrations ? `${civIllustrations.name} — Illustrations` : 'Gallery'}
-                  </SectionLabel>
-                  {civIllustrations ? (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                      {civIllustrations.gallery.map((img, i) => (
-                        <Reveal key={i} delay={i * 0.06}>
-                          <motion.div className="rounded-xl overflow-hidden aspect-[4/3] cursor-pointer"
-                            style={{ border: '1px solid rgba(255,255,255,0.06)' }}
-                            whileHover={{ scale: 1.03, borderColor: `${cat.color}30` }}
-                            transition={{ type: 'spring', stiffness: 400, damping: 25 }}>
-                            <img src={img} alt={`${civIllustrations.name} illustration ${i + 1}`}
-                              className="w-full h-full object-cover" loading="lazy"
-                              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-                          </motion.div>
-                        </Reveal>
-                      ))}
-                    </div>
-                  ) : event.images && event.images.length > 0 ? (
+              {/* Gallery — only for events with explicit images array */}
+              {event.images && event.images.length > 0 && (
+                <section id="gallery" ref={setSectionRef('gallery')} className="mb-20">
+                  <Reveal>
+                    <SectionLabel>Gallery</SectionLabel>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                       {event.images.map((img, i) => (
                         <motion.div key={i} className="rounded-xl overflow-hidden aspect-[4/3] cursor-pointer"
@@ -889,19 +938,9 @@ export function EventStory() {
                         </motion.div>
                       ))}
                     </div>
-                  ) : (
-                    <div className="grid grid-cols-3 gap-4">
-                      {[0, 1, 2].map(i => (
-                        <motion.div key={i} className="aspect-[4/3] rounded-xl flex items-center justify-center"
-                          style={{ background: 'rgba(255,255,255,0.015)', border: '1px solid rgba(255,255,255,0.04)' }}
-                          whileHover={{ borderColor: `${cat.color}30`, background: `${cat.color}06` }}>
-                          <ImageIcon size={20} className="text-[#28282f]" />
-                        </motion.div>
-                      ))}
-                    </div>
-                  )}
-                </Reveal>
-              </section>
+                  </Reveal>
+                </section>
+              )}
 
               {/* Video */}
               <section id="video" ref={setSectionRef('video')} className="mb-20">
