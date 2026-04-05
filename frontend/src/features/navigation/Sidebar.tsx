@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Globe, Scroll, Search, Trophy, Settings, Menu, X, LayoutDashboard, Clock, BookOpen, Landmark } from 'lucide-react';
-import { useNavigate } from 'react-router';
+import { useNavigate, useLocation } from 'react-router';
 import { useUIStore } from '@/shared/stores/uiStore';
 import { cn } from '@/shared/utils/cn';
 import type { LucideIcon } from 'lucide-react';
@@ -145,6 +145,7 @@ function DesktopSidebar() {
   const [expanded, setExpanded] = useState(false);
   const activePanel = useUIStore(s => s.activePanel);
   const togglePanel = useUIStore(s => s.togglePanel);
+  const location = useLocation();
   const navigate = useNavigate();
 
   const dispatchSearch = useCallback(() => {
@@ -192,12 +193,34 @@ function DesktopSidebar() {
     if (item.action) {
       item.action();
     } else if (item.panel) {
-      togglePanel(item.panel);
+      // If we're not on the explore page, navigate there first
+      if (!location.pathname.startsWith('/explore')) {
+        navigate('/explore');
+        // Small delay to let the page mount before toggling the panel
+        setTimeout(() => togglePanel(item.panel!), 100);
+      } else {
+        togglePanel(item.panel);
+      }
     }
   }
 
   function isActive(item: NavItemConfig): boolean {
-    return !!item.panel && activePanel === item.panel;
+    // Route-based items: check current path
+    if (item.action && item.tourId) {
+      const routeMap: Record<string, string> = {
+        dashboard: '/dashboard',
+        timeline: '/timeline',
+        journeys: '/journeys',
+        civilizations: '/civilizations',
+      };
+      const route = routeMap[item.tourId];
+      if (route) return location.pathname.startsWith(route);
+    }
+    // Panel-based items: check on explore page + active panel
+    if (item.panel) {
+      return location.pathname.startsWith('/explore') && activePanel === item.panel;
+    }
+    return false;
   }
 
   return (
@@ -309,6 +332,7 @@ function MobileDrawer() {
   const activePanel = useUIStore(s => s.activePanel);
   const togglePanel = useUIStore(s => s.togglePanel);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const dispatchSearch = useCallback(() => {
     window.dispatchEvent(
@@ -355,13 +379,29 @@ function MobileDrawer() {
     if (item.action) {
       item.action();
     } else if (item.panel) {
-      togglePanel(item.panel);
+      if (!location.pathname.startsWith('/explore')) {
+        navigate('/explore');
+        setTimeout(() => togglePanel(item.panel!), 100);
+      } else {
+        togglePanel(item.panel);
+      }
     }
     setOpen(false);
   }
 
   function isActive(item: NavItemConfig): boolean {
-    return !!item.panel && activePanel === item.panel;
+    if (item.action && item.label) {
+      const routeMap: Record<string, string> = {
+        Dashboard: '/dashboard', Timeline: '/timeline',
+        Journeys: '/journeys', Civilizations: '/civilizations',
+      };
+      const route = routeMap[item.label];
+      if (route) return location.pathname.startsWith(route);
+    }
+    if (item.panel) {
+      return location.pathname.startsWith('/explore') && activePanel === item.panel;
+    }
+    return false;
   }
 
   // Close drawer on Escape
