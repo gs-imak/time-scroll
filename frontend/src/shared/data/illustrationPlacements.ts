@@ -273,15 +273,6 @@ export const EVENT_ILLUSTRATIONS: Record<string, IllustrationPlacement> = {
     ],
   },
 
-  'maurya-ashoka': {
-    heroImage: { slug: 'mauryan-empire', num: 1 },
-    sceneBreaks: [{ slug: 'mauryan-empire', num: 8, afterParagraph: 0 }],
-    floats: [
-      { slug: 'mauryan-empire', num: 5, side: 'right', size: 'lg', paragraph: 0 },
-      { slug: 'mauryan-empire', num: 12, side: 'left', size: 'md', paragraph: 1 },
-    ],
-  },
-
   // ═══ ANCIENT PERSIA — verified: 1=ornate silver shield (transparent),
   // 5=Persepolis gateway with bull statues (transparent) ═══
 
@@ -295,107 +286,146 @@ export const EVENT_ILLUSTRATIONS: Record<string, IllustrationPlacement> = {
     ],
   },
 
+  // ═══ PHOENICIA — verified: 1=temple ruins blue/gold (transparent),
+  // 5=PORT CITY aerial with ships, 8=three ornate pillars (transparent) ═══
+
   'phoenician-alphabet': {
-    heroImage: { slug: 'ancient-phoenicia', num: 1 },
-    sceneBreaks: [],
+    heroImage: { slug: 'ancient-phoenicia', num: 5 },    // PORT CITY — Phoenician trade hub
+    heroBg: { slug: 'ancient-phoenicia', num: 1 },
+    sceneBreaks: [{ slug: 'ancient-phoenicia', num: 5, afterParagraph: 0 }],
     floats: [
-      { slug: 'ancient-phoenicia', num: 8, side: 'right', size: 'lg', paragraph: 0 },
-      { slug: 'ancient-phoenicia', num: 5, side: 'left', size: 'md', paragraph: 1 },
+      { slug: 'ancient-phoenicia', num: 1, side: 'right', size: 'lg', paragraph: 0 },
+      { slug: 'ancient-phoenicia', num: 8, side: 'left', size: 'md', paragraph: 1 },
     ],
   },
+
+  // ═══ KUSH — verified: 1=Nile valley, 5=marketplace, 8=WARRIOR KING (transparent),
+  // 15=pharaoh face (transparent) ═══
 
   'kingdom-of-kush': {
-    heroImage: { slug: 'kingdom-of-kush', num: 1 },
-    sceneBreaks: [{ slug: 'kingdom-of-kush', num: 8, afterParagraph: 0 }],
+    heroImage: { slug: 'kingdom-of-kush', num: 8 },     // WARRIOR KING
+    heroBg: { slug: 'kingdom-of-kush', num: 15 },
+    sceneBreaks: [
+      { slug: 'kingdom-of-kush', num: 1, afterParagraph: 0 },
+      { slug: 'kingdom-of-kush', num: 5, afterParagraph: 1 },
+    ],
     floats: [
-      { slug: 'kingdom-of-kush', num: 5, side: 'right', size: 'lg', paragraph: 0 },
-      { slug: 'kingdom-of-kush', num: 15, side: 'left', size: 'md', paragraph: 1 },
-      { slug: 'kingdom-of-kush', num: 10, side: 'right', size: 'md', paragraph: 2 },
+      { slug: 'kingdom-of-kush', num: 15, side: 'right', size: 'lg', paragraph: 0 },
     ],
   },
+
+  // ═══ BABYLON — verified: 1=ziggurat gardens (transparent), 5=ISHTAR GATE (transparent),
+  // 8=astronomical disc (transparent), 12=Lamassu (transparent) ═══
 
   'code-hammurabi': {
-    heroImage: { slug: 'ancient-babylon', num: 1 },
-    sceneBreaks: [{ slug: 'ancient-babylon', num: 8, afterParagraph: 0 }],
+    heroImage: { slug: 'ancient-babylon', num: 5 },      // ISHTAR GATE
+    heroBg: { slug: 'ancient-babylon', num: 1 },
+    sceneBreaks: [{ slug: 'ancient-babylon', num: 1, afterParagraph: 0 }],
     floats: [
-      { slug: 'ancient-babylon', num: 5, side: 'right', size: 'lg', paragraph: 0 },
-      { slug: 'ancient-babylon', num: 12, side: 'left', size: 'md', paragraph: 1 },
+      { slug: 'ancient-babylon', num: 12, side: 'right', size: 'lg', paragraph: 0 },
+      { slug: 'ancient-babylon', num: 8, side: 'left', size: 'md', paragraph: 1 },
     ],
   },
 
+  // ═══ AZTECS — verified: 1=Tenochtitlan canal city, 5=pyramid complex,
+  // 8=Quetzalcoatl mask (transparent), 15=ritual mask (transparent) ═══
+
   'aztec-tenochtitlan': {
-    heroImage: { slug: 'aztecs', num: 1 },
-    sceneBreaks: [{ slug: 'aztecs', num: 8, afterParagraph: 0 }],
+    heroImage: { slug: 'aztecs', num: 1 },               // canal city
+    heroBg: { slug: 'aztecs', num: 8 },
+    sceneBreaks: [{ slug: 'aztecs', num: 5, afterParagraph: 0 }],
     floats: [
-      { slug: 'aztecs', num: 5, side: 'right', size: 'lg', paragraph: 0 },
+      { slug: 'aztecs', num: 8, side: 'right', size: 'lg', paragraph: 0 },
       { slug: 'aztecs', num: 15, side: 'left', size: 'md', paragraph: 1 },
-      { slug: 'aztecs', num: 10, side: 'right', size: 'md', paragraph: 2 },
     ],
   },
+
+  // ═══ MAYA — verified: 1=stone arch gate (transparent), 5=priestess headdress (transparent),
+  // 10=painted pottery (transparent) ═══
 
   'teotihuacan-founded': {
     heroImage: { slug: 'ancient-maya', num: 1 },
     sceneBreaks: [],
     floats: [
-      { slug: 'ancient-maya', num: 8, side: 'right', size: 'lg', paragraph: 0 },
-      { slug: 'ancient-maya', num: 5, side: 'left', size: 'md', paragraph: 1 },
+      { slug: 'ancient-maya', num: 5, side: 'right', size: 'lg', paragraph: 0 },
+      { slug: 'ancient-maya', num: 10, side: 'left', size: 'md', paragraph: 1 },
     ],
   },
 
   'machu-picchu': {
-    heroImage: { slug: 'ancient-maya', num: 3 },
-    sceneBreaks: [{ slug: 'ancient-maya', num: 10, afterParagraph: 0 }],
+    heroImage: { slug: 'ancient-maya', num: 5 },          // priestess
+    sceneBreaks: [],
     floats: [
-      { slug: 'ancient-maya', num: 7, side: 'right', size: 'lg', paragraph: 0 },
-      { slug: 'ancient-maya', num: 18, side: 'left', size: 'md', paragraph: 1 },
+      { slug: 'ancient-maya', num: 1, side: 'right', size: 'lg', paragraph: 0 },
+      { slug: 'ancient-maya', num: 10, side: 'left', size: 'md', paragraph: 1 },
     ],
   },
 
+  // ═══ MALI — verified: 1=trading post (transparent), 5=KING portrait (transparent),
+  // 8=nobleman turban (transparent), 15=warrior/trader (transparent) ═══
+
   'mansa-musa': {
-    heroImage: { slug: 'mali-empire', num: 1 },
-    sceneBreaks: [{ slug: 'mali-empire', num: 8, afterParagraph: 0 }],
+    heroImage: { slug: 'mali-empire', num: 5 },           // KING PORTRAIT
+    heroBg: { slug: 'mali-empire', num: 1 },
+    sceneBreaks: [{ slug: 'mali-empire', num: 1, afterParagraph: 0 }],
     floats: [
-      { slug: 'mali-empire', num: 5, side: 'right', size: 'lg', paragraph: 0 },
+      { slug: 'mali-empire', num: 8, side: 'right', size: 'lg', paragraph: 0 },
       { slug: 'mali-empire', num: 15, side: 'left', size: 'md', paragraph: 1 },
     ],
   },
 
+  // ═══ KHMER — verified: 1=ANGKOR WAT aerial (transparent), 5=temple towers (transparent) ═══
+
   'angkor-wat': {
-    heroImage: { slug: 'ancient-khmer', num: 1 },
-    sceneBreaks: [{ slug: 'ancient-khmer', num: 8, afterParagraph: 0 }],
+    heroImage: { slug: 'ancient-khmer', num: 1 },         // ANGKOR WAT
+    sceneBreaks: [],
     floats: [
       { slug: 'ancient-khmer', num: 5, side: 'right', size: 'lg', paragraph: 0 },
-      { slug: 'ancient-khmer', num: 15, side: 'left', size: 'md', paragraph: 1 },
-      { slug: 'ancient-khmer', num: 10, side: 'right', size: 'md', paragraph: 2 },
     ],
   },
 
+  // ═══ JAPAN — verified: 1=kitsune fox (transparent), 5=female samurai (transparent),
+  // 15=SHOGUN gold armor (transparent) ═══
+
   'edo-period-japan': {
-    heroImage: { slug: 'ancient-japan', num: 1 },
-    sceneBreaks: [{ slug: 'ancient-japan', num: 8, afterParagraph: 0 }],
+    heroImage: { slug: 'ancient-japan', num: 15 },         // SHOGUN
+    heroBg: { slug: 'ancient-japan', num: 1 },
+    sceneBreaks: [],
     floats: [
       { slug: 'ancient-japan', num: 5, side: 'right', size: 'lg', paragraph: 0 },
-      { slug: 'ancient-japan', num: 15, side: 'left', size: 'md', paragraph: 1 },
-      { slug: 'ancient-japan', num: 10, side: 'right', size: 'md', paragraph: 2 },
+      { slug: 'ancient-japan', num: 1, side: 'left', size: 'md', paragraph: 1 },
     ],
   },
+
+  // ═══ ARABIA — verified: 1=rock tomb (transparent), 5=stone ruins (transparent),
+  // 8=Arab elder turban (transparent) ═══
 
   'great-pyramid': {
     heroImage: { slug: 'ancient-arabia', num: 1 },
-    sceneBreaks: [{ slug: 'ancient-arabia', num: 8, afterParagraph: 0 }],
+    sceneBreaks: [],
     floats: [
       { slug: 'ancient-arabia', num: 5, side: 'right', size: 'lg', paragraph: 0 },
-      { slug: 'ancient-arabia', num: 12, side: 'left', size: 'md', paragraph: 1 },
+      { slug: 'ancient-arabia', num: 8, side: 'left', size: 'md', paragraph: 1 },
     ],
   },
 
   'rosetta-stone': {
-    heroImage: { slug: 'ancient-arabia', num: 3 },
+    heroImage: { slug: 'ancient-arabia', num: 5 },
     sceneBreaks: [],
     floats: [
-      { slug: 'ancient-arabia', num: 10, side: 'right', size: 'lg', paragraph: 0 },
-      { slug: 'ancient-arabia', num: 7, side: 'left', size: 'md', paragraph: 1 },
+      { slug: 'ancient-arabia', num: 1, side: 'right', size: 'lg', paragraph: 0 },
+      { slug: 'ancient-arabia', num: 8, side: 'left', size: 'md', paragraph: 1 },
     ],
+  },
+
+  // ═══ MAURYAN — verified: 1=warrior king profile helmet (transparent),
+  // 5=grand palace complex (transparent) ═══
+
+  'maurya-ashoka': {
+    heroImage: { slug: 'mauryan-empire', num: 1 },        // WARRIOR KING
+    heroBg: { slug: 'mauryan-empire', num: 5 },
+    sceneBreaks: [{ slug: 'mauryan-empire', num: 5, afterParagraph: 0 }],
+    floats: [],
   },
 };
 
