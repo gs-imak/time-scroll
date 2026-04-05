@@ -15,7 +15,7 @@ import { ERAS } from '@/shared/utils/constants';
 import type { HistoricalEvent } from '@/shared/types/events';
 import { EventQuiz } from './EventQuiz';
 import { EventMapVisual } from './EventMapVisual';
-import { getEventPlacements, getIllustrationUrl } from '@/shared/data/illustrationPlacements';
+import { getEventPlacements, getIllustrationUrl, getFloatClasses } from '@/shared/data/illustrationPlacements';
 import { useMonumentViewer } from '@/features/monuments/useMonumentViewer';
 
 // ── Category visuals ──
@@ -694,10 +694,10 @@ export function EventStory() {
               {/* Media */}
               <Reveal delay={0.05}>
                 <div className="mb-16">
-                  {(illustrations?.sceneBreak || event.imageUrl) ? (
+                  {(illustrations?.sceneBreaks?.[0] || event.imageUrl) ? (
                     <div className="rounded-2xl overflow-hidden">
                       <img
-                        src={illustrations?.sceneBreak ? getIllustrationUrl(illustrations.sceneBreak.slug, illustrations.sceneBreak.num) : event.imageUrl!}
+                        src={illustrations?.sceneBreaks?.[0] ? getIllustrationUrl(illustrations.sceneBreaks[0].slug, illustrations.sceneBreaks[0].num) : event.imageUrl!}
                         alt={event.title}
                         className="w-full h-auto object-cover"
                         style={{ maxHeight: '440px' }}
@@ -800,25 +800,22 @@ export function EventStory() {
                 </Reveal>
                 {event.description.split('\n\n').map((para, i) => (
                   <Reveal key={i} delay={i * 0.06}>
-                    {/* Float an illustration next to the second paragraph */}
-                    {/* Editorial float: illustration on RIGHT, text wraps around its contour */}
-                    {illustrations?.floatImage && i === 1 && (() => {
-                      const imgUrl = getIllustrationUrl(illustrations.floatImage!.slug, illustrations.floatImage!.num);
+                    {/* Book-style floated illustrations — multiple per event, alternating sides */}
+                    {illustrations?.floats?.filter(f => f.paragraph === i).map((float, fi) => {
+                      const { className, style } = getFloatClasses(float);
+                      const imgUrl = getIllustrationUrl(float.slug, float.num);
                       return (
                         <img
+                          key={`float-${i}-${fi}`}
                           src={imgUrl}
                           alt=""
-                          className="hidden md:block float-right ml-8 mb-6 w-[220px] lg:w-[280px] xl:w-[320px] drop-shadow-xl"
-                          style={{
-                            shapeOutside: `url(${imgUrl})`,
-                            shapeMargin: '16px',
-                            shapeImageThreshold: '0.1',
-                          }}
+                          className={className}
+                          style={style}
                           loading="lazy"
                           onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                         />
                       );
-                    })()}
+                    })}
                     <p className="text-[15px] sm:text-[16px] text-[#8a8a9a] leading-[1.9] mb-6">{para}</p>
                     {i === 0 && pullQuote && (
                       <Reveal delay={0.1}>
@@ -829,12 +826,12 @@ export function EventStory() {
                         </blockquote>
                       </Reveal>
                     )}
-                    {/* FULL-WIDTH scene illustration between paragraphs 1 and 2 */}
-                    {illustrations?.sceneBreak && i === 0 && (
-                      <Reveal delay={0.15}>
-                        <div className="my-12 -mx-6 sm:-mx-10">
+                    {/* Full-width scene illustrations between paragraphs */}
+                    {illustrations?.sceneBreaks?.filter(sb => sb.afterParagraph === i).map((sb, si) => (
+                      <Reveal key={`scene-${i}-${si}`} delay={0.15}>
+                        <div className="my-12 -mx-6 sm:-mx-10 clear-both">
                           <img
-                            src={getIllustrationUrl(illustrations.sceneBreak.slug, illustrations.sceneBreak.num)}
+                            src={getIllustrationUrl(sb.slug, sb.num)}
                             alt=""
                             className="w-full h-auto object-contain max-h-[400px]"
                             loading="lazy"
@@ -842,7 +839,7 @@ export function EventStory() {
                           />
                         </div>
                       </Reveal>
-                    )}
+                    ))}
                   </Reveal>
                 ))}
               </section>
