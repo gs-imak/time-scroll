@@ -15,7 +15,7 @@ import { ERAS } from '@/shared/utils/constants';
 import type { HistoricalEvent } from '@/shared/types/events';
 import { EventQuiz } from './EventQuiz';
 import { EventMapVisual } from './EventMapVisual';
-// Illustrations available but integration paused — needs proper design
+import { getEventPlacements, getIllustrationUrl } from '@/shared/data/illustrationPlacements';
 import { useMonumentViewer } from '@/features/monuments/useMonumentViewer';
 
 // ── Category visuals ──
@@ -127,6 +127,7 @@ export function EventStory() {
   const era = event ? ERAS.find(e => e.id === event.eraId) : null;
   const cat = event ? CATEGORY_META[event.category] : null;
   const icon = event ? EVENT_ICONS[event.id] ?? '●' : '●';
+  const illustrations = event ? getEventPlacements(event.id) : null;
   const favoriteEvents = useProgressStore(s => s.favoriteEvents);
   const toggleFavorite = useProgressStore(s => s.toggleFavorite);
   const eventNotes = useProgressStore(s => s.eventNotes);
@@ -496,6 +497,31 @@ export function EventStory() {
                 </motion.div>
               )}
 
+              {/* Parallax illustration accents */}
+              {illustrations?.parallaxRight && (
+                <motion.div
+                  className="absolute right-[1%] top-[1400px] z-[1]"
+                  style={{ y: sideRightY2, opacity: sideOpacity2 }}
+                >
+                  <img
+                    src={getIllustrationUrl(illustrations.parallaxRight.slug, illustrations.parallaxRight.num)}
+                    alt="" className="w-[140px] opacity-[0.2] drop-shadow-lg" loading="lazy"
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                  />
+                </motion.div>
+              )}
+              {illustrations?.parallaxLeft && (
+                <motion.div
+                  className="absolute left-[1%] top-[2200px] z-[1]"
+                  style={{ y: sideLeftY1, opacity: sideOpacity1 }}
+                >
+                  <img
+                    src={getIllustrationUrl(illustrations.parallaxLeft.slug, illustrations.parallaxLeft.num)}
+                    alt="" className="w-[120px] opacity-[0.15] drop-shadow-lg" loading="lazy"
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                  />
+                </motion.div>
+              )}
             </div>
 
             {/* ═══ HERO ═══ */}
@@ -553,6 +579,20 @@ export function EventStory() {
                   </motion.div>
                 )}
               </AnimatePresence>
+
+              {/* Hero illustration accent — transparent illustration positioned in hero */}
+              {illustrations?.heroAccent && (
+                <motion.img
+                  src={getIllustrationUrl(illustrations.heroAccent.slug, illustrations.heroAccent.num)}
+                  alt=""
+                  className={`absolute z-[5] bottom-8 ${illustrations.heroAccent.position === 'right' ? 'right-[5%]' : 'left-[5%]'} w-[180px] md:w-[260px] lg:w-[320px] opacity-[0.35] drop-shadow-2xl pointer-events-none select-none hidden md:block`}
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 0.35, y: 0 }}
+                  transition={{ delay: 0.4, duration: 0.8 }}
+                  loading="lazy"
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                />
+              )}
 
               {/* Hero content */}
               <motion.div className="relative z-10 max-w-[800px] mx-auto w-full px-6 sm:px-10 pb-12"
@@ -744,6 +784,20 @@ export function EventStory() {
                         </blockquote>
                       </Reveal>
                     )}
+                    {/* Scene break illustration between paragraphs */}
+                    {illustrations?.sceneBreak && i === 0 && (
+                      <Reveal delay={0.15}>
+                        <div className="my-10 flex justify-center">
+                          <img
+                            src={getIllustrationUrl(illustrations.sceneBreak.slug, illustrations.sceneBreak.num)}
+                            alt=""
+                            className="max-w-full h-auto max-h-[280px] object-contain rounded-xl opacity-90"
+                            loading="lazy"
+                            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                          />
+                        </div>
+                      </Reveal>
+                    )}
                   </Reveal>
                 ))}
               </section>
@@ -801,22 +855,34 @@ export function EventStory() {
                 </section>
               )}
 
-              {/* Did You Know */}
+              {/* Did You Know — with optional illustration accent */}
               {event.impactText && (
                 <section id="impact" ref={setSectionRef('impact')} className="mb-20">
                   <Reveal>
-                    <motion.div className="rounded-2xl p-7 sm:p-9 relative overflow-hidden"
-                      style={{ background: 'rgba(255, 255, 255, 0.02)', border: `1px solid ${cat.color}18` }}
-                      whileHover={{ scale: 1.008 }} transition={{ type: 'spring', stiffness: 400, damping: 25 }}>
-                      <div className="absolute top-0 left-0 w-1 h-full rounded-full" style={{ background: cat.color }} />
-                      <div className="pl-6">
-                        <div className="flex items-center gap-2 mb-4">
-                          <Lightbulb size={16} style={{ color: cat.color }} />
-                          <span className="text-[12px] font-semibold tracking-wider uppercase" style={{ color: cat.color }}>Did you know?</span>
+                    <div className="relative">
+                      {/* Floating illustration next to the callout */}
+                      {illustrations?.impactAccent && (
+                        <img
+                          src={getIllustrationUrl(illustrations.impactAccent.slug, illustrations.impactAccent.num)}
+                          alt=""
+                          className={`hidden lg:block absolute top-1/2 -translate-y-1/2 w-[160px] xl:w-[200px] opacity-[0.25] pointer-events-none select-none ${illustrations.impactAccent.position === 'right' ? '-right-[180px] xl:-right-[220px]' : '-left-[180px] xl:-left-[220px]'}`}
+                          loading="lazy"
+                          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                        />
+                      )}
+                      <motion.div className="rounded-2xl p-7 sm:p-9 relative overflow-hidden"
+                        style={{ background: 'rgba(255, 255, 255, 0.02)', border: `1px solid ${cat.color}18` }}
+                        whileHover={{ scale: 1.008 }} transition={{ type: 'spring', stiffness: 400, damping: 25 }}>
+                        <div className="absolute top-0 left-0 w-1 h-full rounded-full" style={{ background: cat.color }} />
+                        <div className="pl-6">
+                          <div className="flex items-center gap-2 mb-4">
+                            <Lightbulb size={16} style={{ color: cat.color }} />
+                            <span className="text-[12px] font-semibold tracking-wider uppercase" style={{ color: cat.color }}>Did you know?</span>
+                          </div>
+                          <p className="text-[16px] text-[#8a8a9a] leading-[1.8]">{event.impactText}</p>
                         </div>
-                        <p className="text-[16px] text-[#8a8a9a] leading-[1.8]">{event.impactText}</p>
-                      </div>
-                    </motion.div>
+                      </motion.div>
+                    </div>
                   </Reveal>
                 </section>
               )}
