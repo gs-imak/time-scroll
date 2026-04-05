@@ -801,16 +801,24 @@ export function EventStory() {
                 {event.description.split('\n\n').map((para, i) => (
                   <Reveal key={i} delay={i * 0.06}>
                     {/* Float an illustration next to the second paragraph */}
-                    {illustrations?.floatImage && i === 1 && (
-                      <img
-                        src={getIllustrationUrl(illustrations.floatImage.slug, illustrations.floatImage.num)}
-                        alt=""
-                        className={`hidden md:block ${illustrations.floatImage.position === 'right' ? 'float-right ml-8' : 'float-left mr-8'} mb-6 w-[200px] lg:w-[260px] opacity-90 drop-shadow-xl`}
-                        style={{ shapeOutside: 'margin-box' }}
-                        loading="lazy"
-                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                      />
-                    )}
+                    {/* Editorial float: illustration on RIGHT, text wraps around its contour */}
+                    {illustrations?.floatImage && i === 1 && (() => {
+                      const imgUrl = getIllustrationUrl(illustrations.floatImage!.slug, illustrations.floatImage!.num);
+                      return (
+                        <img
+                          src={imgUrl}
+                          alt=""
+                          className="hidden md:block float-right ml-8 mb-6 w-[220px] lg:w-[280px] xl:w-[320px] drop-shadow-xl"
+                          style={{
+                            shapeOutside: `url(${imgUrl})`,
+                            shapeMargin: '16px',
+                            shapeImageThreshold: '0.1',
+                          }}
+                          loading="lazy"
+                          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                        />
+                      );
+                    })()}
                     <p className="text-[15px] sm:text-[16px] text-[#8a8a9a] leading-[1.9] mb-6">{para}</p>
                     {i === 0 && pullQuote && (
                       <Reveal delay={0.1}>
