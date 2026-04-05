@@ -15,6 +15,7 @@ import { ERAS } from '@/shared/utils/constants';
 import type { HistoricalEvent } from '@/shared/types/events';
 import { EventQuiz } from './EventQuiz';
 import { EventMapVisual } from './EventMapVisual';
+import { getEventIllustrations } from '@/shared/data/civilizationAssets';
 import { useMonumentViewer } from '@/features/monuments/useMonumentViewer';
 
 // ── Category visuals ──
@@ -126,6 +127,7 @@ export function EventStory() {
   const era = event ? ERAS.find(e => e.id === event.eraId) : null;
   const cat = event ? CATEGORY_META[event.category] : null;
   const icon = event ? EVENT_ICONS[event.id] ?? '●' : '●';
+  const civIllustrations = event ? getEventIllustrations(event.id) : null;
 
   const favoriteEvents = useProgressStore(s => s.favoriteEvents);
   const toggleFavorite = useProgressStore(s => s.toggleFavorite);
@@ -857,16 +859,33 @@ export function EventStory() {
                 </Reveal>
               </section>
 
-              {/* Gallery */}
+              {/* Gallery — civilization illustrations or event images */}
               <section id="gallery" ref={setSectionRef('gallery')} className="mb-20">
                 <Reveal>
-                  <SectionLabel>Gallery</SectionLabel>
-                  {event.images && event.images.length > 0 ? (
+                  <SectionLabel>
+                    {civIllustrations ? `${civIllustrations.name} — Illustrations` : 'Gallery'}
+                  </SectionLabel>
+                  {civIllustrations ? (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                      {civIllustrations.gallery.map((img, i) => (
+                        <Reveal key={i} delay={i * 0.06}>
+                          <motion.div className="rounded-xl overflow-hidden aspect-[4/3] cursor-pointer"
+                            style={{ border: '1px solid rgba(255,255,255,0.06)' }}
+                            whileHover={{ scale: 1.03, borderColor: `${cat.color}30` }}
+                            transition={{ type: 'spring', stiffness: 400, damping: 25 }}>
+                            <img src={img} alt={`${civIllustrations.name} illustration ${i + 1}`}
+                              className="w-full h-full object-cover" loading="lazy"
+                              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                          </motion.div>
+                        </Reveal>
+                      ))}
+                    </div>
+                  ) : event.images && event.images.length > 0 ? (
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                       {event.images.map((img, i) => (
                         <motion.div key={i} className="rounded-xl overflow-hidden aspect-[4/3] cursor-pointer"
                           whileHover={{ scale: 1.03 }} transition={{ type: 'spring', stiffness: 400, damping: 25 }}>
-                          <img src={img} alt={`${event.title} ${i + 1}`} className="w-full h-full object-cover" />
+                          <img src={img} alt={`${event.title} ${i + 1}`} className="w-full h-full object-cover" loading="lazy" />
                         </motion.div>
                       ))}
                     </div>
