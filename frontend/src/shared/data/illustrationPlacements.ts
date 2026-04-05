@@ -179,72 +179,97 @@ export const EVENT_ILLUSTRATIONS: Record<string, IllustrationPlacement> = {
 
   // ═══ OTHER CIVILIZATIONS ═══
 
+  // ═══ VIKINGS — verified: 1=warrior in water (transparent), 5=horned helmet
+  // viking (transparent), 10=shieldmaiden (transparent), 15=fjord landscape ═══
+
   'viking-expansion': {
-    heroImage: { slug: 'vikings', num: 1 },
-    sceneBreaks: [{ slug: 'vikings', num: 8, afterParagraph: 0 }],
-    floats: [
-      { slug: 'vikings', num: 5, side: 'right', size: 'lg', paragraph: 0 },
-      { slug: 'vikings', num: 10, side: 'left', size: 'md', paragraph: 1 },
-      { slug: 'vikings', num: 15, side: 'right', size: 'md', paragraph: 2 },
+    heroImage: { slug: 'vikings', num: 1 },            // warrior emerging from water — PERFECT
+    heroBg: { slug: 'vikings', num: 15 },               // fjord landscape as watermark
+    sceneBreaks: [
+      { slug: 'vikings', num: 15, afterParagraph: 0 },  // fjord landscape — Norse homeland
     ],
-    parallaxLeft: { slug: 'vikings', num: 12 },
+    floats: [
+      { slug: 'vikings', num: 5, side: 'right', size: 'lg', paragraph: 0 },   // horned helmet viking
+      { slug: 'vikings', num: 10, side: 'left', size: 'lg', paragraph: 1 },    // shieldmaiden
+    ],
   },
+
+  // ═══ ANCIENT MONGOLIA — verified: 1=steppe yurt camp, 5=horseman on white
+  // horse (transparent), 8=woman warrior fur cloak (transparent) ═══
 
   'genghis-khan': {
-    heroImage: { slug: 'ancient-mongolia', num: 1 },
-    sceneBreaks: [{ slug: 'ancient-mongolia', num: 8, afterParagraph: 0 }],
-    floats: [
-      { slug: 'ancient-mongolia', num: 5, side: 'right', size: 'lg', paragraph: 0 },
-      { slug: 'ancient-mongolia', num: 10, side: 'left', size: 'md', paragraph: 1 },
-      { slug: 'ancient-mongolia', num: 15, side: 'right', size: 'md', paragraph: 2 },
+    heroImage: { slug: 'ancient-mongolia', num: 5 },    // HORSEMAN — this IS Genghis Khan
+    heroBg: { slug: 'ancient-mongolia', num: 1 },       // steppe camp as watermark
+    sceneBreaks: [
+      { slug: 'ancient-mongolia', num: 1, afterParagraph: 0 },  // steppe landscape
     ],
-    parallaxRight: { slug: 'ancient-mongolia', num: 18 },
+    floats: [
+      { slug: 'ancient-mongolia', num: 8, side: 'right', size: 'lg', paragraph: 0 },  // woman warrior
+      { slug: 'ancient-mongolia', num: 5, side: 'left', size: 'md', paragraph: 2 },    // horseman again
+    ],
   },
 
+  // ═══ ANCIENT CHINA — verified: 1=pagoda+maples, 3=Forbidden City, 5=GREAT WALL,
+  // 8=sage+pagoda, 10=lake pavilion, 12=silk-robed woman, 15=dragon coins,
+  // 18=9 ancient coins ═══
+
   'great-wall-begin': {
-    heroImage: { slug: 'ancient-china', num: 1 },
-    sceneBreaks: [{ slug: 'ancient-china', num: 10, afterParagraph: 0 }],
+    heroImage: { slug: 'ancient-china', num: 5 },       // THE GREAT WALL illustration
+    heroBg: { slug: 'ancient-china', num: 3 },          // Forbidden City watermark
+    sceneBreaks: [
+      { slug: 'ancient-china', num: 10, afterParagraph: 0 },  // serene lake pavilion
+    ],
     floats: [
-      { slug: 'ancient-china', num: 5, side: 'right', size: 'lg', paragraph: 0 },
-      { slug: 'ancient-china', num: 8, side: 'left', size: 'md', paragraph: 1 },
-      { slug: 'ancient-china', num: 15, side: 'right', size: 'md', paragraph: 2 },
+      { slug: 'ancient-china', num: 1, side: 'right', size: 'lg', paragraph: 0 },   // pagoda
+      { slug: 'ancient-china', num: 8, side: 'left', size: 'md', paragraph: 1 },    // sage+pagoda
+      { slug: 'ancient-china', num: 3, side: 'right', size: 'md', paragraph: 2 },   // Forbidden City
     ],
   },
 
   'silk-road': {
-    heroImage: { slug: 'ancient-china', num: 3 },
-    sceneBreaks: [{ slug: 'ancient-china', num: 12, afterParagraph: 0 }],
+    heroImage: { slug: 'ancient-china', num: 12 },      // silk-robed woman — THE Silk Road visual
+    heroBg: { slug: 'ancient-china', num: 15 },          // dragon coins — trade
+    sceneBreaks: [
+      { slug: 'ancient-china', num: 10, afterParagraph: 0 },  // lake pavilion — oasis stop
+    ],
     floats: [
-      { slug: 'ancient-china', num: 7, side: 'right', size: 'lg', paragraph: 0 },
-      { slug: 'ancient-china', num: 18, side: 'left', size: 'md', paragraph: 1 },
+      { slug: 'ancient-china', num: 15, side: 'right', size: 'lg', paragraph: 0 },  // dragon coins — trade
+      { slug: 'ancient-china', num: 1, side: 'left', size: 'md', paragraph: 1 },    // pagoda
+      { slug: 'ancient-china', num: 18, side: 'right', size: 'md', paragraph: 2 },  // 9 coins grid
     ],
   },
 
   'shang-oracle-bones': {
-    heroImage: { slug: 'ancient-china', num: 4 },
+    heroImage: { slug: 'ancient-china', num: 3 },       // Forbidden City — royal court
+    heroBg: { slug: 'ancient-china', num: 8 },           // sage+pagoda
     sceneBreaks: [],
     floats: [
-      { slug: 'ancient-china', num: 14, side: 'right', size: 'lg', paragraph: 0 },
-      { slug: 'ancient-china', num: 7, side: 'left', size: 'md', paragraph: 1 },
+      { slug: 'ancient-china', num: 8, side: 'right', size: 'lg', paragraph: 0 },   // sage figure
+      { slug: 'ancient-china', num: 1, side: 'left', size: 'md', paragraph: 1 },    // pagoda
     ],
   },
 
+  // ═══ ANCIENT INDIA — verified: 1=temple corridor with pillars,
+  // 5=feathered necklace/jewelry (transparent), 10=woman in sari (transparent) ═══
+
   'birth-of-buddhism': {
-    heroImage: { slug: 'ancient-india', num: 1 },
-    sceneBreaks: [{ slug: 'ancient-india', num: 8, afterParagraph: 0 }],
+    heroImage: { slug: 'ancient-india', num: 10 },       // woman in sari — Indian culture
+    heroBg: { slug: 'ancient-india', num: 1 },           // temple corridor
+    sceneBreaks: [
+      { slug: 'ancient-india', num: 1, afterParagraph: 0 },  // temple corridor — meditation setting
+    ],
     floats: [
-      { slug: 'ancient-india', num: 5, side: 'right', size: 'lg', paragraph: 0 },
-      { slug: 'ancient-india', num: 15, side: 'left', size: 'md', paragraph: 1 },
-      { slug: 'ancient-india', num: 10, side: 'right', size: 'md', paragraph: 2 },
+      { slug: 'ancient-india', num: 5, side: 'right', size: 'lg', paragraph: 0 },   // jewelry — Indian craft
+      { slug: 'ancient-india', num: 10, side: 'left', size: 'md', paragraph: 2 },   // woman figure
     ],
   },
 
   'indus-valley': {
-    heroImage: { slug: 'ancient-india', num: 3 },
-    sceneBreaks: [{ slug: 'ancient-india', num: 10, afterParagraph: 0 }],
+    heroImage: { slug: 'ancient-india', num: 1 },        // temple corridor — ancient architecture
+    sceneBreaks: [],
     floats: [
-      { slug: 'ancient-india', num: 7, side: 'right', size: 'lg', paragraph: 0 },
-      { slug: 'ancient-india', num: 12, side: 'left', size: 'md', paragraph: 1 },
+      { slug: 'ancient-india', num: 10, side: 'right', size: 'lg', paragraph: 0 },  // woman — civilization
+      { slug: 'ancient-india', num: 5, side: 'left', size: 'md', paragraph: 1 },    // jewelry — craftsmanship
     ],
   },
 
@@ -257,13 +282,16 @@ export const EVENT_ILLUSTRATIONS: Record<string, IllustrationPlacement> = {
     ],
   },
 
+  // ═══ ANCIENT PERSIA — verified: 1=ornate silver shield (transparent),
+  // 5=Persepolis gateway with bull statues (transparent) ═══
+
   'persian-empire-cyrus': {
-    heroImage: { slug: 'ancient-persia', num: 1 },
-    sceneBreaks: [{ slug: 'ancient-persia', num: 8, afterParagraph: 0 }],
+    heroImage: { slug: 'ancient-persia', num: 5 },       // Persepolis gateway — THE Persian Empire icon
+    heroBg: { slug: 'ancient-persia', num: 1 },          // shield medallion watermark
+    sceneBreaks: [],
     floats: [
-      { slug: 'ancient-persia', num: 5, side: 'right', size: 'lg', paragraph: 0 },
-      { slug: 'ancient-persia', num: 15, side: 'left', size: 'md', paragraph: 1 },
-      { slug: 'ancient-persia', num: 10, side: 'right', size: 'md', paragraph: 2 },
+      { slug: 'ancient-persia', num: 1, side: 'right', size: 'lg', paragraph: 0 },   // ornate shield
+      { slug: 'ancient-persia', num: 5, side: 'left', size: 'md', paragraph: 2 },    // gateway repeat
     ],
   },
 
