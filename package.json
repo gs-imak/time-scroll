@@ -1,5 +1,11 @@
 {
   "name": "time-scroll",
   "private": true,
-  "workspaces": ["frontend"]
+  "workspaces": [
+    "frontend"
+  ],
+  "devDependencies": {
+    "adm-zip": "^0.5.17",
+    "sharp": "^0.34.5"
+  }
 }

@@ -8,6 +8,8 @@ const GlobeExplorer = lazy(() => import('@/features/globe/GlobeExplorer'));
 const TimelineView = lazy(() => import('@/features/timeline/TimelineView'));
 const JourneyBrowser = lazy(() => import('@/features/journeys/JourneyBrowser'));
 const JourneyPlayer = lazy(() => import('@/features/journeys/JourneyPlayer'));
+const CivilizationIndex = lazy(() => import('@/features/civilizations/CivilizationIndex'));
+const CivilizationGallery = lazy(() => import('@/features/civilizations/CivilizationGallery'));
 
 function Loading() {
   return (
@@ -67,6 +69,22 @@ export const router = createBrowserRouter([
         element: (
           <Suspense fallback={<Loading />}>
             <JourneyPlayer />
+          </Suspense>
+        ),
+      },
+      {
+        path: '/civilizations',
+        element: (
+          <Suspense fallback={<Loading />}>
+            <CivilizationIndex />
+          </Suspense>
+        ),
+      },
+      {
+        path: '/civilizations/:slug',
+        element: (
+          <Suspense fallback={<Loading />}>
+            <CivilizationGallery />
           </Suspense>
         ),
       },

@@ -1,12 +1,15 @@
-import { useEffect, useRef, useState, createContext, useContext, useCallback, type ReactNode } from 'react';
+import { useEffect, useRef, useState, useMemo, createContext, useContext, useCallback, type ReactNode } from 'react';
 import Globe, { type GlobeMethods } from 'react-globe.gl';
 import * as THREE from 'three';
+import { useNavigate } from 'react-router';
 import { useMapStore } from '@/shared/stores/mapStore';
 import { useTimeStore } from '@/shared/stores/timeStore';
 import { useEventsStore } from '@/shared/stores/eventsStore';
+import { useJourneyArcsStore } from '@/shared/stores/journeyArcsStore';
 import { closestBoundaryYear } from '@/shared/utils/geo';
 import { formatYear } from '@/shared/utils/format';
 import { BOUNDARY_YEAR_MAP } from '@/shared/utils/constants';
+import { getVisibleCivilizationLabels } from '@/shared/data/civilizationLabels';
 import { createEventMarker, CATEGORY_COLORS } from './eventMarkers';
 
 // === Globe context for child components (landmarks, etc.) ===
@@ -43,12 +46,19 @@ export function GlobeView({ children }: GlobeViewProps) {
   const [polygonsData, setPolygonsData] = useState<object[]>([]);
   const [ready, setReady] = useState(false);
 
+  const navigate = useNavigate();
   const setMapReady = useMapStore(s => s.setMapReady);
   const currentYear = useTimeStore(s => s.currentYear);
   const currentEra = useTimeStore(s => s.currentEra);
   const getVisibleEvents = useEventsStore(s => s.getVisibleEvents);
   const selectEvent = useEventsStore(s => s.selectEvent);
+  const journeyArcs = useJourneyArcsStore(s => s.arcs);
   const loadedFileRef = useRef<string | null>(null);
+
+  const civilizationLabels = useMemo(
+    () => getVisibleCivilizationLabels(currentYear),
+    [currentYear],
+  );
 
   // Responsive sizing
   useEffect(() => {
@@ -272,6 +282,33 @@ export function GlobeView({ children }: GlobeViewProps) {
                 </div>
               </div>`;
             }}
+
+            // Civilization name labels
+            labelsData={civilizationLabels}
+            labelLat={(d: any) => d.lat}
+            labelLng={(d: any) => d.lng}
+            labelText={(d: any) => d.name}
+            labelSize={() => 0.6}
+            labelColor={() => '#c49a44'}
+            labelResolution={3}
+            labelDotRadius={0}
+            labelAltitude={0.01}
+            onLabelClick={(label: any) => {
+              navigate(`/civilizations/${label.slug}`);
+            }}
+
+            // Journey arcs
+            arcsData={journeyArcs}
+            arcStartLat={(d: any) => d.startLat}
+            arcStartLng={(d: any) => d.startLng}
+            arcEndLat={(d: any) => d.endLat}
+            arcEndLng={(d: any) => d.endLng}
+            arcColor={() => 'rgba(196, 154, 68, 0.4)'}
+            arcAltitude={0.15}
+            arcStroke={1}
+            arcDashLength={0.5}
+            arcDashGap={0.2}
+            arcDashAnimateTime={2000}
 
           />
         )}
