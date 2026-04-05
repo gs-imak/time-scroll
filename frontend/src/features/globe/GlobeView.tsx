@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState, useMemo, createContext, useContext, useCallback, type ReactNode } from 'react';
 import Globe, { type GlobeMethods } from 'react-globe.gl';
 import * as THREE from 'three';
-import { useNavigate } from 'react-router';
 import { useMapStore } from '@/shared/stores/mapStore';
 import { useTimeStore } from '@/shared/stores/timeStore';
 import { useEventsStore } from '@/shared/stores/eventsStore';
@@ -46,7 +45,6 @@ export function GlobeView({ children }: GlobeViewProps) {
   const [polygonsData, setPolygonsData] = useState<object[]>([]);
   const [ready, setReady] = useState(false);
 
-  const navigate = useNavigate();
   const setMapReady = useMapStore(s => s.setMapReady);
   const currentYear = useTimeStore(s => s.currentYear);
   const currentEra = useTimeStore(s => s.currentEra);
@@ -293,9 +291,6 @@ export function GlobeView({ children }: GlobeViewProps) {
             labelResolution={3}
             labelDotRadius={0}
             labelAltitude={0.01}
-            onLabelClick={(label: any) => {
-              navigate(`/civilizations/${label.slug}`);
-            }}
 
             // Journey arcs
             arcsData={journeyArcs}
