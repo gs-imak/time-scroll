@@ -15,7 +15,7 @@ import { ERAS } from '@/shared/utils/constants';
 import type { HistoricalEvent } from '@/shared/types/events';
 import { EventQuiz } from './EventQuiz';
 import { EventMapVisual } from './EventMapVisual';
-import { getEventIllustrations, getCivImageUrl } from '@/shared/data/civilizationAssets';
+// Illustrations available but integration paused — needs proper design
 import { useMonumentViewer } from '@/features/monuments/useMonumentViewer';
 
 // ── Category visuals ──
@@ -127,8 +127,6 @@ export function EventStory() {
   const era = event ? ERAS.find(e => e.id === event.eraId) : null;
   const cat = event ? CATEGORY_META[event.category] : null;
   const icon = event ? EVENT_ICONS[event.id] ?? '●' : '●';
-  const civIllustrations = event ? getEventIllustrations(event.id) : null;
-
   const favoriteEvents = useProgressStore(s => s.favoriteEvents);
   const toggleFavorite = useProgressStore(s => s.toggleFavorite);
   const eventNotes = useProgressStore(s => s.eventNotes);
@@ -498,31 +496,6 @@ export function EventStory() {
                 </motion.div>
               )}
 
-              {/* Civilization illustration parallax accents */}
-              {civIllustrations && (
-                <>
-                  <motion.div
-                    className="absolute right-[2%] top-[1400px] z-[1]"
-                    style={{ y: sideRightY2, opacity: sideOpacity2 }}
-                  >
-                    <img
-                      src={getCivImageUrl(civIllustrations.slug, Math.min(5, civIllustrations.totalImages))}
-                      alt="" className="w-[120px] opacity-40 drop-shadow-lg" loading="lazy"
-                      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                    />
-                  </motion.div>
-                  <motion.div
-                    className="absolute left-[2%] top-[2200px] z-[1]"
-                    style={{ y: sideLeftY1, opacity: sideOpacity1 }}
-                  >
-                    <img
-                      src={getCivImageUrl(civIllustrations.slug, Math.min(15, civIllustrations.totalImages))}
-                      alt="" className="w-[100px] opacity-30 drop-shadow-lg" loading="lazy"
-                      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                    />
-                  </motion.div>
-                </>
-              )}
             </div>
 
             {/* ═══ HERO ═══ */}
@@ -754,62 +727,21 @@ export function EventStory() {
               {/* Interactive Map Visual */}
               <EventMapVisual eventId={event.id} />
 
-              {/* Overview — with floating civilization illustrations */}
+              {/* Overview */}
               <section id="overview" ref={setSectionRef('overview')} className="mb-20">
                 <Reveal>
                   <SectionLabel>Overview</SectionLabel>
                 </Reveal>
-
                 {event.description.split('\n\n').map((para, i) => (
                   <Reveal key={i} delay={i * 0.06}>
-                    <div className="relative">
-                      {/* Float a civilization illustration next to the 1st and 3rd paragraphs */}
-                      {civIllustrations && i === 0 && (
-                        <img
-                          src={civIllustrations.hero}
-                          alt={`${civIllustrations.name} illustration`}
-                          className="hidden sm:block float-right ml-6 mb-4 w-[160px] md:w-[200px] opacity-80 drop-shadow-lg"
-                          style={{ shapeOutside: 'margin-box' }}
-                          loading="lazy"
-                          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                        />
-                      )}
-                      {civIllustrations && i === 2 && (
-                        <img
-                          src={getCivImageUrl(civIllustrations.slug, Math.min(11, civIllustrations.totalImages))}
-                          alt={`${civIllustrations.name} illustration`}
-                          className="hidden sm:block float-left mr-6 mb-4 w-[140px] md:w-[180px] opacity-70 drop-shadow-lg"
-                          style={{ shapeOutside: 'margin-box' }}
-                          loading="lazy"
-                          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                        />
-                      )}
-                      <p className="text-[15px] sm:text-[16px] text-[#8a8a9a] leading-[1.9] mb-6">{para}</p>
-                    </div>
-
-                    {/* Pull-quote after first paragraph */}
+                    <p className="text-[15px] sm:text-[16px] text-[#8a8a9a] leading-[1.9] mb-6">{para}</p>
                     {i === 0 && pullQuote && (
                       <Reveal delay={0.1}>
-                        <blockquote className="my-10 py-6 px-8 border-l-[3px] rounded-r-xl clear-both" style={{ borderColor: cat.color, background: `${cat.color}06` }}>
+                        <blockquote className="my-10 py-6 px-8 border-l-[3px] rounded-r-xl" style={{ borderColor: cat.color, background: `${cat.color}06` }}>
                           <p className="text-[18px] sm:text-[20px] text-[#8a8a9a] leading-[1.7] italic font-light">
                             "{pullQuote}"
                           </p>
                         </blockquote>
-                      </Reveal>
-                    )}
-
-                    {/* Section divider illustration between paragraphs 1 and 2 */}
-                    {civIllustrations && i === 1 && (
-                      <Reveal>
-                        <div className="flex justify-center my-8 opacity-50">
-                          <img
-                            src={getCivImageUrl(civIllustrations.slug, Math.min(7, civIllustrations.totalImages))}
-                            alt=""
-                            className="h-[80px] md:h-[100px] object-contain"
-                            loading="lazy"
-                            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                          />
-                        </div>
                       </Reveal>
                     )}
                   </Reveal>
