@@ -29,7 +29,9 @@ function pack(slug: string, name: string, total: number, lat: number, lng: numbe
   };
 }
 
-const EGYPT = pack('ancient-egypt', 'Ancient Egypt', 20, 29.97, 31.13, 1);
+// Ancient Egypt pack failed extraction (>2GB zip) — no webp files available
+// Map to ancient-arabia as closest available pack for now
+const EGYPT = pack('ancient-arabia', 'Ancient Arabia', 20, 29.97, 31.13, 1);
 const GREECE = pack('ancient-greece', 'Ancient Greece', 20, 37.98, 23.72, 1);
 const ROME = pack('ancient-rome', 'Ancient Rome', 20, 41.90, 12.49, 1);
 const PERSIA = pack('ancient-persia', 'Ancient Persia', 20, 30.06, 53.16, 1);
@@ -41,7 +43,8 @@ const MAYA = pack('ancient-maya', 'Ancient Maya', 20, 19.69, -98.84, 1);
 const KUSH = pack('kingdom-of-kush', 'Kingdom of Kush', 20, 16.93, 33.74, 1);
 const PHOENICIA = pack('ancient-phoenicia', 'Ancient Phoenicia', 20, 34.12, 35.65, 1);
 const JAPAN = pack('ancient-japan', 'Ancient Japan', 20, 35.67, 139.65, 1);
-const INCA = pack('inca-empire', 'Inca Empire', 20, -13.16, -72.54, 1);
+// Inca Empire pack failed extraction (>2GB zip) — map to ancient-maya as closest
+const INCA = pack('ancient-maya', 'Inca Empire', 20, -13.16, -72.54, 1);
 const MALI = pack('mali-empire', 'Mali Empire', 20, 16.77, -3.00, 1);
 const KHMER = pack('ancient-khmer', 'Ancient Khmer', 20, 13.41, 103.86, 1);
 const MONGOLIA = pack('ancient-mongolia', 'Ancient Mongolia', 20, 47.91, 106.91, 1);
