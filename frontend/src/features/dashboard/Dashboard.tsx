@@ -10,7 +10,15 @@ import { useEventsStore } from '@/shared/stores/eventsStore';
 import { ERAS } from '@/shared/utils/constants';
 import { EVENT_QUIZZES } from '@/shared/data/eventQuizzes';
 import { JOURNEYS } from '@/shared/data/journeys';
+import { getEventIllustrations } from '@/shared/data/civilizationAssets';
 import { cn } from '@/shared/utils/cn';
+
+/** Get the best available image for an event card — prefer local illustration, fallback to Wikimedia */
+function getCardImage(event: { id: string; imageUrl?: string; category: string }): string | null {
+  const illust = getEventIllustrations(event.id);
+  if (illust) return illust.thumbnail; // Local WebP — reliable
+  return event.imageUrl ?? null; // Wikimedia — may break
+}
 
 const ERA_COLORS: Record<string, string> = {
   prehistory: '#8d7b68', ancient: '#c49a44', classical: '#b85454',
@@ -231,8 +239,8 @@ export default function Dashboard() {
                 <div
                   className="w-full sm:w-[220px] h-[140px] sm:h-auto relative flex-shrink-0 overflow-hidden"
                   style={{
-                    background: dailyEvent.imageUrl
-                      ? `url(${dailyEvent.imageUrl}) center/cover`
+                    background: getCardImage(dailyEvent)
+                      ? `url(${getCardImage(dailyEvent)}) center/cover`
                       : `linear-gradient(135deg, ${CATEGORY_COLORS[dailyEvent.category] ?? '#8a8a9a'}30, ${CATEGORY_COLORS[dailyEvent.category] ?? '#8a8a9a'}10)`,
                   }}
                 >
@@ -468,8 +476,8 @@ export default function Dashboard() {
                       <div
                         className="w-full aspect-[16/10] relative overflow-hidden"
                         style={{
-                          background: event.imageUrl
-                            ? `url(${event.imageUrl}) center/cover`
+                          background: getCardImage(event)
+                            ? `url(${getCardImage(event)}) center/cover`
                             : `linear-gradient(135deg, ${catColor}30, ${catColor}10)`,
                         }}
                       >
@@ -550,8 +558,8 @@ export default function Dashboard() {
                       <div
                         className="w-full aspect-[16/10] relative overflow-hidden"
                         style={{
-                          background: event.imageUrl
-                            ? `url(${event.imageUrl}) center/cover`
+                          background: getCardImage(event)
+                            ? `url(${getCardImage(event)}) center/cover`
                             : `linear-gradient(135deg, ${catColor}30, ${catColor}10)`,
                         }}
                       >

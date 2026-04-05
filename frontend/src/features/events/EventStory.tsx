@@ -677,8 +677,17 @@ export function EventStory() {
               {/* Media */}
               <Reveal delay={0.05}>
                 <div className="mb-16">
-                  {event.imageUrl ? (
-                    <div className="rounded-2xl overflow-hidden"><img src={event.imageUrl} alt={event.title} className="w-full h-auto object-cover" style={{ maxHeight: '440px' }} /></div>
+                  {(illustrations?.sceneBreak || event.imageUrl) ? (
+                    <div className="rounded-2xl overflow-hidden">
+                      <img
+                        src={illustrations?.sceneBreak ? getIllustrationUrl(illustrations.sceneBreak.slug, illustrations.sceneBreak.num) : event.imageUrl!}
+                        alt={event.title}
+                        className="w-full h-auto object-cover"
+                        style={{ maxHeight: '440px' }}
+                        loading="lazy"
+                        onError={(e) => { (e.target as HTMLImageElement).parentElement!.style.display = 'none'; }}
+                      />
+                    </div>
                   ) : event.videoUrl ? (
                     <div className="rounded-2xl overflow-hidden aspect-video">
                       <iframe src={event.videoUrl} className="w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen title={event.title} />
