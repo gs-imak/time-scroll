@@ -143,6 +143,11 @@ export function OnboardingTour() {
   useEffect(() => {
     if (localStorage.getItem(STORAGE_KEY) === 'true') return;
     if (!mapReady) return;
+    // Don't show tour if an event URL param is present — let the user go directly to the event
+    if (window.location.search.includes('event=')) {
+      localStorage.setItem(STORAGE_KEY, 'true');
+      return;
+    }
 
     // Small delay so the loading screen exit animation finishes
     const timer = setTimeout(() => setActive(true), 1000);
