@@ -84,7 +84,7 @@ function EventCard({ id, title, year, category, icon, viewed, side, index }: {
 
       {/* Card */}
       <motion.button
-        onClick={() => navigate(`/explore/${year}/${id}`)}
+        onClick={() => navigate(`/explore?event=${id}`)}
         className={`
           group relative flex items-center gap-3 w-full
           rounded-[12px] px-4 py-3 text-left cursor-pointer

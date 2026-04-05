@@ -145,14 +145,14 @@ export default function Dashboard() {
   const handleRandomEvent = useCallback(() => {
     if (unexplored.length === 0) return;
     const pick = unexplored[Math.floor(Math.random() * unexplored.length)]!;
-    navigate(`/explore/${pick.year}/${pick.id}`);
+    navigate(`/explore?event=${pick.id}`);
   }, [unexplored, navigate]);
 
   const handleRandomQuiz = useCallback(() => {
     const withQuiz = events.filter(e => EVENT_QUIZZES[e.id]);
     if (withQuiz.length === 0) return;
     const pick = withQuiz[Math.floor(Math.random() * withQuiz.length)]!;
-    navigate(`/explore/${pick.year}/${pick.id}`);
+    navigate(`/explore?event=${pick.id}`);
   }, [events, navigate]);
 
   return (
@@ -460,10 +460,10 @@ export default function Dashboard() {
                   >
                     <GlassCard className="group overflow-hidden cursor-pointer transition-all duration-200 hover:border-white/[0.14] hover:translate-y-[-2px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-void active:scale-[0.97]"
                       style={{ border: '1px solid rgba(255,255,255,0.06)' }}
-                      onClick={() => navigate(`/explore/${event.year}/${event.id}`)}
+                      onClick={() => navigate(`/explore?event=${event.id}`)}
                       role="button"
                       tabIndex={0}
-                      onKeyDown={e => e.key === 'Enter' && navigate(`/explore/${event.year}/${event.id}`)}
+                      onKeyDown={e => e.key === 'Enter' && navigate(`/explore?event=${event.id}`)}
                     >
                       <div
                         className="w-full aspect-[16/10] relative overflow-hidden"
@@ -542,10 +542,10 @@ export default function Dashboard() {
                   >
                     <GlassCard className="group overflow-hidden cursor-pointer transition-all duration-200 hover:border-white/[0.14] hover:translate-y-[-2px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-void active:scale-[0.97]"
                       style={{ border: '1px solid rgba(255,255,255,0.06)' }}
-                      onClick={() => navigate(`/explore/${event.year}/${event.id}`)}
+                      onClick={() => navigate(`/explore?event=${event.id}`)}
                       role="button"
                       tabIndex={0}
-                      onKeyDown={e => e.key === 'Enter' && navigate(`/explore/${event.year}/${event.id}`)}
+                      onKeyDown={e => e.key === 'Enter' && navigate(`/explore?event=${event.id}`)}
                     >
                       <div
                         className="w-full aspect-[16/10] relative overflow-hidden"
@@ -658,7 +658,7 @@ export default function Dashboard() {
                 return (
                   <button
                     key={event.id}
-                    onClick={() => navigate(`/explore/${event.year}/${event.id}`)}
+                    onClick={() => navigate(`/explore?event=${event.id}`)}
                     className="w-full flex items-center gap-3 px-5 py-3 text-left cursor-pointer hover:bg-white/[0.03] transition-colors active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-void"
                   >
                     <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: catColor }} />

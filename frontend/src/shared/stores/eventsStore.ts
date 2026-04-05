@@ -1,6 +1,13 @@
 import { create } from 'zustand';
 import type { HistoricalEvent, EventCategory } from '@/shared/types/events';
 import { SEED_EVENTS, ERAS } from '@/shared/utils/constants';
+import { NEW_EVENTS } from '@/shared/data/newEvents';
+
+// Merge seed events + new events, deduplicate by id
+const ALL_EVENTS: HistoricalEvent[] = [
+  ...SEED_EVENTS,
+  ...NEW_EVENTS.filter(ne => !SEED_EVENTS.some(se => se.id === ne.id)),
+];
 
 interface EventFilters {
   categories: EventCategory[];
@@ -23,7 +30,7 @@ function getEraForYear(year: number) {
 }
 
 export const useEventsStore = create<EventsStore>((set, get) => ({
-  events: SEED_EVENTS,
+  events: ALL_EVENTS,
   selectedEventId: null,
   filters: { categories: [], eraId: null },
 
