@@ -580,18 +580,35 @@ export function EventStory() {
                 )}
               </AnimatePresence>
 
-              {/* Hero illustration accent — transparent illustration positioned in hero */}
-              {illustrations?.heroAccent && (
-                <motion.img
-                  src={getIllustrationUrl(illustrations.heroAccent.slug, illustrations.heroAccent.num)}
-                  alt=""
-                  className={`absolute z-[5] bottom-8 ${illustrations.heroAccent.position === 'right' ? 'right-[5%]' : 'left-[5%]'} w-[180px] md:w-[260px] lg:w-[320px] opacity-[0.35] drop-shadow-2xl pointer-events-none select-none hidden md:block`}
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 0.35, y: 0 }}
-                  transition={{ delay: 0.4, duration: 0.8 }}
-                  loading="lazy"
-                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                />
+              {/* LARGE hero illustration — the main visual identity of this event */}
+              {illustrations?.heroImage && (
+                <motion.div
+                  className="absolute z-[5] bottom-0 right-0 w-[40%] md:w-[45%] lg:w-[50%] max-w-[600px] pointer-events-none select-none hidden sm:block"
+                  initial={{ opacity: 0, x: 40 }}
+                  animate={{ opacity: 0.6, x: 0 }}
+                  transition={{ delay: 0.3, duration: 1, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  <img
+                    src={getIllustrationUrl(illustrations.heroImage.slug, illustrations.heroImage.num)}
+                    alt=""
+                    className="w-full h-auto drop-shadow-2xl"
+                    loading="lazy"
+                    onError={(e) => { (e.target as HTMLImageElement).parentElement!.style.display = 'none'; }}
+                  />
+                </motion.div>
+              )}
+
+              {/* Background watermark illustration in hero gradient */}
+              {illustrations?.heroBg && (
+                <div className="absolute inset-0 z-[1] flex items-center justify-center pointer-events-none select-none overflow-hidden">
+                  <img
+                    src={getIllustrationUrl(illustrations.heroBg.slug, illustrations.heroBg.num)}
+                    alt=""
+                    className="w-[70%] max-w-[700px] opacity-[0.04]"
+                    loading="lazy"
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                  />
+                </div>
               )}
 
               {/* Hero content */}
@@ -783,24 +800,35 @@ export function EventStory() {
                 </Reveal>
                 {event.description.split('\n\n').map((para, i) => (
                   <Reveal key={i} delay={i * 0.06}>
+                    {/* Float an illustration next to the second paragraph */}
+                    {illustrations?.floatImage && i === 1 && (
+                      <img
+                        src={getIllustrationUrl(illustrations.floatImage.slug, illustrations.floatImage.num)}
+                        alt=""
+                        className={`hidden md:block ${illustrations.floatImage.position === 'right' ? 'float-right ml-8' : 'float-left mr-8'} mb-6 w-[200px] lg:w-[260px] opacity-90 drop-shadow-xl`}
+                        style={{ shapeOutside: 'margin-box' }}
+                        loading="lazy"
+                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                      />
+                    )}
                     <p className="text-[15px] sm:text-[16px] text-[#8a8a9a] leading-[1.9] mb-6">{para}</p>
                     {i === 0 && pullQuote && (
                       <Reveal delay={0.1}>
-                        <blockquote className="my-10 py-6 px-8 border-l-[3px] rounded-r-xl" style={{ borderColor: cat.color, background: `${cat.color}06` }}>
+                        <blockquote className="my-10 py-6 px-8 border-l-[3px] rounded-r-xl clear-both" style={{ borderColor: cat.color, background: `${cat.color}06` }}>
                           <p className="text-[18px] sm:text-[20px] text-[#8a8a9a] leading-[1.7] italic font-light">
                             "{pullQuote}"
                           </p>
                         </blockquote>
                       </Reveal>
                     )}
-                    {/* Scene break illustration between paragraphs */}
+                    {/* FULL-WIDTH scene illustration between paragraphs 1 and 2 */}
                     {illustrations?.sceneBreak && i === 0 && (
                       <Reveal delay={0.15}>
-                        <div className="my-10 flex justify-center">
+                        <div className="my-12 -mx-6 sm:-mx-10">
                           <img
                             src={getIllustrationUrl(illustrations.sceneBreak.slug, illustrations.sceneBreak.num)}
                             alt=""
-                            className="max-w-full h-auto max-h-[280px] object-contain rounded-xl opacity-90"
+                            className="w-full h-auto object-contain max-h-[400px]"
                             loading="lazy"
                             onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                           />
@@ -869,16 +897,6 @@ export function EventStory() {
                 <section id="impact" ref={setSectionRef('impact')} className="mb-20">
                   <Reveal>
                     <div className="relative">
-                      {/* Floating illustration next to the callout */}
-                      {illustrations?.impactAccent && (
-                        <img
-                          src={getIllustrationUrl(illustrations.impactAccent.slug, illustrations.impactAccent.num)}
-                          alt=""
-                          className={`hidden lg:block absolute top-1/2 -translate-y-1/2 w-[160px] xl:w-[200px] opacity-[0.25] pointer-events-none select-none ${illustrations.impactAccent.position === 'right' ? '-right-[180px] xl:-right-[220px]' : '-left-[180px] xl:-left-[220px]'}`}
-                          loading="lazy"
-                          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                        />
-                      )}
                       <motion.div className="rounded-2xl p-7 sm:p-9 relative overflow-hidden"
                         style={{ background: 'rgba(255, 255, 255, 0.02)', border: `1px solid ${cat.color}18` }}
                         whileHover={{ scale: 1.008 }} transition={{ type: 'spring', stiffness: 400, damping: 25 }}>
