@@ -20,16 +20,57 @@ interface GlobeContextValue {
 const GlobeContext = createContext<GlobeContextValue>({ globeRef: null, getScreenCoords: () => null });
 export const useGlobe = () => useContext(GlobeContext);
 
-// === Era hex colors — muted, cinematic tones (WebGL needs real hex) ===
-const ERA_HEX_COLORS: Record<string, string> = {
-  prehistory: '#8d7b68',
-  ancient: '#c49a44',
-  classical: '#b85454',
-  medieval: '#8b6faa',
-  renaissance: '#5a7fb5',
-  industrial: '#7a9e5a',
-  modern: '#5a9aaa',
+// === Civilization territory colors — deterministic per NAME for visual distinction ===
+// Hand-picked palette for major civilizations + hash-based fallback for others
+const MAJOR_CIV_COLORS: Record<string, string> = {
+  'Rome': '#b85454',
+  'Roman Empire': '#b85454',
+  'Achaemenid Empire': '#c49a44',
+  'Greek city-states': '#5a8fa5',
+  'Carthaginian Empire': '#b87a60',
+  'Zhou states': '#6d9476',
+  'Magadha': '#8b80b0',
+  'Olmec': '#7a9e5a',
+  'Meroe': '#c4944a',
+  'Hindu kingdoms': '#d4a054',
+  'Mauryan Empire': '#8b80b0',
+  'Han Empire': '#6d9476',
+  'Mongol Empire': '#b85454',
+  'Ottoman Empire': '#c49a44',
+  'Byzantine Empire': '#8b6faa',
+  'Tang Dynasty': '#5a9aaa',
+  'Song Dynasty': '#5a9aaa',
+  'Ming Dynasty': '#5a9aaa',
+  'Qing Dynasty': '#5a9aaa',
+  'Abbasid Caliphate': '#c49a44',
+  'Umayyad Caliphate': '#d4a054',
+  'Mali Empire': '#c4944a',
+  'Songhai Empire': '#b87a60',
+  'Inca Empire': '#7a9e5a',
+  'Aztec Empire': '#b87a60',
+  'Mughal Empire': '#d4a054',
+  'British Empire': '#b85454',
+  'Spanish Empire': '#c49a44',
+  'French Empire': '#5a7fb5',
+  'Russian Empire': '#8b6faa',
 };
+
+// Deterministic hash for civilizations not in the hand-picked list
+const CIV_PALETTE = [
+  '#c49a44', '#b85454', '#5a8fa5', '#6d9476', '#8b80b0',
+  '#b87a60', '#7a9e5a', '#5a7fb5', '#d4a054', '#8b6faa',
+  '#c4944a', '#5a9aaa', '#9a7b5a', '#7b8fa5', '#a08070',
+  '#6b8b7a', '#9b7090', '#8a9b6a', '#7a6b8b', '#ab8060',
+];
+
+function getCivColor(name: string | undefined): string {
+  if (!name || name === '?') return '#555566';
+  if (MAJOR_CIV_COLORS[name]) return MAJOR_CIV_COLORS[name]!;
+  // Deterministic hash
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash = ((hash << 5) - hash + name.charCodeAt(i)) | 0;
+  return CIV_PALETTE[Math.abs(hash) % CIV_PALETTE.length]!;
+}
 
 // === Sorted boundary years ===
 const SORTED_BOUNDARY_YEARS = Object.keys(BOUNDARY_YEAR_MAP).map(Number).sort((a, b) => a - b);
@@ -47,7 +88,6 @@ export function GlobeView({ children }: GlobeViewProps) {
 
   const setMapReady = useMapStore(s => s.setMapReady);
   const currentYear = useTimeStore(s => s.currentYear);
-  const currentEra = useTimeStore(s => s.currentEra);
   const getVisibleEvents = useEventsStore(s => s.getVisibleEvents);
   const selectEvent = useEventsStore(s => s.selectEvent);
   const journeyArcs = useJourneyArcsStore(s => s.arcs);
@@ -243,20 +283,57 @@ export function GlobeView({ children }: GlobeViewProps) {
             atmosphereAltitude={0.18}
             showAtmosphere={true}
 
-            // Historical boundaries (polygons)
+            // Historical boundaries (polygons) — per-civilization coloring
             polygonsData={polygonsData}
             polygonGeoJsonGeometry={(d: any) => d.geometry}
-            polygonCapColor={() => {
-              const hex = ERA_HEX_COLORS[currentEra.id] ?? '#ffffff';
-              // Very subtle fill so borders read as regions, not just lines
+            polygonCapColor={(d: any) => {
+              const name = d.properties?.NAME;
+              const hex = getCivColor(name);
               const r = parseInt(hex.slice(1, 3), 16);
               const g = parseInt(hex.slice(3, 5), 16);
               const b = parseInt(hex.slice(5, 7), 16);
-              return `rgba(${r}, ${g}, ${b}, 0.04)`;
+              // Named civilizations get visible fill; unnamed get subtle
+              const alpha = name && name !== '?' ? 0.18 : 0.03;
+              return `rgba(${r}, ${g}, ${b}, ${alpha})`;
             }}
-            polygonSideColor={() => 'rgba(255, 255, 255, 0.02)'}
-            polygonStrokeColor={() => ERA_HEX_COLORS[currentEra.id] ?? '#ffffff'}
-            polygonAltitude={0.004}
+            polygonSideColor={(d: any) => {
+              const name = d.properties?.NAME;
+              const hex = getCivColor(name);
+              const r = parseInt(hex.slice(1, 3), 16);
+              const g = parseInt(hex.slice(3, 5), 16);
+              const b = parseInt(hex.slice(5, 7), 16);
+              return `rgba(${r}, ${g}, ${b}, 0.08)`;
+            }}
+            polygonStrokeColor={(d: any) => {
+              const name = d.properties?.NAME;
+              return getCivColor(name);
+            }}
+            polygonAltitude={(d: any) => {
+              const name = d.properties?.NAME;
+              return name && name !== '?' ? 0.006 : 0.002;
+            }}
+            polygonLabel={(d: any) => {
+              const name = d.properties?.NAME;
+              if (!name || name === '?') return '';
+              const color = getCivColor(name);
+              return `<div style="
+                background: rgba(14, 14, 20, 0.92);
+                backdrop-filter: blur(16px);
+                border: 1px solid rgba(255,255,255,0.08);
+                border-left: 3px solid ${color};
+                border-radius: 8px;
+                padding: 8px 12px;
+                font-family: 'Space Grotesk', system-ui, sans-serif;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+              ">
+                <div style="font-size: 13px; font-weight: 600; color: ${color};">
+                  ${name}
+                </div>
+                <div style="font-size: 10px; color: #55556a; margin-top: 2px;">
+                  ${formatYear(currentYear)} — Territory
+                </div>
+              </div>`;
+            }}
             polygonsTransitionDuration={2000}
 
             // Event markers — per-event billboard badges
