@@ -88,6 +88,7 @@ const TimelineView = lazyRetry(() => import('@/features/timeline/TimelineView'),
 const JourneyBrowser = lazyRetry(() => import('@/features/journeys/JourneyBrowser'), 'journeys');
 const JourneyPlayer = lazyRetry(() => import('@/features/journeys/JourneyPlayer'), 'journey-player');
 const QuizHub = lazyRetry(() => import('@/features/quiz/QuizHub'), 'quiz');
+const SettingsPage = lazyRetry(() => import('@/features/settings/SettingsPage'), 'settings');
 
 function Loading() {
   return (
@@ -125,6 +126,7 @@ export const router = createBrowserRouter([
       { path: '/journeys', element: withBoundary(<JourneyBrowser />) },
       { path: '/journeys/:journeyId', element: withBoundary(<JourneyPlayer />) },
       { path: '/quiz', element: withBoundary(<QuizHub />) },
+      { path: '/settings', element: withBoundary(<SettingsPage />) },
     ],
   },
 ]);

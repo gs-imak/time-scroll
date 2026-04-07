@@ -212,7 +212,7 @@ function DesktopSidebar() {
   const goToTimeline = useCallback(() => { navigate('/timeline'); }, [navigate]);
   const goToJourneys = useCallback(() => { navigate('/journeys'); }, [navigate]);
   const goToQuiz = useCallback(() => { navigate('/quiz'); }, [navigate]);
-  const handleSettings = useCallback(() => { console.info('[Time Scroll] Settings coming soon'); }, []);
+  const goToSettings = useCallback(() => { navigate('/settings'); }, [navigate]);
 
   const goToExplore = useCallback(() => { navigate('/explore'); }, [navigate]);
 
@@ -226,7 +226,7 @@ function DesktopSidebar() {
   ];
 
   const bottomItems: NavItemConfig[] = [
-    { icon: Settings, label: 'Settings', action: handleSettings },
+    { icon: Settings, label: 'Settings', action: goToSettings, tourId: 'settings' },
   ];
 
   function handleClick(item: NavItemConfig) {
@@ -240,7 +240,7 @@ function DesktopSidebar() {
       const routeMap: Record<string, string> = {
         dashboard: '/dashboard', timeline: '/timeline',
         explore: '/explore', journeys: '/journeys',
-        quiz: '/quiz',
+        quiz: '/quiz', settings: '/settings',
       };
       const route = routeMap[item.tourId];
       if (route) return location.pathname.startsWith(route);
@@ -343,7 +343,7 @@ function MobileDrawer() {
   const goToJourneys = useCallback(() => { navigate('/journeys'); }, [navigate]);
   const goToQuiz = useCallback(() => { navigate('/quiz'); }, [navigate]);
   const goToExplore = useCallback(() => { navigate('/explore'); }, [navigate]);
-  const handleSettings = useCallback(() => { console.info('[Time Scroll] Settings coming soon'); }, []);
+  const goToSettings = useCallback(() => { navigate('/settings'); }, [navigate]);
 
   const navItems: NavItemConfig[] = [
     { icon: LayoutDashboard, label: 'Dashboard', action: goToDashboard },
@@ -355,7 +355,7 @@ function MobileDrawer() {
   ];
 
   const bottomItems: NavItemConfig[] = [
-    { icon: Settings, label: 'Settings', action: handleSettings },
+    { icon: Settings, label: 'Settings', action: goToSettings, tourId: 'settings' },
   ];
 
   function handleClick(item: NavItemConfig) {
@@ -369,7 +369,7 @@ function MobileDrawer() {
     const routeMap: Record<string, string> = {
       Dashboard: '/dashboard', Timeline: '/timeline',
       Explore: '/explore', Journeys: '/journeys',
-      Quiz: '/quiz',
+      Quiz: '/quiz', Settings: '/settings',
     };
     const route = routeMap[item.label];
     if (route) return location.pathname.startsWith(route);
