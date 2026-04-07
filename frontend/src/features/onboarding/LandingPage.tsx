@@ -457,7 +457,7 @@ export default function LandingPage() {
               </div>
 
               <p
-                className="mt-3 uppercase tracking-[0.25em]"
+                className="mt-5 uppercase tracking-[0.25em]"
                 style={{
                   fontSize: '11px',
                   color: 'var(--color-text-muted)',
