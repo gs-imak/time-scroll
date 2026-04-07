@@ -5,19 +5,25 @@
 
 export interface CivDescription {
   summary: string;
+  detail?: string;
   knownFor: string;
+  keyFacts?: string[];
   imageUrl: string;
 }
 
 export const CIV_DESCRIPTIONS: Record<string, CivDescription> = {
   rome: {
     summary: 'Founded as a small city-state in central Italy, Rome grew into a republic and then an empire that dominated the Mediterranean and much of Europe for centuries.',
+    detail: 'At its peak under Emperor Trajan (117 CE), the Roman Empire stretched from Britain to Mesopotamia, governing over 70 million people across 5 million km². Roman engineering — roads, aqueducts, concrete — created infrastructure that still stands. Their legal system became the foundation of Western law, and Latin evolved into the Romance languages spoken by over 900 million people today.',
     knownFor: 'Engineering, law, military conquest, roads, aqueducts, and the spread of Latin culture across Europe.',
+    keyFacts: ['Peak population: ~70 million', 'Lasted 1,000+ years (753 BCE – 476 CE)', 'Built 400,000 km of roads', 'Language evolved into Italian, French, Spanish, Portuguese, Romanian'],
     imageUrl: 'https://images.unsplash.com/photo-1515542483964-5e8c63d7d89b?w=640&q=80&fit=crop',
   },
   byzantium: {
     summary: 'The eastern continuation of the Roman Empire, centered on Constantinople. It preserved Roman governance and Greek culture for over a thousand years after the fall of the west.',
+    detail: 'While Western Europe descended into the Early Middle Ages, Byzantium maintained urban civilization, literacy, and sophisticated governance. Constantinople was the largest and wealthiest city in Europe for most of the medieval period, protected by its legendary triple walls. Byzantine scholars preserved Greek and Roman texts that would later fuel the Renaissance in Western Europe.',
     knownFor: 'Preserving classical knowledge, Hagia Sophia, Orthodox Christianity, and codifying Roman law.',
+    keyFacts: ['Capital: Constantinople (modern Istanbul)', 'Lasted 1,123 years (330–1453 CE)', 'Hagia Sophia: largest cathedral for 1,000 years', 'Invented Greek fire (ancient napalm)'],
     imageUrl: 'https://images.unsplash.com/photo-1683874350903-8151d987fef4?w=640&q=80&fit=crop',
   },
   hre: {
@@ -27,27 +33,37 @@ export const CIV_DESCRIPTIONS: Record<string, CivDescription> = {
   },
   persia: {
     summary: 'One of the world\'s oldest civilizations, Persia built empires that stretched from Egypt to India. Multiple dynasties — Achaemenid, Parthian, Sasanian, Safavid — each left lasting marks.',
+    detail: 'The Achaemenid Empire under Cyrus the Great (550 BCE) was the first true superpower — at 5.5 million km², it held 44% of the world\'s population. Cyrus issued the Cyrus Cylinder, considered the first charter of human rights. Persian culture gave the world algebra, hospitals, the windmill, and some of the greatest poetry ever written (Rumi, Hafez, Omar Khayyam).',
     knownFor: 'The first postal system, Zoroastrianism, Persian gardens, poetry, and the Royal Road trade network.',
+    keyFacts: ['Achaemenid Empire: 44% of world population', 'Cyrus Cylinder: first human rights charter', 'Invented the postal system and qanat irrigation', 'Rumi is the best-selling poet in the US'],
     imageUrl: 'https://images.unsplash.com/photo-1562576605-88930bca8574?w=640&q=80&fit=crop',
   },
   china: {
     summary: 'The world\'s longest continuous civilization, unified under various dynasties for over two millennia. Each dynasty brought distinct cultural, technological, and territorial achievements.',
+    detail: 'China invented paper (105 CE), printing (868 CE), gunpowder (9th century), and the magnetic compass — the "Four Great Inventions" that transformed the world. The Grand Canal (1,776 km) is the longest artificial waterway ever built. By 1400, China had the world\'s largest navy and most advanced economy. The Great Wall system stretches 21,196 km across northern China.',
     knownFor: 'Paper, printing, gunpowder, the compass, silk production, the Great Wall, and Confucian philosophy.',
+    keyFacts: ['Continuous civilization for 5,000+ years', 'Four Great Inventions changed the world', 'Great Wall: 21,196 km total length', 'Zheng He\'s treasure fleet: 300+ ships'],
     imageUrl: 'https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=640&q=80&fit=crop',
   },
   greece: {
     summary: 'A collection of independent city-states that produced some of history\'s most influential ideas. Athens pioneered democracy; Sparta forged military excellence; Alexander spread Greek culture across Asia.',
+    detail: 'In just a few centuries, the Greeks invented democracy, philosophy (Socrates, Plato, Aristotle), theater, the Olympic Games, and the foundations of Western science and mathematics. The Parthenon was built in just 15 years. Alexander the Great conquered the largest empire the world had seen by age 30 — then died at 32, never having lost a battle.',
     knownFor: 'Philosophy, democracy, the Olympic Games, theater, mathematics, and classical architecture.',
+    keyFacts: ['Athens: birthplace of democracy (508 BCE)', 'Olympics: held every 4 years since 776 BCE', 'Alexander conquered from Greece to India by age 30', 'Aristotle tutored Alexander the Great'],
     imageUrl: 'https://images.unsplash.com/photo-1569770725012-58fac5eec229?w=640&q=80&fit=crop',
   },
   egypt: {
     summary: 'Built along the Nile River, ancient Egypt was one of the earliest and most enduring civilizations. Its pharaohs ruled for three millennia, leaving monuments that still stand today.',
+    detail: 'The Great Pyramid of Giza was the tallest structure on Earth for 3,800 years. Egyptian physicians performed surgery, set broken bones, and had specialized doctors 2,000 years before Hippocrates. They invented papyrus (the ancestor of paper), a 365-day calendar, and toothpaste. Cleopatra lived closer in time to the Moon landing than to the building of the pyramids.',
     knownFor: 'Pyramids, hieroglyphics, mummification, papyrus, advanced medicine, and monumental architecture.',
+    keyFacts: ['Great Pyramid: tallest structure for 3,800 years', 'Civilization lasted 3,000+ years', 'Invented the 365-day calendar', 'Cleopatra was Greek, not Egyptian'],
     imageUrl: 'https://images.unsplash.com/photo-1692986172150-ec32dccfa5f0?w=640&q=80&fit=crop',
   },
   mongolia: {
     summary: 'Nomadic steppe warriors who built the largest contiguous land empire in history under Genghis Khan. At its peak, the Mongol Empire stretched from Korea to Hungary.',
+    detail: 'In just 25 years, Genghis Khan conquered more territory than the Romans did in 400 years. The Mongol Empire at its peak covered 24 million km² — 16% of Earth\'s land. Despite their reputation for destruction, the Mongols established the Pax Mongolica, making the Silk Road safer for trade than ever before. An estimated 0.5% of all men alive today carry Genghis Khan\'s Y-chromosome.',
     knownFor: 'Horse warfare, the Silk Road\'s golden age, religious tolerance, and a postal relay system spanning continents.',
+    keyFacts: ['Largest contiguous land empire ever: 24M km²', 'Genghis Khan: ~16 million living descendants', 'Created the Yam postal relay (faster than Pony Express)', 'Killed an estimated 40 million people'],
     imageUrl: 'https://images.unsplash.com/photo-1600751267958-5bb0d08beb41?w=640&q=80&fit=crop',
   },
   ottoman: {
@@ -82,7 +98,9 @@ export const CIV_DESCRIPTIONS: Record<string, CivDescription> = {
   },
   japan: {
     summary: 'An island civilization that developed a unique culture in relative isolation. Samurai warriors, shoguns, and emperors shaped centuries of Japanese history before rapid modernization in the 1800s.',
+    detail: 'Japan\'s Jōmon people created the world\'s oldest pottery (14,000 BCE). The Tale of Genji (1010 CE) is considered the world\'s first novel. During the Edo period (1603-1868), Japan sealed itself from the world for 250 years, developing one of the most refined cultures in history. After opening in 1853, Japan industrialized so fast it defeated Russia — a European power — by 1905.',
     knownFor: 'Bushido, Zen Buddhism, woodblock printing, the samurai class, and the Meiji-era industrial transformation.',
+    keyFacts: ['World\'s oldest pottery: Jōmon (14,000 BCE)', 'Tale of Genji: world\'s first novel (1010 CE)', '250 years of isolation during Edo period', 'Industrialized from feudal to world power in 30 years'],
     imageUrl: 'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=640&q=80&fit=crop',
   },
   vikings: {
@@ -146,7 +164,7 @@ export const CIV_DESCRIPTIONS: Record<string, CivDescription> = {
  * Direct NAME-to-description mapping for territories that appear in GeoJSON
  * but aren't in CIV_ALIASES. Keyed by the exact properties.NAME string.
  */
-export const NAME_DESCRIPTIONS: Record<string, { summary: string; knownFor: string; imageUrl?: string }> = {
+export const NAME_DESCRIPTIONS: Record<string, { summary: string; detail?: string; knownFor: string; keyFacts?: string[]; imageUrl?: string }> = {
   // ── European kingdoms & states ──
   'Sweden': { summary: 'A Scandinavian kingdom that grew from Viking-era origins into a major Baltic power. During the 17th century under Gustavus Adolphus, Sweden controlled much of the Baltic and was one of Europe\'s great military powers. Swedish innovations in infantry tactics revolutionized warfare.', knownFor: 'Viking heritage, Baltic empire, military innovation, the Vasa warship, and ABBA.', imageUrl: 'https://images.unsplash.com/photo-1543139465-aa8dc66dc427?w=640&q=80&fit=crop' },
   'Portugal': { summary: 'A small Iberian kingdom that pioneered the Age of Exploration, establishing the first global maritime empire with colonies stretching from Brazil to Macau, Mozambique to Goa. Portuguese navigators opened sea routes that connected the world for the first time.', knownFor: 'Maritime navigation, Vasco da Gama\'s route to India, colonization of Brazil, and the spice trade.', imageUrl: 'https://images.unsplash.com/photo-1555881400-74d7acaacd8b?w=640&q=80&fit=crop' },
@@ -242,7 +260,7 @@ export const NAME_DESCRIPTIONS: Record<string, { summary: string; knownFor: stri
   'Indus valley civilization': { summary: 'One of the three earliest urban civilizations (alongside Mesopotamia and Egypt), flourishing in the Indus River valley from 3300-1300 BCE with remarkably advanced city planning.', knownFor: 'Grid-planned cities, indoor plumbing, standardized weights and measures, the Great Bath of Mohenjo-daro, and still-undeciphered script.' , imageUrl: 'https://images.unsplash.com/photo-1709659625397-3c8b9a5ecf29?w=640&q=80&fit=crop'},
   'Kerma': { summary: 'The earliest urban civilization in sub-Saharan Africa, based along the Nile in modern Sudan (2500-1500 BCE). Kerma was a powerful rival to Egyptian control of Nubia.', knownFor: 'Massive mudbrick temple (the Deffufa), elaborate burial practices, bronze-working, and resistance against Egyptian expansion.' , imageUrl: 'https://images.unsplash.com/photo-1764685761993-4bbb0cf4ba49?w=640&q=80&fit=crop'},
   'Saba': { summary: 'The biblical Kingdom of Sheba, located in modern-day Yemen. Saba controlled the lucrative incense trade routes that connected Arabia to the Mediterranean world.', knownFor: 'The Queen of Sheba legend, the Marib Dam (an ancient engineering marvel), frankincense trade, and monumental stone temples.' , imageUrl: 'https://images.unsplash.com/photo-1669607379505-baf0014408ce?w=640&q=80&fit=crop'},
-  'Jōmon': { summary: 'The prehistoric people of Japan who created some of the world\'s oldest pottery (dating to 14,000 BCE) and lived as hunter-gatherers in a remarkably stable culture for over 10,000 years.', knownFor: 'The world\'s earliest pottery, cord-marked ceramics, dogū figurines, and a sophisticated hunter-gatherer society that lasted millennia.' },
+  'Jōmon': { summary: 'The prehistoric people of Japan who created some of the world\'s oldest pottery (dating to 14,000 BCE) and lived as hunter-gatherers in a remarkably stable culture for over 10,000 years.', detail: 'The Jōmon were not primitive — they built permanent villages, developed sophisticated fishing technology, and created some of the most expressive prehistoric art in the world. Their dogū figurines (small clay figures with goggle eyes) are hauntingly beautiful and mysterious. DNA studies show modern Japanese people carry significant Jōmon ancestry, especially the Ainu people of northern Japan.', knownFor: 'The world\'s earliest pottery, cord-marked ceramics, dogū figurines, and a sophisticated hunter-gatherer society that lasted millennia.', keyFacts: ['World\'s oldest pottery: 14,000 BCE', 'Culture lasted over 10,000 years', 'Created mysterious dogū figurines', 'Ancestors of modern Ainu people'], imageUrl: 'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=640&q=80&fit=crop' },
   'Illyrians': { summary: 'Ancient peoples of the western Balkans who established tribal kingdoms along the Adriatic coast. They were known as fierce warriors and skilled sailors.', knownFor: 'Piracy and seafaring, distinctive hilltop fortifications, bronze weapons, and resistance against Roman expansion.' },
   'Hurrian Kingdoms': { summary: 'A people who established kingdoms across northern Mesopotamia and Anatolia, most notably the Mitanni Empire (1500-1300 BCE), which was a major power rivaling Egypt and the Hittites.', knownFor: 'The Mitanni Empire, horse training manuals (the oldest known), Hurrian hymns (earliest known music notation), and diplomatic marriages with Egypt.' },
   'Namazga': { summary: 'A Bronze Age civilization in Central Asia (modern Turkmenistan) with sophisticated urban centers that were contemporary with Mesopotamia and the Indus Valley.', knownFor: 'The city of Altyn-Depe, early bronze metallurgy, proto-urban planning, and trade connections to Mesopotamia and the Indus Valley.' },

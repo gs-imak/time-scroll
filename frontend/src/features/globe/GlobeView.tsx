@@ -835,6 +835,27 @@ export function GlobeView({ children }: GlobeViewProps) {
                         <p className="text-[12px] text-text-secondary leading-[1.65] mb-3">
                           {desc.summary}
                         </p>
+                        {desc.detail && (
+                          <p className="text-[12px] text-text-secondary leading-[1.65] mb-3">
+                            {desc.detail}
+                          </p>
+                        )}
+                        {desc.keyFacts && desc.keyFacts.length > 0 && (
+                          <div
+                            className="rounded-lg px-3 py-2.5 mb-3"
+                            style={{ background: `${civColor}08`, border: `1px solid ${civColor}15` }}
+                          >
+                            <p className="text-[10px] font-semibold text-text-muted uppercase tracking-wider mb-1.5">Key Facts</p>
+                            <ul className="flex flex-col gap-1">
+                              {desc.keyFacts.map((fact: string, i: number) => (
+                                <li key={i} className="text-[11px] text-text-secondary leading-[1.5] flex items-start gap-1.5">
+                                  <span style={{ color: civColor, fontSize: '8px', marginTop: '4px' }}>●</span>
+                                  {fact}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
                         <div
                           className="rounded-lg px-3 py-2.5 mb-4"
                           style={{ background: `${civColor}08`, border: `1px solid ${civColor}15` }}
