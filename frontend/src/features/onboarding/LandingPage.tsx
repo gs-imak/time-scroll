@@ -176,7 +176,7 @@ export default function LandingPage() {
       {!exiting ? (
         <motion.div
           key="landing"
-          className="fixed inset-0 z-50 flex flex-col items-center overflow-y-auto overflow-x-hidden"
+          className="fixed inset-0 z-50 flex flex-col items-center overflow-hidden"
           style={{
             background:
               'radial-gradient(ellipse 80% 50% at 50% 20%, var(--color-elevated) 0%, var(--color-surface) 30%, var(--color-void) 60%, var(--color-void) 100%)',
@@ -193,7 +193,7 @@ export default function LandingPage() {
           />
 
           <motion.div
-            className="relative z-10 flex flex-col items-center w-full max-w-5xl px-6 md:px-10 py-16 sm:py-14 md:py-10 my-auto min-h-0"
+            className="relative z-10 flex flex-col items-center w-full max-w-5xl px-6 md:px-10 py-6 sm:py-4 md:py-3 my-auto min-h-0"
             variants={stagger.container}
             initial="initial"
             animate="animate"
@@ -210,7 +210,7 @@ export default function LandingPage() {
               <span
                 className="block font-bold text-text-primary"
                 style={{
-                  fontSize: 'clamp(56px, 10vw, 128px)',
+                  fontSize: 'clamp(40px, 7vw, 90px)',
                   fontWeight: 700,
                 }}
               >
@@ -219,7 +219,7 @@ export default function LandingPage() {
               <span
                 className="block font-bold bg-clip-text text-transparent"
                 style={{
-                  fontSize: 'clamp(56px, 10vw, 128px)',
+                  fontSize: 'clamp(40px, 7vw, 90px)',
                   fontWeight: 700,
                   backgroundImage:
                     'linear-gradient(135deg, #c49a44 0%, #d4b06a 45%, #a07830 100%)',
@@ -230,9 +230,9 @@ export default function LandingPage() {
             </motion.h1>
 
             <motion.p
-              className="mt-6 text-center leading-relaxed max-w-lg"
+              className="mt-3 text-center leading-relaxed max-w-lg"
               style={{
-                fontSize: '18px',
+                fontSize: '16px',
                 color: 'var(--color-text-secondary)',
                 fontFamily: "'Space Grotesk', sans-serif",
                 fontWeight: 300,
@@ -247,13 +247,13 @@ export default function LandingPage() {
 
             {/* --- Feature highlights --- */}
             <motion.div
-              className="flex flex-wrap justify-center gap-3 mt-10"
+              className="flex flex-wrap justify-center gap-2 mt-5"
               variants={stagger.item}
             >
               {FEATURES.map((f, i) => (
                 <motion.div
                   key={f.label}
-                  className="flex items-center gap-3 px-5 py-3 rounded-xl"
+                  className="flex items-center gap-2.5 px-4 py-2.5 rounded-lg"
                   style={{
                     background: 'var(--glass-bg)',
                     border: '1px solid var(--color-border-subtle)',
@@ -299,11 +299,11 @@ export default function LandingPage() {
             </motion.div>
 
             {/* --- Era selector --- */}
-            <motion.div className="w-full mt-12" variants={stagger.item}>
+            <motion.div className="w-full mt-6" variants={stagger.item}>
               <p
-                className="text-center uppercase tracking-[0.2em] font-medium mb-6"
+                className="text-center uppercase tracking-[0.2em] font-medium mb-3"
                 style={{
-                  fontSize: '13px',
+                  fontSize: '11px',
                   color: 'var(--color-text-muted)',
                   fontFamily: "'JetBrains Mono', monospace",
                 }}
@@ -311,7 +311,7 @@ export default function LandingPage() {
                 Choose your starting era
               </p>
 
-              <div className="flex flex-wrap justify-center gap-3">
+              <div className="flex flex-wrap justify-center gap-2">
                 {ERAS.map((era, i) => {
                   const isSelected = selectedEra === era.id;
                   const color = ERA_COLORS[era.id] ?? '#5a9aaa';
@@ -324,15 +324,15 @@ export default function LandingPage() {
                         setSelectedEra(era.id === selectedEra ? null : era.id)
                       }
                       className={cn(
-                        'group relative flex flex-col items-start text-left rounded-xl cursor-pointer transition-all duration-300',
-                        'px-5 py-4',
+                        'group relative flex flex-col items-start text-left rounded-lg cursor-pointer transition-all duration-300',
+                        'px-4 py-3',
                         'border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-void',
                         isSelected
                           ? 'border-transparent'
                           : 'border-white/[0.07] hover:border-white/[0.14]',
                       )}
                       style={{
-                        minWidth: '140px',
+                        minWidth: '120px',
                         ...(isSelected
                           ? {
                               background: `${color}18`,
@@ -352,7 +352,7 @@ export default function LandingPage() {
                       aria-label={`${era.name}, ${formatYear(era.startYear)} to ${formatYear(era.endYear)}`}
                     >
                       <div
-                        className="w-10 h-[3px] rounded-full mb-3 transition-all duration-300"
+                        className="w-8 h-[2px] rounded-full mb-2 transition-all duration-300"
                         style={{
                           background: isSelected ? color : `${color}60`,
                           boxShadow: isSelected ? `0 0 10px ${color}70` : 'none',
@@ -367,7 +367,7 @@ export default function LandingPage() {
                             : 'text-text-secondary group-hover:text-text-primary',
                         )}
                         style={{
-                          fontSize: '15px',
+                          fontSize: '13px',
                           fontWeight: 500,
                           fontFamily: "'Space Grotesk', sans-serif",
                           ...(isSelected ? { color } : {}),
@@ -377,9 +377,9 @@ export default function LandingPage() {
                       </span>
 
                       <span
-                        className="mt-1.5 tracking-wider"
+                        className="mt-1 tracking-wider"
                         style={{
-                          fontSize: '12px',
+                          fontSize: '10px',
                           color: isSelected ? `${color}aa` : '#55556a',
                           fontFamily: "'JetBrains Mono', monospace",
                         }}
@@ -414,7 +414,7 @@ export default function LandingPage() {
 
             {/* --- CTA --- */}
             <motion.div
-              className="mt-12 flex flex-col items-center"
+              className="mt-6 flex flex-col items-center"
               variants={stagger.item}
             >
               <div className="relative">
@@ -434,12 +434,12 @@ export default function LandingPage() {
                   onClick={handleExplore}
                   className={cn(
                     'relative inline-flex items-center justify-center gap-3',
-                    'h-[52px] px-7 rounded-xl font-semibold cursor-pointer',
+                    'h-[46px] px-6 rounded-xl font-semibold cursor-pointer',
                     'transition-all duration-200',
                     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-void',
                   )}
                   style={{
-                    fontSize: '16px',
+                    fontSize: '14px',
                     fontFamily: "'Space Grotesk', sans-serif",
                     background: 'linear-gradient(135deg, #c49a44 0%, #a07830 100%)',
                     color: '#08080c',
@@ -457,7 +457,7 @@ export default function LandingPage() {
               </div>
 
               <p
-                className="mt-5 uppercase tracking-[0.25em]"
+                className="mt-3 uppercase tracking-[0.25em]"
                 style={{
                   fontSize: '11px',
                   color: 'var(--color-text-muted)',
