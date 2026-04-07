@@ -1,18 +1,15 @@
 import { useState, useEffect, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Globe, Scroll, Search, Trophy, Settings, Menu, X, LayoutDashboard, Clock, BookOpen, BrainCircuit, Sun, Moon } from 'lucide-react';
+import { Globe, Search, Settings, Menu, X, LayoutDashboard, Clock, BookOpen, BrainCircuit, Sun, Moon } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router';
 import { useUIStore } from '@/shared/stores/uiStore';
 import { useThemeStore } from '@/shared/stores/themeStore';
 import { cn } from '@/shared/utils/cn';
 import type { LucideIcon } from 'lucide-react';
 
-type Panel = 'exploration' | 'events' | 'progress';
-
 interface NavItemConfig {
   icon: LucideIcon;
   label: string;
-  panel?: Panel;
   action?: () => void;
   tourId?: string;
 }
@@ -202,8 +199,6 @@ function ThemeToggle({ expanded, mobile }: { expanded: boolean; mobile?: boolean
 
 function DesktopSidebar() {
   const [expanded, setExpanded] = useState(false);
-  const activePanel = useUIStore(s => s.activePanel);
-  const togglePanel = useUIStore(s => s.togglePanel);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -219,15 +214,15 @@ function DesktopSidebar() {
   const goToQuiz = useCallback(() => { navigate('/quiz'); }, [navigate]);
   const handleSettings = useCallback(() => { console.info('[Time Scroll] Settings coming soon'); }, []);
 
+  const goToExplore = useCallback(() => { navigate('/explore'); }, [navigate]);
+
   const navItems: NavItemConfig[] = [
     { icon: LayoutDashboard, label: 'Dashboard', action: goToDashboard, tourId: 'dashboard' },
     { icon: Clock, label: 'Timeline', action: goToTimeline, tourId: 'timeline' },
+    { icon: Globe, label: 'Explore', action: goToExplore, tourId: 'explore' },
     { icon: BookOpen, label: 'Journeys', action: goToJourneys, tourId: 'journeys' },
     { icon: BrainCircuit, label: 'Quiz', action: goToQuiz, tourId: 'quiz' },
-    { icon: Globe, label: 'Explore', panel: 'exploration', tourId: 'explore' },
-    { icon: Scroll, label: 'Events', panel: 'events', tourId: 'events' },
     { icon: Search, label: 'Search', action: dispatchSearch, tourId: 'search' },
-    { icon: Trophy, label: 'Progress', panel: 'progress', tourId: 'progress' },
   ];
 
   const bottomItems: NavItemConfig[] = [
@@ -237,27 +232,18 @@ function DesktopSidebar() {
   function handleClick(item: NavItemConfig) {
     if (item.action) {
       item.action();
-    } else if (item.panel) {
-      if (!location.pathname.startsWith('/explore')) {
-        navigate('/explore');
-        setTimeout(() => togglePanel(item.panel!), 100);
-      } else {
-        togglePanel(item.panel);
-      }
     }
   }
 
   function isActive(item: NavItemConfig): boolean {
-    if (item.action && item.tourId) {
+    if (item.tourId) {
       const routeMap: Record<string, string> = {
         dashboard: '/dashboard', timeline: '/timeline',
-        journeys: '/journeys', civilizations: '/civilizations',
+        explore: '/explore', journeys: '/journeys',
+        quiz: '/quiz',
       };
       const route = routeMap[item.tourId];
       if (route) return location.pathname.startsWith(route);
-    }
-    if (item.panel) {
-      return location.pathname.startsWith('/explore') && activePanel === item.panel;
     }
     return false;
   }
@@ -343,8 +329,6 @@ function DesktopSidebar() {
 
 function MobileDrawer() {
   const [open, setOpen] = useState(false);
-  const activePanel = useUIStore(s => s.activePanel);
-  const togglePanel = useUIStore(s => s.togglePanel);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -358,17 +342,16 @@ function MobileDrawer() {
   const goToTimeline = useCallback(() => { navigate('/timeline'); }, [navigate]);
   const goToJourneys = useCallback(() => { navigate('/journeys'); }, [navigate]);
   const goToQuiz = useCallback(() => { navigate('/quiz'); }, [navigate]);
+  const goToExplore = useCallback(() => { navigate('/explore'); }, [navigate]);
   const handleSettings = useCallback(() => { console.info('[Time Scroll] Settings coming soon'); }, []);
 
   const navItems: NavItemConfig[] = [
     { icon: LayoutDashboard, label: 'Dashboard', action: goToDashboard },
     { icon: Clock, label: 'Timeline', action: goToTimeline },
+    { icon: Globe, label: 'Explore', action: goToExplore },
     { icon: BookOpen, label: 'Journeys', action: goToJourneys },
     { icon: BrainCircuit, label: 'Quiz', action: goToQuiz },
-    { icon: Globe, label: 'Explore', panel: 'exploration' },
-    { icon: Scroll, label: 'Events', panel: 'events' },
     { icon: Search, label: 'Search', action: dispatchSearch },
-    { icon: Trophy, label: 'Progress', panel: 'progress' },
   ];
 
   const bottomItems: NavItemConfig[] = [
@@ -378,29 +361,18 @@ function MobileDrawer() {
   function handleClick(item: NavItemConfig) {
     if (item.action) {
       item.action();
-    } else if (item.panel) {
-      if (!location.pathname.startsWith('/explore')) {
-        navigate('/explore');
-        setTimeout(() => togglePanel(item.panel!), 100);
-      } else {
-        togglePanel(item.panel);
-      }
     }
     setOpen(false);
   }
 
   function isActive(item: NavItemConfig): boolean {
-    if (item.action && item.label) {
-      const routeMap: Record<string, string> = {
-        Dashboard: '/dashboard', Timeline: '/timeline',
-        Journeys: '/journeys', Civilizations: '/civilizations',
-      };
-      const route = routeMap[item.label];
-      if (route) return location.pathname.startsWith(route);
-    }
-    if (item.panel) {
-      return location.pathname.startsWith('/explore') && activePanel === item.panel;
-    }
+    const routeMap: Record<string, string> = {
+      Dashboard: '/dashboard', Timeline: '/timeline',
+      Explore: '/explore', Journeys: '/journeys',
+      Quiz: '/quiz',
+    };
+    const route = routeMap[item.label];
+    if (route) return location.pathname.startsWith(route);
     return false;
   }
 
