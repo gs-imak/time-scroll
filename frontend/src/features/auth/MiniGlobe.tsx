@@ -135,12 +135,32 @@ export function MiniGlobe() {
       obj.setRotationFromQuaternion(quaternion);
       obj.scale.setScalar(1.8);
 
-      // Hide the glow disc (child 0) which causes most flickering
+      // Hide the glow disc (child 0) which causes flickering
       if (obj.children?.[0]) obj.children[0].visible = false;
+
+      // Subtle pulse on the ring (child 1) — makes markers feel alive
+      const ring = obj.children?.[1];
+      if (ring?.material) {
+        const t = (performance.now() / 1500 + d.latitude) % (Math.PI * 2);
+        ring.material.opacity = 0.5 + Math.sin(t) * 0.35;
+      }
     }
   }, []);
 
   const events = useMemo(() => SHOWCASE_EVENTS, []);
+
+  // Golden arc connections between related events — shows the app traces history across the globe
+  const arcs = useMemo(() => [
+    { startLat: 29.98, startLng: 31.13, endLat: 41.89, endLng: 12.49 },   // Pyramids → Colosseum
+    { startLat: 41.89, startLng: 12.49, endLat: 37.98, endLng: 23.73 },   // Colosseum → Athens
+    { startLat: 37.98, startLng: 23.73, endLat: 27.17, endLng: 78.04 },   // Athens → Taj Mahal
+    { startLat: 27.17, startLng: 78.04, endLat: 40.43, endLng: 116.57 },  // Taj Mahal → Great Wall
+    { startLat: 40.43, startLng: 116.57, endLat: 13.41, endLng: 103.87 }, // Great Wall → Angkor Wat
+    { startLat: 16.77, startLng: -3.01, endLat: 29.98, endLng: 31.13 },   // Mansa Musa → Pyramids
+    { startLat: 19.43, startLng: -99.13, endLat: -13.16, endLng: -72.55 },// Tenochtitlan → Machu Picchu
+    { startLat: 60.47, startLng: 10.74, endLat: 52.52, endLng: 13.38 },   // Vikings → Berlin
+    { startLat: 48.86, startLng: 2.29, endLat: 28.57, endLng: -80.65 },   // Eiffel → Moon Landing
+  ], []);
 
   const [polygons, setPolygons] = useState<object[]>([]);
   useEffect(() => {
@@ -198,6 +218,19 @@ export function MiniGlobe() {
           polygonAltitude={() => 0.006}
           polygonLabel={() => ''}
           polygonsTransitionDuration={0}
+
+          // Golden arc connections between events
+          arcsData={arcs}
+          arcStartLat={(d: any) => d.startLat}
+          arcStartLng={(d: any) => d.startLng}
+          arcEndLat={(d: any) => d.endLat}
+          arcEndLng={(d: any) => d.endLng}
+          arcColor={() => 'rgba(196, 154, 68, 0.3)'}
+          arcAltitude={0.12}
+          arcStroke={0.8}
+          arcDashLength={0.4}
+          arcDashGap={0.2}
+          arcDashAnimateTime={3000}
 
           // Event markers — large and visible
           customLayerData={events}
