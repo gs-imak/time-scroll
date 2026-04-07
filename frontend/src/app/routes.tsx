@@ -1,38 +1,92 @@
 import { createBrowserRouter } from 'react-router';
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, Component, type ReactNode } from 'react';
 import { AppLayout } from './AppLayout';
 
 /**
  * Lazy import with auto-retry on chunk load failure.
- * After a new deploy, old chunk filenames no longer exist on the CDN.
- * If the dynamic import fails, we reload the page once to get the
- * fresh HTML that points to the new chunk filenames.
+ * Uses a per-module key so each route gets its own retry chance,
+ * and clears the flag after 10 seconds so future failures also retry.
  */
-function lazyRetry(factory: () => Promise<any>) {
+function lazyRetry(factory: () => Promise<any>, name: string) {
   return lazy(() =>
     factory().catch(() => {
-      // Only reload once — use sessionStorage flag to prevent infinite loop
-      const key = 'chunk-retry';
+      const key = `chunk-retry-${name}`;
       if (!sessionStorage.getItem(key)) {
         sessionStorage.setItem(key, '1');
+        // Clear flag after 10s so future deploy failures also auto-retry
+        setTimeout(() => sessionStorage.removeItem(key), 10000);
         window.location.reload();
-        // Return a never-resolving promise to prevent React error during reload
         return new Promise(() => {});
       }
       sessionStorage.removeItem(key);
-      // If we already retried, surface the error
       return factory();
     }),
   );
 }
 
-const LandingPage = lazyRetry(() => import('@/features/onboarding/LandingPage'));
-const Dashboard = lazyRetry(() => import('@/features/dashboard/Dashboard'));
-const GlobeExplorer = lazyRetry(() => import('@/features/globe/GlobeExplorer'));
-const TimelineView = lazyRetry(() => import('@/features/timeline/TimelineView'));
-const JourneyBrowser = lazyRetry(() => import('@/features/journeys/JourneyBrowser'));
-const JourneyPlayer = lazyRetry(() => import('@/features/journeys/JourneyPlayer'));
-const QuizHub = lazyRetry(() => import('@/features/quiz/QuizHub'));
+/**
+ * Error boundary that catches chunk load failures and shows a
+ * friendly reload button instead of the ugly default error.
+ */
+class ChunkErrorBoundary extends Component<
+  { children: ReactNode },
+  { hasError: boolean }
+> {
+  constructor(props: { children: ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    if (
+      error.message?.includes('Failed to fetch dynamically imported module') ||
+      error.message?.includes('Loading chunk') ||
+      error.message?.includes('Loading CSS chunk')
+    ) {
+      return { hasError: true };
+    }
+    throw error;
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="flex flex-col items-center justify-center h-screen bg-void text-text-primary gap-4">
+          <p className="text-text-secondary text-[14px]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+            A new version is available
+          </p>
+          <button
+            onClick={() => {
+              // Clear all retry flags and reload
+              for (let i = 0; i < sessionStorage.length; i++) {
+                const key = sessionStorage.key(i);
+                if (key?.startsWith('chunk-retry-')) sessionStorage.removeItem(key);
+              }
+              window.location.reload();
+            }}
+            className="px-6 py-3 rounded-xl text-[14px] font-semibold cursor-pointer"
+            style={{
+              fontFamily: "'Space Grotesk', sans-serif",
+              background: 'linear-gradient(135deg, #c49a44 0%, #a07830 100%)',
+              color: '#08080c',
+            }}
+          >
+            Refresh to update
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+const LandingPage = lazyRetry(() => import('@/features/onboarding/LandingPage'), 'landing');
+const Dashboard = lazyRetry(() => import('@/features/dashboard/Dashboard'), 'dashboard');
+const GlobeExplorer = lazyRetry(() => import('@/features/globe/GlobeExplorer'), 'globe');
+const TimelineView = lazyRetry(() => import('@/features/timeline/TimelineView'), 'timeline');
+const JourneyBrowser = lazyRetry(() => import('@/features/journeys/JourneyBrowser'), 'journeys');
+const JourneyPlayer = lazyRetry(() => import('@/features/journeys/JourneyPlayer'), 'journey-player');
+const QuizHub = lazyRetry(() => import('@/features/quiz/QuizHub'), 'quiz');
 
 function Loading() {
   return (
@@ -42,66 +96,30 @@ function Loading() {
   );
 }
 
+function withBoundary(element: ReactNode) {
+  return (
+    <ChunkErrorBoundary>
+      <Suspense fallback={<Loading />}>
+        {element}
+      </Suspense>
+    </ChunkErrorBoundary>
+  );
+}
+
 export const router = createBrowserRouter([
   {
     path: '/',
-    element: (
-      <Suspense fallback={<Loading />}>
-        <LandingPage />
-      </Suspense>
-    ),
+    element: withBoundary(<LandingPage />),
   },
   {
     element: <AppLayout />,
     children: [
-      {
-        path: '/dashboard',
-        element: (
-          <Suspense fallback={<Loading />}>
-            <Dashboard />
-          </Suspense>
-        ),
-      },
-      {
-        path: '/timeline',
-        element: (
-          <Suspense fallback={<Loading />}>
-            <TimelineView />
-          </Suspense>
-        ),
-      },
-      {
-        path: '/explore/:year?/:locationId?',
-        element: (
-          <Suspense fallback={<Loading />}>
-            <GlobeExplorer />
-          </Suspense>
-        ),
-      },
-      {
-        path: '/journeys',
-        element: (
-          <Suspense fallback={<Loading />}>
-            <JourneyBrowser />
-          </Suspense>
-        ),
-      },
-      {
-        path: '/journeys/:journeyId',
-        element: (
-          <Suspense fallback={<Loading />}>
-            <JourneyPlayer />
-          </Suspense>
-        ),
-      },
-      {
-        path: '/quiz',
-        element: (
-          <Suspense fallback={<Loading />}>
-            <QuizHub />
-          </Suspense>
-        ),
-      },
+      { path: '/dashboard', element: withBoundary(<Dashboard />) },
+      { path: '/timeline', element: withBoundary(<TimelineView />) },
+      { path: '/explore/:year?/:locationId?', element: withBoundary(<GlobeExplorer />) },
+      { path: '/journeys', element: withBoundary(<JourneyBrowser />) },
+      { path: '/journeys/:journeyId', element: withBoundary(<JourneyPlayer />) },
+      { path: '/quiz', element: withBoundary(<QuizHub />) },
     ],
   },
 ]);
