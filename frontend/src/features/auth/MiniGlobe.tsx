@@ -3,35 +3,44 @@ import Globe, { type GlobeMethods } from 'react-globe.gl';
 import * as THREE from 'three';
 import { createEventMarker, CATEGORY_COLORS } from '@/features/globe/eventMarkers';
 import { formatYear } from '@/shared/utils/format';
+import { motion } from 'framer-motion';
+import { MousePointer2 } from 'lucide-react';
 
-/**
- * Interactive globe for the login page — shows the Earth with a curated
- * selection of historical event markers to represent the app's content.
- */
-
-// Curated events spread across the globe — iconic moments that make users curious
+// Curated events spread across the globe
 const SHOWCASE_EVENTS = [
-  { id: 'great-pyramid', title: 'Great Pyramid', year: -2560, category: 'construction', latitude: 29.98, longitude: 31.13 },
+  { id: 'great-pyramid', title: 'Great Pyramid of Giza', year: -2560, category: 'construction', latitude: 29.98, longitude: 31.13 },
   { id: 'colosseum', title: 'Colosseum', year: 80, category: 'construction', latitude: 41.89, longitude: 12.49 },
-  { id: 'great-wall-begin', title: 'Great Wall', year: -221, category: 'construction', latitude: 40.43, longitude: 116.57 },
+  { id: 'great-wall-begin', title: 'Great Wall of China', year: -221, category: 'construction', latitude: 40.43, longitude: 116.57 },
   { id: 'machu-picchu', title: 'Machu Picchu', year: 1450, category: 'construction', latitude: -13.16, longitude: -72.55 },
   { id: 'angkor-wat', title: 'Angkor Wat', year: 1150, category: 'construction', latitude: 13.41, longitude: 103.87 },
   { id: 'taj-mahal', title: 'Taj Mahal', year: 1632, category: 'construction', latitude: 27.17, longitude: 78.04 },
   { id: 'eiffel-tower', title: 'Eiffel Tower', year: 1889, category: 'construction', latitude: 48.86, longitude: 2.29 },
   { id: 'moon-landing', title: 'Moon Landing', year: 1969, category: 'discovery', latitude: 28.57, longitude: -80.65 },
   { id: 'democracy-athens', title: 'Birth of Democracy', year: -508, category: 'political', latitude: 37.98, longitude: 23.73 },
-  { id: 'genghis-khan', title: 'Mongol Empire', year: 1206, category: 'war', latitude: 47.92, longitude: 106.92 },
+  { id: 'genghis-khan', title: 'Mongol Empire Founded', year: 1206, category: 'war', latitude: 47.92, longitude: 106.92 },
   { id: 'viking-expansion', title: 'Viking Expansion', year: 793, category: 'war', latitude: 60.47, longitude: 10.74 },
-  { id: 'silk-road', title: 'Silk Road', year: -130, category: 'discovery', latitude: 39.47, longitude: 75.99 },
-  { id: 'mansa-musa', title: 'Mansa Musa', year: 1324, category: 'cultural', latitude: 16.77, longitude: -3.01 },
-  { id: 'aztec-tenochtitlan', title: 'Tenochtitlan', year: 1325, category: 'construction', latitude: 19.43, longitude: -99.13 },
-  { id: 'berlin-wall', title: 'Berlin Wall', year: 1989, category: 'political', latitude: 52.52, longitude: 13.38 },
+  { id: 'silk-road', title: 'Silk Road Established', year: -130, category: 'discovery', latitude: 39.47, longitude: 75.99 },
+  { id: 'mansa-musa', title: 'Mansa Musa\'s Pilgrimage', year: 1324, category: 'cultural', latitude: 16.77, longitude: -3.01 },
+  { id: 'aztec-tenochtitlan', title: 'Tenochtitlan Founded', year: 1325, category: 'construction', latitude: 19.43, longitude: -99.13 },
+  { id: 'berlin-wall', title: 'Fall of the Berlin Wall', year: 1989, category: 'political', latitude: 52.52, longitude: 13.38 },
 ];
+
+const FEATURED_CIVS = new Set([
+  'Mongol Empire', 'Byzantine Empire', 'Song Empire', 'Mali', 'Angevin Empire',
+]);
+const FEATURED_COLORS: Record<string, string> = {
+  'Mongol Empire': '#b85454',
+  'Byzantine Empire': '#8b6faa',
+  'Song Empire': '#5a9aaa',
+  'Mali': '#c49a44',
+  'Angevin Empire': '#5a7fb5',
+};
 
 export function MiniGlobe() {
   const globeRef = useRef<GlobeMethods | undefined>(undefined);
   const containerRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+  const [interacted, setInteracted] = useState(false);
 
   useEffect(() => {
     const updateSize = () => {
@@ -49,15 +58,40 @@ export function MiniGlobe() {
 
   const onReady = useCallback(() => {
     if (!globeRef.current) return;
-    globeRef.current.pointOfView({ lat: 25, lng: 30, altitude: 2.0 }, 0);
+    // Closer view so territories and markers are more visible
+    globeRef.current.pointOfView({ lat: 25, lng: 30, altitude: 1.6 }, 0);
 
     const controls = globeRef.current.controls();
     if (controls) {
       controls.autoRotate = true;
-      controls.autoRotateSpeed = 0.5;
+      controls.autoRotateSpeed = 0.4;
       controls.enableDamping = true;
       controls.dampingFactor = 0.1;
       controls.enableZoom = false;
+    }
+
+    // Add cloud layer for visual richness
+    const scene = globeRef.current.scene();
+    if (scene) {
+      const cloudTexture = new THREE.TextureLoader().load('/assets/images/earth-clouds.png');
+      cloudTexture.anisotropy = 4;
+      const cloudGeo = new THREE.SphereGeometry(101.2, 64, 32);
+      const cloudMat = new THREE.MeshPhongMaterial({
+        map: cloudTexture,
+        transparent: true,
+        opacity: 0.18,
+        depthWrite: false,
+        side: THREE.FrontSide,
+      });
+      const cloudMesh = new THREE.Mesh(cloudGeo, cloudMat);
+      cloudMesh.name = 'loginCloudLayer';
+      scene.add(cloudMesh);
+
+      const animateClouds = () => {
+        cloudMesh.rotation.y += 0.00004;
+        requestAnimationFrame(animateClouds);
+      };
+      animateClouds();
     }
   }, []);
 
@@ -82,23 +116,11 @@ export function MiniGlobe() {
         up,
       );
       obj.setRotationFromQuaternion(quaternion);
-      obj.scale.setScalar(1.3); // Bigger for visibility on login
+      obj.scale.setScalar(2.0); // Large and prominent
     }
   }, []);
 
   const events = useMemo(() => SHOWCASE_EVENTS, []);
-
-  // Show only 5 hand-picked civilizations — no overlap, no flickering
-  const FEATURED_CIVS = new Set([
-    'Mongol Empire', 'Byzantine Empire', 'Song Empire', 'Mali', 'Angevin Empire',
-  ]);
-  const FEATURED_COLORS: Record<string, string> = {
-    'Mongol Empire': '#b85454',
-    'Byzantine Empire': '#8b6faa',
-    'Song Empire': '#5a9aaa',
-    'Mali': '#c49a44',
-    'Angevin Empire': '#5a7fb5',
-  };
 
   const [polygons, setPolygons] = useState<object[]>([]);
   useEffect(() => {
@@ -114,7 +136,12 @@ export function MiniGlobe() {
   }, []);
 
   return (
-    <div ref={containerRef} className="absolute inset-0">
+    <div
+      ref={containerRef}
+      className="absolute inset-0"
+      onMouseDown={() => setInteracted(true)}
+      onTouchStart={() => setInteracted(true)}
+    >
       {dimensions.width > 0 && (
         <Globe
           ref={globeRef}
@@ -125,10 +152,10 @@ export function MiniGlobe() {
           bumpImageUrl="/assets/images/earth-bump-8k.png"
           backgroundImageUrl="//unpkg.com/three-globe/example/img/night-sky.png"
           atmosphereColor="#6db3f2"
-          atmosphereAltitude={0.18}
+          atmosphereAltitude={0.25}
           showAtmosphere={true}
 
-          // 5 featured territory borders — clean, no overlap
+          // 5 featured territories
           polygonsData={polygons}
           polygonGeoJsonGeometry={(d: any) => d.geometry}
           polygonCapColor={(d: any) => {
@@ -137,7 +164,7 @@ export function MiniGlobe() {
             const r = parseInt(hex.slice(1, 3), 16);
             const g = parseInt(hex.slice(3, 5), 16);
             const b = parseInt(hex.slice(5, 7), 16);
-            return `rgba(${r}, ${g}, ${b}, 0.18)`;
+            return `rgba(${r}, ${g}, ${b}, 0.22)`;
           }}
           polygonSideColor={() => 'rgba(0,0,0,0)'}
           polygonStrokeColor={(d: any) => {
@@ -146,24 +173,50 @@ export function MiniGlobe() {
             const r = Math.min(255, parseInt(hex.slice(1, 3), 16) + 60);
             const g = Math.min(255, parseInt(hex.slice(3, 5), 16) + 60);
             const b = Math.min(255, parseInt(hex.slice(5, 7), 16) + 60);
-            return `rgba(${r}, ${g}, ${b}, 0.8)`;
+            return `rgba(${r}, ${g}, ${b}, 0.85)`;
           }}
           polygonAltitude={() => 0.006}
           polygonLabel={() => ''}
           polygonsTransitionDuration={0}
 
-          // Event markers
+          // Event markers — large and visible
           customLayerData={events}
           customThreeObject={createMarker}
           customThreeObjectUpdate={updateMarkerPosition}
           customLayerLabel={(d: any) => {
             const c = CATEGORY_COLORS[d.category] ?? '#8a8a9a';
-            return `<div style="background:rgba(14,14,20,0.9);backdrop-filter:blur(16px);border:1px solid ${c}40;border-radius:8px;padding:8px 12px;font-family:'Space Grotesk',sans-serif;">
-              <div style="font-size:13px;font-weight:600;color:#e0e0e6;">${d.title}</div>
-              <div style="font-size:10px;color:${c};margin-top:2px;">${formatYear(d.year)}</div>
+            return `<div style="background:rgba(10,10,16,0.92);backdrop-filter:blur(20px);border:1.5px solid ${c}50;border-radius:10px;padding:10px 14px;font-family:'Space Grotesk',sans-serif;box-shadow:0 4px 20px rgba(0,0,0,0.5);min-width:140px;">
+              <div style="font-size:14px;font-weight:700;color:#e0e0e6;margin-bottom:2px;">${d.title}</div>
+              <div style="font-size:10px;font-weight:500;color:${c};">${formatYear(d.year)} · ${d.category}</div>
             </div>`;
           }}
         />
+      )}
+
+      {/* "Drag to explore" hint — fades out after first interaction */}
+      {!interacted && (
+        <motion.div
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-2 px-4 py-2.5 rounded-full pointer-events-none"
+          style={{
+            background: 'rgba(0, 0, 0, 0.5)',
+            backdropFilter: 'blur(12px)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+          }}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0 }}
+          transition={{ delay: 1.5, duration: 0.5 }}
+        >
+          <motion.div
+            animate={{ x: [0, 8, 0] }}
+            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+          >
+            <MousePointer2 size={14} style={{ color: 'rgba(255,255,255,0.6)' }} />
+          </motion.div>
+          <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)', fontFamily: "'Space Grotesk', sans-serif", fontWeight: 500 }}>
+            Drag to explore
+          </span>
+        </motion.div>
       )}
     </div>
   );
