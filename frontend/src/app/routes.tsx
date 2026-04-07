@@ -81,6 +81,7 @@ class ChunkErrorBoundary extends Component<
 }
 
 const LandingPage = lazyRetry(() => import('@/features/onboarding/LandingPage'), 'landing');
+const LoginPage = lazyRetry(() => import('@/features/auth/LoginPage'), 'login');
 const Dashboard = lazyRetry(() => import('@/features/dashboard/Dashboard'), 'dashboard');
 const GlobeExplorer = lazyRetry(() => import('@/features/globe/GlobeExplorer'), 'globe');
 const TimelineView = lazyRetry(() => import('@/features/timeline/TimelineView'), 'timeline');
@@ -110,6 +111,10 @@ export const router = createBrowserRouter([
   {
     path: '/',
     element: withBoundary(<LandingPage />),
+  },
+  {
+    path: '/login',
+    element: withBoundary(<LoginPage />),
   },
   {
     element: <AppLayout />,

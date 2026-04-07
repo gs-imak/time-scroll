@@ -468,6 +468,16 @@ export default function LandingPage() {
                   ? `Starting from ${formatYear(selectedEraData.startYear)}`
                   : 'Starting from 3000 BCE'}
               </p>
+
+              <p className="mt-4 text-[13px] text-text-muted">
+                Already have an account?{' '}
+                <button
+                  onClick={() => navigate('/login')}
+                  className="text-accent-gold hover:underline cursor-pointer font-medium"
+                >
+                  Sign in
+                </button>
+              </p>
             </motion.div>
           </motion.div>
         </motion.div>
