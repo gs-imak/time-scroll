@@ -52,7 +52,7 @@ export function SpotlightOverlay() {
   const currentYear = useTimeStore(s => s.currentYear);
   const currentEra = ERAS.find(e => currentYear >= e.startYear && currentYear < e.endYear);
 
-  const [contextExpanded, setContextExpanded] = useState(false);
+  const [contextExpanded, setContextExpanded] = useState(true);
 
   const cycleSpeed = useCallback(() => {
     const idx = SPEED_OPTIONS.indexOf(playSpeed);
@@ -87,10 +87,10 @@ export function SpotlightOverlay() {
     return getSpotlightContext(civId, fromYear, toYear);
   }, [civId, snapshotYears, currentSnapshotIndex]);
 
-  // Collapse when snapshot changes
+  // Re-expand when new context events appear at a new snapshot
   useEffect(() => {
-    setContextExpanded(false);
-  }, [currentSnapshotIndex]);
+    if (contextEvents.length > 0) setContextExpanded(true);
+  }, [currentSnapshotIndex, contextEvents.length]);
 
   const color = civColor || '#c49a44';
   const isFirst = currentSnapshotIndex === 0;
@@ -138,90 +138,108 @@ export function SpotlightOverlay() {
               <motion.div
                 key={`ctx-${currentSnapshotIndex}`}
                 className="fixed top-20 left-4 z-40 lg:left-[80px]"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.35, ease: EASE }}
+                initial={{ opacity: 0, x: -30, scale: 0.95 }}
+                animate={{ opacity: 1, x: 0, scale: 1 }}
+                exit={{ opacity: 0, x: -30, scale: 0.95 }}
+                transition={{ duration: 0.4, ease: EASE }}
               >
-                {/* Collapsed pill */}
-                <motion.button
-                  onClick={() => setContextExpanded(!contextExpanded)}
-                  className="flex items-center gap-2 px-3 py-2 rounded-xl cursor-pointer"
+                <div
+                  className="rounded-2xl overflow-hidden"
                   style={{
                     background: 'var(--glass-strong-bg)',
-                    backdropFilter: 'blur(16px)',
-                    border: `1px solid ${color}30`,
-                    boxShadow: `0 2px 12px var(--glass-shadow)`,
+                    backdropFilter: 'blur(24px)',
+                    border: `1.5px solid ${color}30`,
+                    boxShadow: `0 0 30px ${color}15, 0 8px 32px var(--glass-shadow-strong)`,
+                    width: 360,
                   }}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
                 >
-                  {(() => {
-                    const firstCat = contextEvents[0]?.category || 'cultural';
-                    const Icon = CATEGORY_ICONS[firstCat] || Compass;
-                    const catColor = CATEGORY_COLORS[firstCat] || color;
-                    return <Icon size={14} style={{ color: catColor }} />;
-                  })()}
-                  <span className="text-[11px] font-medium text-text-secondary">
-                    {contextEvents.length} event{contextEvents.length > 1 ? 's' : ''}
-                  </span>
-                  <motion.span
-                    animate={{ rotate: contextExpanded ? 180 : 0 }}
-                    transition={{ duration: 0.2 }}
+                  {/* Header with collapse toggle */}
+                  <button
+                    onClick={() => setContextExpanded(!contextExpanded)}
+                    className="w-full flex items-center justify-between px-5 py-3 cursor-pointer"
+                    style={{ borderBottom: contextExpanded ? `1px solid ${color}15` : 'none' }}
                   >
-                    <ChevronDown size={12} className="text-text-muted" />
-                  </motion.span>
-                </motion.button>
-
-                {/* Expanded event list */}
-                <AnimatePresence>
-                  {contextExpanded && (
-                    <motion.div
-                      className="mt-2 rounded-xl overflow-hidden"
-                      style={{
-                        background: 'var(--glass-strong-bg)',
-                        backdropFilter: 'blur(20px)',
-                        border: `1px solid ${color}20`,
-                        boxShadow: `0 4px 24px var(--glass-shadow)`,
-                        maxWidth: 320,
-                      }}
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
-                      transition={{ duration: 0.3, ease: EASE }}
-                    >
-                      <div className="p-3 flex flex-col gap-2.5">
-                        {contextEvents.map((ev, i) => {
-                          const Icon = CATEGORY_ICONS[ev.category] || Compass;
-                          const catColor = CATEGORY_COLORS[ev.category] || '#8a8a9a';
-                          return (
-                            <div key={i} className="flex gap-2.5">
-                              <div
-                                className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5"
-                                style={{ background: `${catColor}15`, border: `1px solid ${catColor}25` }}
-                              >
-                                <Icon size={13} style={{ color: catColor }} />
-                              </div>
-                              <div className="min-w-0">
-                                <div className="flex items-center gap-2">
-                                  <span className="text-[12px] font-semibold text-text-primary truncate">
-                                    {ev.title}
-                                  </span>
-                                </div>
-                                <span className="text-[10px] font-mono text-text-muted">
-                                  {formatYear(ev.year)}
-                                </span>
-                                <p className="text-[11px] text-text-secondary leading-[1.5] mt-0.5">
-                                  {ev.description}
-                                </p>
-                              </div>
-                            </div>
-                          );
-                        })}
+                    <div className="flex items-center gap-3">
+                      {(() => {
+                        const firstCat = contextEvents[0]?.category || 'cultural';
+                        const Icon = CATEGORY_ICONS[firstCat] || Compass;
+                        const catColor = CATEGORY_COLORS[firstCat] || color;
+                        return (
+                          <div
+                            className="w-8 h-8 rounded-lg flex items-center justify-center"
+                            style={{ background: `${catColor}20`, border: `1px solid ${catColor}30` }}
+                          >
+                            <Icon size={16} style={{ color: catColor }} />
+                          </div>
+                        );
+                      })()}
+                      <div className="text-left">
+                        <span className="text-[13px] font-bold text-text-primary block">
+                          {contextEvents.length === 1
+                            ? contextEvents[0]!.title
+                            : `${contextEvents.length} Key Events`}
+                        </span>
+                        <span className="text-[10px] font-mono text-text-muted">
+                          {contextEvents.length === 1
+                            ? formatYear(contextEvents[0]!.year)
+                            : `${formatYear(contextEvents[0]!.year)} — ${formatYear(contextEvents[contextEvents.length - 1]!.year)}`}
+                        </span>
                       </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                    </div>
+                    <motion.span
+                      animate={{ rotate: contextExpanded ? 180 : 0 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <ChevronDown size={14} className="text-text-muted" />
+                    </motion.span>
+                  </button>
+
+                  {/* Event details */}
+                  <AnimatePresence>
+                    {contextExpanded && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.3, ease: EASE }}
+                        className="overflow-hidden"
+                      >
+                        <div className="px-5 py-4 flex flex-col gap-4">
+                          {contextEvents.map((ev, i) => {
+                            const Icon = CATEGORY_ICONS[ev.category] || Compass;
+                            const catColor = CATEGORY_COLORS[ev.category] || '#8a8a9a';
+                            return (
+                              <div key={i} className="flex gap-3">
+                                <div
+                                  className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
+                                  style={{ background: `${catColor}18`, border: `1px solid ${catColor}25` }}
+                                >
+                                  <Icon size={16} style={{ color: catColor }} />
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <div className="flex items-center gap-2 mb-0.5">
+                                    <span className="text-[13px] font-semibold text-text-primary">
+                                      {ev.title}
+                                    </span>
+                                  </div>
+                                  <span
+                                    className="text-[10px] font-mono inline-block px-1.5 py-0.5 rounded mb-1.5"
+                                    style={{ background: `${catColor}15`, color: catColor }}
+                                  >
+                                    {formatYear(ev.year)} · {ev.category}
+                                  </span>
+                                  <p className="text-[12px] text-text-secondary leading-[1.6]">
+                                    {ev.description}
+                                  </p>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
