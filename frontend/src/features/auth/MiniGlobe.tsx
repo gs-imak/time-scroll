@@ -88,25 +88,29 @@ export function MiniGlobe() {
 
   const events = useMemo(() => SHOWCASE_EVENTS, []);
 
-  // Load boundary polygons for a visually rich era (year 1200)
+  // Show only 5 hand-picked civilizations — no overlap, no flickering
+  const FEATURED_CIVS = new Set([
+    'Mongol Empire', 'Byzantine Empire', 'Song Empire', 'Mali', 'Angevin Empire',
+  ]);
+  const FEATURED_COLORS: Record<string, string> = {
+    'Mongol Empire': '#b85454',
+    'Byzantine Empire': '#8b6faa',
+    'Song Empire': '#5a9aaa',
+    'Mali': '#c49a44',
+    'Angevin Empire': '#5a7fb5',
+  };
+
   const [polygons, setPolygons] = useState<object[]>([]);
   useEffect(() => {
     fetch('/assets/geo/world_1200.geojson')
       .then(r => r.json())
-      .then(data => setPolygons(data.features || []))
+      .then(data => {
+        const filtered = (data.features || []).filter(
+          (f: any) => FEATURED_CIVS.has(f.properties?.NAME)
+        );
+        setPolygons(filtered);
+      })
       .catch(() => {});
-  }, []);
-
-  // Deterministic color per civilization name
-  const CIV_PALETTE = [
-    '#c49a44', '#b85454', '#5a8fa5', '#6d9476', '#8b80b0',
-    '#b87a60', '#7a9e5a', '#5a7fb5', '#d4a054', '#8b6faa',
-  ];
-  const getCivColor = useCallback((name: string | undefined) => {
-    if (!name || name === '?') return '#555566';
-    let hash = 0;
-    for (let i = 0; i < name.length; i++) hash = ((hash << 5) - hash + name.charCodeAt(i)) | 0;
-    return CIV_PALETTE[Math.abs(hash) % CIV_PALETTE.length]!;
   }, []);
 
   return (
@@ -124,32 +128,27 @@ export function MiniGlobe() {
           atmosphereAltitude={0.18}
           showAtmosphere={true}
 
-          // Territory borders
+          // 5 featured territory borders — clean, no overlap
           polygonsData={polygons}
           polygonGeoJsonGeometry={(d: any) => d.geometry}
           polygonCapColor={(d: any) => {
             const name = d.properties?.NAME;
-            if (!name || name === '?') return 'rgba(40, 40, 50, 0.02)';
-            const hex = getCivColor(name);
+            const hex = FEATURED_COLORS[name] || '#555566';
             const r = parseInt(hex.slice(1, 3), 16);
             const g = parseInt(hex.slice(3, 5), 16);
             const b = parseInt(hex.slice(5, 7), 16);
-            return `rgba(${r}, ${g}, ${b}, 0.2)`;
+            return `rgba(${r}, ${g}, ${b}, 0.18)`;
           }}
           polygonSideColor={() => 'rgba(0,0,0,0)'}
           polygonStrokeColor={(d: any) => {
             const name = d.properties?.NAME;
-            if (!name || name === '?') return 'rgba(60, 60, 70, 0.1)';
-            const hex = getCivColor(name);
-            const r = Math.min(255, parseInt(hex.slice(1, 3), 16) + 50);
-            const g = Math.min(255, parseInt(hex.slice(3, 5), 16) + 50);
-            const b = Math.min(255, parseInt(hex.slice(5, 7), 16) + 50);
-            return `rgba(${r}, ${g}, ${b}, 0.7)`;
+            const hex = FEATURED_COLORS[name] || '#555566';
+            const r = Math.min(255, parseInt(hex.slice(1, 3), 16) + 60);
+            const g = Math.min(255, parseInt(hex.slice(3, 5), 16) + 60);
+            const b = Math.min(255, parseInt(hex.slice(5, 7), 16) + 60);
+            return `rgba(${r}, ${g}, ${b}, 0.8)`;
           }}
-          polygonAltitude={(d: any) => {
-            const name = d.properties?.NAME;
-            return name && name !== '?' ? 0.008 : 0.001;
-          }}
+          polygonAltitude={() => 0.006}
           polygonLabel={() => ''}
           polygonsTransitionDuration={0}
 
