@@ -434,12 +434,12 @@ export default function LandingPage() {
                   onClick={handleExplore}
                   className={cn(
                     'relative inline-flex items-center justify-center gap-3',
-                    'h-[46px] px-6 rounded-xl font-semibold cursor-pointer',
+                    'h-[50px] px-7 rounded-xl font-semibold cursor-pointer',
                     'transition-all duration-200',
                     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-void',
                   )}
                   style={{
-                    fontSize: '14px',
+                    fontSize: '15px',
                     fontFamily: "'Space Grotesk', sans-serif",
                     background: 'linear-gradient(135deg, #c49a44 0%, #a07830 100%)',
                     color: '#08080c',
