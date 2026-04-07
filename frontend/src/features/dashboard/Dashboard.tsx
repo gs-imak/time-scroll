@@ -754,53 +754,6 @@ export default function Dashboard() {
           </motion.section>
         )}
 
-        {/* ── Achievements ── */}
-        <motion.section className="mb-12" {...section(0.6)}>
-          <SectionLabel>Achievements</SectionLabel>
-          <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-none">
-            {ACHIEVEMENTS.map((ach, i) => {
-              const unlocked = unlockedAchievements.includes(ach.id);
-              return (
-                <motion.div
-                  key={ach.id}
-                  className="flex-shrink-0 flex flex-col items-center gap-2"
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.4, delay: 0.7 + i * 0.05, ease: EASE }}
-                  title={`${ach.title}: ${ach.desc}`}
-                >
-                  <div
-                    className={cn(
-                      'flex items-center justify-center rounded-full transition-all duration-200',
-                      unlocked ? 'hover:scale-110' : 'grayscale opacity-30',
-                    )}
-                    style={{
-                      width: '56px',
-                      height: '56px',
-                      background: unlocked ? 'rgba(196, 154, 68, 0.15)' : 'rgba(255,255,255,0.04)',
-                      border: unlocked ? '1px solid rgba(196, 154, 68, 0.3)' : '1px solid rgba(255,255,255,0.06)',
-                      boxShadow: unlocked ? '0 0 16px rgba(196, 154, 68, 0.15)' : 'none',
-                      fontSize: '22px',
-                    }}
-                  >
-                    {ach.icon}
-                  </div>
-                  <span
-                    className="text-center max-w-[72px] truncate"
-                    style={{
-                      fontFamily: "'JetBrains Mono', monospace",
-                      fontSize: '10px',
-                      color: unlocked ? 'var(--color-text-secondary)' : 'var(--color-text-muted)',
-                    }}
-                  >
-                    {ach.title}
-                  </span>
-                </motion.div>
-              );
-            })}
-          </div>
-        </motion.section>
-
         {/* ── Quick Actions ── */}
         <motion.section className="pb-12" {...section(0.7)}>
           <SectionLabel>Quick Actions</SectionLabel>
