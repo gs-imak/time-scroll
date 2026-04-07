@@ -778,6 +778,8 @@ export function GlobeView({ children }: GlobeViewProps) {
                     border: `1.5px solid ${civColor}35`,
                     boxShadow: `0 0 30px ${civColor}15, 0 8px 32px var(--glass-shadow-strong)`,
                     width: 340,
+                    maxHeight: 'calc(100vh - 120px)',
+                    overflowY: 'auto',
                   }}
                 >
                   {/* Image */}
@@ -809,16 +811,16 @@ export function GlobeView({ children }: GlobeViewProps) {
                   )}
 
                   {/* Content */}
-                  <div className="px-5 pb-5" style={{ marginTop: desc?.imageUrl ? -8 : 16 }}>
+                  <div className="relative z-10 px-5 pb-5 pt-4">
                     {/* Header */}
                     <div className="flex items-center gap-2.5 mb-3">
                       <div
                         className="w-3 h-3 rounded-sm shrink-0"
                         style={{ background: civColor, boxShadow: `0 0 8px ${civColor}80` }}
                       />
-                      <div>
+                      <div className="min-w-0">
                         <h3
-                          className="text-[16px] font-bold leading-tight"
+                          className="text-[16px] font-bold leading-tight break-words"
                           style={{ color: civColor, fontFamily: "'Space Grotesk', sans-serif" }}
                         >
                           {selectedTerritory}
