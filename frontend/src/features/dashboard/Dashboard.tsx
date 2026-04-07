@@ -10,14 +10,12 @@ import { useEventsStore } from '@/shared/stores/eventsStore';
 import { ERAS } from '@/shared/utils/constants';
 import { EVENT_QUIZZES } from '@/shared/data/eventQuizzes';
 import { JOURNEYS } from '@/shared/data/journeys';
-import { getEventIllustrations } from '@/shared/data/civilizationAssets';
+
 import { cn } from '@/shared/utils/cn';
 
-/** Get the best available image for an event card — prefer local illustration, fallback to Wikimedia */
+/** Get the best available image for an event card */
 function getCardImage(event: { id: string; imageUrl?: string; category: string }): string | null {
-  const illust = getEventIllustrations(event.id);
-  if (illust) return illust.thumbnail; // Local WebP — reliable
-  return event.imageUrl ?? null; // Wikimedia — may break
+  return event.imageUrl ?? null;
 }
 
 const ERA_COLORS: Record<string, string> = {
@@ -476,11 +474,18 @@ export default function Dashboard() {
                       <div
                         className="w-full aspect-[16/10] relative overflow-hidden"
                         style={{
-                          background: getCardImage(event)
-                            ? `url(${getCardImage(event)}) center/cover`
-                            : `linear-gradient(135deg, ${catColor}30, ${catColor}10)`,
+                          background: `linear-gradient(135deg, ${catColor}30, ${catColor}10)`,
                         }}
                       >
+                        {getCardImage(event) && (
+                          <img
+                            src={getCardImage(event)!}
+                            alt=""
+                            loading="lazy"
+                            className="absolute inset-0 w-full h-full object-cover"
+                            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                          />
+                        )}
                         <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(14,14,20,0.9) 0%, transparent 60%)' }} />
                         <div
                           className="absolute top-3 left-3 w-2.5 h-2.5 rounded-full"
@@ -558,11 +563,18 @@ export default function Dashboard() {
                       <div
                         className="w-full aspect-[16/10] relative overflow-hidden"
                         style={{
-                          background: getCardImage(event)
-                            ? `url(${getCardImage(event)}) center/cover`
-                            : `linear-gradient(135deg, ${catColor}30, ${catColor}10)`,
+                          background: `linear-gradient(135deg, ${catColor}30, ${catColor}10)`,
                         }}
                       >
+                        {getCardImage(event) && (
+                          <img
+                            src={getCardImage(event)!}
+                            alt=""
+                            loading="lazy"
+                            className="absolute inset-0 w-full h-full object-cover"
+                            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                          />
+                        )}
                         <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(14,14,20,0.9) 0%, transparent 60%)' }} />
                         <div
                           className="absolute top-3 left-3 w-2.5 h-2.5 rounded-full"
