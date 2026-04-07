@@ -2,13 +2,37 @@ import { createBrowserRouter } from 'react-router';
 import { lazy, Suspense } from 'react';
 import { AppLayout } from './AppLayout';
 
-const LandingPage = lazy(() => import('@/features/onboarding/LandingPage'));
-const Dashboard = lazy(() => import('@/features/dashboard/Dashboard'));
-const GlobeExplorer = lazy(() => import('@/features/globe/GlobeExplorer'));
-const TimelineView = lazy(() => import('@/features/timeline/TimelineView'));
-const JourneyBrowser = lazy(() => import('@/features/journeys/JourneyBrowser'));
-const JourneyPlayer = lazy(() => import('@/features/journeys/JourneyPlayer'));
-const QuizHub = lazy(() => import('@/features/quiz/QuizHub'));
+/**
+ * Lazy import with auto-retry on chunk load failure.
+ * After a new deploy, old chunk filenames no longer exist on the CDN.
+ * If the dynamic import fails, we reload the page once to get the
+ * fresh HTML that points to the new chunk filenames.
+ */
+function lazyRetry(factory: () => Promise<any>) {
+  return lazy(() =>
+    factory().catch(() => {
+      // Only reload once — use sessionStorage flag to prevent infinite loop
+      const key = 'chunk-retry';
+      if (!sessionStorage.getItem(key)) {
+        sessionStorage.setItem(key, '1');
+        window.location.reload();
+        // Return a never-resolving promise to prevent React error during reload
+        return new Promise(() => {});
+      }
+      sessionStorage.removeItem(key);
+      // If we already retried, surface the error
+      return factory();
+    }),
+  );
+}
+
+const LandingPage = lazyRetry(() => import('@/features/onboarding/LandingPage'));
+const Dashboard = lazyRetry(() => import('@/features/dashboard/Dashboard'));
+const GlobeExplorer = lazyRetry(() => import('@/features/globe/GlobeExplorer'));
+const TimelineView = lazyRetry(() => import('@/features/timeline/TimelineView'));
+const JourneyBrowser = lazyRetry(() => import('@/features/journeys/JourneyBrowser'));
+const JourneyPlayer = lazyRetry(() => import('@/features/journeys/JourneyPlayer'));
+const QuizHub = lazyRetry(() => import('@/features/quiz/QuizHub'));
 
 function Loading() {
   return (
