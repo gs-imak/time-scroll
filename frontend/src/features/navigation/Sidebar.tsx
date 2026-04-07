@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Globe, Scroll, Search, Trophy, Settings, Menu, X, LayoutDashboard, Clock, BookOpen, BrainCircuit } from 'lucide-react';
+import { Globe, Scroll, Search, Trophy, Settings, Menu, X, LayoutDashboard, Clock, BookOpen, BrainCircuit, Sun, Moon } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router';
 import { useUIStore } from '@/shared/stores/uiStore';
+import { useThemeStore } from '@/shared/stores/themeStore';
 import { cn } from '@/shared/utils/cn';
 import type { LucideIcon } from 'lucide-react';
 
@@ -50,8 +51,8 @@ function NavItem({
           active
             ? 'text-text-primary'
             : 'text-text-secondary hover:text-text-primary',
-          hovered && !active && 'bg-[rgba(255,255,255,0.04)]',
-          active && 'bg-[rgba(255,255,255,0.04)]',
+          hovered && !active && 'bg-border-subtle',
+          active && 'bg-border-subtle',
         )}
         style={{ paddingLeft: 12, paddingRight: 12 }}
         aria-label={label}
@@ -61,8 +62,7 @@ function NavItem({
         {active && (
           <motion.span
             layoutId="sidebar-active-indicator"
-            className="absolute left-0 top-[10px] bottom-[10px] w-[3px] rounded-r-full"
-            style={{ background: '#c49a44' }}
+            className="absolute left-0 top-[10px] bottom-[10px] w-[3px] rounded-r-full bg-accent-gold"
             transition={{ type: 'spring', stiffness: 400, damping: 30 }}
           />
         )}
@@ -86,15 +86,7 @@ function NavItem({
 
       {!expanded && hovered && (
         <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 pointer-events-none z-50">
-          <div
-            className="rounded-lg px-3 py-1.5 text-[11px] font-medium whitespace-nowrap shadow-lg"
-            style={{
-              background: 'rgba(14, 14, 20, 0.95)',
-              backdropFilter: 'blur(12px)',
-              border: '1px solid rgba(255, 255, 255, 0.07)',
-              color: '#e0e0e6',
-            }}
-          >
+          <div className="glass-strong rounded-lg px-3 py-1.5 text-[11px] font-medium whitespace-nowrap text-text-primary">
             {label}
           </div>
         </div>
@@ -123,21 +115,88 @@ function MobileNavItem({
         'active:scale-[0.97]',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-void',
         active
-          ? 'text-text-primary bg-[rgba(255,255,255,0.04)]'
-          : 'text-text-secondary hover:text-text-primary hover:bg-[rgba(255,255,255,0.04)]',
+          ? 'text-text-primary bg-border-subtle'
+          : 'text-text-secondary hover:text-text-primary hover:bg-border-subtle',
       )}
       aria-label={label}
       aria-current={active ? 'page' : undefined}
     >
       {active && (
-        <span
-          className="absolute left-0 top-[10px] bottom-[10px] w-[3px] rounded-r-full"
-          style={{ background: '#c49a44' }}
-        />
+        <span className="absolute left-0 top-[10px] bottom-[10px] w-[3px] rounded-r-full bg-accent-gold" />
       )}
       <Icon size={20} className="shrink-0" />
       <span className="text-[14px] font-medium">{label}</span>
     </button>
+  );
+}
+
+function ThemeToggle({ expanded, mobile }: { expanded: boolean; mobile?: boolean }) {
+  const theme = useThemeStore(s => s.theme);
+  const toggleTheme = useThemeStore(s => s.toggleTheme);
+  const [hovered, setHovered] = useState(false);
+  const isDark = theme === 'dark';
+  const Icon = isDark ? Sun : Moon;
+
+  if (mobile) {
+    return (
+      <button
+        onClick={toggleTheme}
+        className={cn(
+          'relative flex items-center w-full h-11 rounded-[10px] px-3 gap-3',
+          'transition-all duration-200 cursor-pointer',
+          'text-text-secondary hover:text-text-primary hover:bg-border-subtle',
+          'active:scale-[0.97]',
+        )}
+        aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+      >
+        <Icon size={20} className="shrink-0" />
+        <span className="text-[14px] font-medium">{isDark ? 'Light Mode' : 'Dark Mode'}</span>
+      </button>
+    );
+  }
+
+  return (
+    <div className="relative">
+      <button
+        onClick={toggleTheme}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        className={cn(
+          'relative flex items-center w-full h-11 rounded-[10px]',
+          'transition-all duration-200 cursor-pointer',
+          'text-text-secondary hover:text-text-primary',
+          'active:scale-[0.97]',
+          hovered && 'bg-border-subtle',
+        )}
+        style={{ paddingLeft: 12, paddingRight: 12 }}
+        aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+      >
+        <span className="shrink-0 flex items-center justify-center w-5 h-5">
+          <Icon size={20} />
+        </span>
+        <AnimatePresence>
+          {expanded && (
+            <motion.span
+              initial={{ opacity: 0, width: 0 }}
+              animate={{ opacity: 1, width: 'auto' }}
+              exit={{ opacity: 0, width: 0 }}
+              transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
+              className="overflow-hidden whitespace-nowrap text-[14px] font-medium ml-3"
+            >
+              {isDark ? 'Light Mode' : 'Dark Mode'}
+            </motion.span>
+          )}
+        </AnimatePresence>
+      </button>
+
+      {!expanded && hovered && (
+        <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 pointer-events-none z-50">
+          <div className="glass-strong rounded-lg px-3 py-1.5 text-[11px] font-medium whitespace-nowrap text-text-primary">
+            {isDark ? 'Light Mode' : 'Dark Mode'}
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -154,25 +213,11 @@ function DesktopSidebar() {
     );
   }, []);
 
-  const goToDashboard = useCallback(() => {
-    navigate('/dashboard');
-  }, [navigate]);
-
-  const goToTimeline = useCallback(() => {
-    navigate('/timeline');
-  }, [navigate]);
-
-  const goToJourneys = useCallback(() => {
-    navigate('/journeys');
-  }, [navigate]);
-
-  const goToQuiz = useCallback(() => {
-    navigate('/quiz');
-  }, [navigate]);
-
-  const handleSettings = useCallback(() => {
-    console.info('[Time Scroll] Settings coming soon');
-  }, []);
+  const goToDashboard = useCallback(() => { navigate('/dashboard'); }, [navigate]);
+  const goToTimeline = useCallback(() => { navigate('/timeline'); }, [navigate]);
+  const goToJourneys = useCallback(() => { navigate('/journeys'); }, [navigate]);
+  const goToQuiz = useCallback(() => { navigate('/quiz'); }, [navigate]);
+  const handleSettings = useCallback(() => { console.info('[Time Scroll] Settings coming soon'); }, []);
 
   const navItems: NavItemConfig[] = [
     { icon: LayoutDashboard, label: 'Dashboard', action: goToDashboard, tourId: 'dashboard' },
@@ -193,10 +238,8 @@ function DesktopSidebar() {
     if (item.action) {
       item.action();
     } else if (item.panel) {
-      // If we're not on the explore page, navigate there first
       if (!location.pathname.startsWith('/explore')) {
         navigate('/explore');
-        // Small delay to let the page mount before toggling the panel
         setTimeout(() => togglePanel(item.panel!), 100);
       } else {
         togglePanel(item.panel);
@@ -205,18 +248,14 @@ function DesktopSidebar() {
   }
 
   function isActive(item: NavItemConfig): boolean {
-    // Route-based items: check current path
     if (item.action && item.tourId) {
       const routeMap: Record<string, string> = {
-        dashboard: '/dashboard',
-        timeline: '/timeline',
-        journeys: '/journeys',
-        civilizations: '/civilizations',
+        dashboard: '/dashboard', timeline: '/timeline',
+        journeys: '/journeys', civilizations: '/civilizations',
       };
       const route = routeMap[item.tourId];
       if (route) return location.pathname.startsWith(route);
     }
-    // Panel-based items: check on explore page + active panel
     if (item.panel) {
       return location.pathname.startsWith('/explore') && activePanel === item.panel;
     }
@@ -225,13 +264,7 @@ function DesktopSidebar() {
 
   return (
     <motion.nav
-      className="fixed top-0 left-0 z-50 h-full flex flex-col"
-      style={{
-        background: 'rgba(14, 14, 20, 0.85)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        borderRight: '1px solid rgba(255, 255, 255, 0.06)',
-      }}
+      className="fixed top-0 left-0 z-50 h-full flex flex-col bg-surface/85 backdrop-blur-xl border-r border-border-subtle"
       initial={{ x: -SIDEBAR_COLLAPSED, opacity: 0 }}
       animate={{
         x: 0,
@@ -248,24 +281,15 @@ function DesktopSidebar() {
       aria-label="Main navigation"
     >
       <div className="flex flex-col flex-1 pt-4 pb-[140px] px-2 gap-1">
-        {/* Logo / brand mark area */}
-        <div
-          className="flex items-center justify-center h-11 mb-2 shrink-0"
-          aria-hidden="true"
-        >
+        {/* Logo */}
+        <div className="flex items-center justify-center h-11 mb-2 shrink-0" aria-hidden="true">
           <motion.div
-            className="w-8 h-8 rounded-[10px] flex items-center justify-center"
+            className="w-8 h-8 rounded-[10px] flex items-center justify-center border border-accent-gold/20"
             style={{
               background: 'linear-gradient(135deg, rgba(196, 154, 68, 0.15), rgba(196, 154, 68, 0.05))',
-              border: '1px solid rgba(196, 154, 68, 0.2)',
             }}
           >
-            <span
-              className="text-[14px] font-bold"
-              style={{ color: '#c49a44' }}
-            >
-              T
-            </span>
+            <span className="text-[14px] font-bold text-accent-gold">T</span>
           </motion.div>
           <AnimatePresence>
             {expanded && (
@@ -274,8 +298,7 @@ function DesktopSidebar() {
                 animate={{ opacity: 1, width: 'auto' }}
                 exit={{ opacity: 0, width: 0 }}
                 transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
-                className="overflow-hidden whitespace-nowrap text-[14px] font-semibold ml-3"
-                style={{ color: '#e0e0e6' }}
+                className="overflow-hidden whitespace-nowrap text-[14px] font-semibold ml-3 text-text-primary"
               >
                 Time Scroll
               </motion.span>
@@ -283,13 +306,8 @@ function DesktopSidebar() {
           </AnimatePresence>
         </div>
 
-        {/* Divider */}
-        <div
-          className="mx-2 mb-2"
-          style={{ height: 1, background: 'rgba(255, 255, 255, 0.06)' }}
-        />
+        <div className="mx-2 mb-2 h-px bg-border-subtle" />
 
-        {/* Main nav items */}
         {navItems.map(item => (
           <NavItem
             key={item.label}
@@ -302,16 +320,12 @@ function DesktopSidebar() {
           />
         ))}
 
-        {/* Spacer */}
         <div className="flex-1" />
 
-        {/* Divider */}
-        <div
-          className="mx-2 mb-1 mt-1"
-          style={{ height: 1, background: 'rgba(255, 255, 255, 0.06)' }}
-        />
+        <div className="mx-2 mb-1 mt-1 h-px bg-border-subtle" />
 
-        {/* Bottom section */}
+        <ThemeToggle expanded={expanded} />
+
         {bottomItems.map(item => (
           <NavItem
             key={item.label}
@@ -340,25 +354,11 @@ function MobileDrawer() {
     );
   }, []);
 
-  const goToDashboard = useCallback(() => {
-    navigate('/dashboard');
-  }, [navigate]);
-
-  const goToTimeline = useCallback(() => {
-    navigate('/timeline');
-  }, [navigate]);
-
-  const goToJourneys = useCallback(() => {
-    navigate('/journeys');
-  }, [navigate]);
-
-  const goToQuiz = useCallback(() => {
-    navigate('/quiz');
-  }, [navigate]);
-
-  const handleSettings = useCallback(() => {
-    console.info('[Time Scroll] Settings coming soon');
-  }, []);
+  const goToDashboard = useCallback(() => { navigate('/dashboard'); }, [navigate]);
+  const goToTimeline = useCallback(() => { navigate('/timeline'); }, [navigate]);
+  const goToJourneys = useCallback(() => { navigate('/journeys'); }, [navigate]);
+  const goToQuiz = useCallback(() => { navigate('/quiz'); }, [navigate]);
+  const handleSettings = useCallback(() => { console.info('[Time Scroll] Settings coming soon'); }, []);
 
   const navItems: NavItemConfig[] = [
     { icon: LayoutDashboard, label: 'Dashboard', action: goToDashboard },
@@ -404,7 +404,6 @@ function MobileDrawer() {
     return false;
   }
 
-  // Close drawer on Escape
   useEffect(() => {
     if (!open) return;
     function handleKey(e: KeyboardEvent) {
@@ -416,15 +415,8 @@ function MobileDrawer() {
 
   return (
     <>
-      {/* Hamburger trigger */}
       <motion.button
-        className="fixed top-3 left-3 z-40 flex items-center justify-center w-11 h-11 rounded-[10px] cursor-pointer"
-        style={{
-          background: 'rgba(14, 14, 20, 0.85)',
-          backdropFilter: 'blur(12px)',
-          WebkitBackdropFilter: 'blur(12px)',
-          border: '1px solid rgba(255, 255, 255, 0.06)',
-        }}
+        className="fixed top-3 left-3 z-40 flex items-center justify-center w-11 h-11 rounded-[10px] cursor-pointer glass-strong text-text-secondary"
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.3, duration: 0.25 }}
@@ -433,17 +425,14 @@ function MobileDrawer() {
         aria-expanded={open}
         aria-controls="mobile-nav-drawer"
       >
-        <Menu size={20} style={{ color: '#8a8a9a' }} />
+        <Menu size={20} />
       </motion.button>
 
-      {/* Drawer overlay */}
       <AnimatePresence>
         {open && (
           <>
-            {/* Backdrop */}
             <motion.div
-              className="fixed inset-0 z-40"
-              style={{ background: 'rgba(8, 8, 12, 0.6)' }}
+              className="fixed inset-0 z-40 bg-void/60"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -452,17 +441,9 @@ function MobileDrawer() {
               aria-hidden="true"
             />
 
-            {/* Drawer panel */}
             <motion.nav
               id="mobile-nav-drawer"
-              className="fixed top-0 left-0 z-50 h-full w-[260px] flex flex-col"
-              style={{
-                background: 'rgba(14, 14, 20, 0.95)',
-                backdropFilter: 'blur(24px)',
-                WebkitBackdropFilter: 'blur(24px)',
-                borderRight: '1px solid rgba(255, 255, 255, 0.06)',
-                boxShadow: '8px 0 40px rgba(0, 0, 0, 0.4)',
-              }}
+              className="fixed top-0 left-0 z-50 h-full w-[260px] flex flex-col bg-surface/95 backdrop-blur-2xl border-r border-border-subtle shadow-2xl"
               initial={{ x: -260 }}
               animate={{ x: 0 }}
               exit={{ x: -260 }}
@@ -471,46 +452,29 @@ function MobileDrawer() {
               aria-modal="true"
               aria-label="Navigation menu"
             >
-              {/* Header */}
               <div className="flex items-center justify-between px-4 py-4">
                 <div className="flex items-center gap-3">
                   <div
-                    className="w-8 h-8 rounded-[10px] flex items-center justify-center"
+                    className="w-8 h-8 rounded-[10px] flex items-center justify-center border border-accent-gold/20"
                     style={{
                       background: 'linear-gradient(135deg, rgba(196, 154, 68, 0.15), rgba(196, 154, 68, 0.05))',
-                      border: '1px solid rgba(196, 154, 68, 0.2)',
                     }}
                   >
-                    <span
-                      className="text-[14px] font-bold"
-                      style={{ color: '#c49a44' }}
-                    >
-                      T
-                    </span>
+                    <span className="text-[14px] font-bold text-accent-gold">T</span>
                   </div>
-                  <span
-                    className="text-[14px] font-semibold"
-                    style={{ color: '#e0e0e6' }}
-                  >
-                    Time Scroll
-                  </span>
+                  <span className="text-[14px] font-semibold text-text-primary">Time Scroll</span>
                 </div>
                 <button
                   onClick={() => setOpen(false)}
-                  className="flex items-center justify-center w-9 h-9 rounded-[8px] cursor-pointer transition-colors duration-200 hover:bg-[rgba(255,255,255,0.04)]"
+                  className="flex items-center justify-center w-9 h-9 rounded-[8px] cursor-pointer transition-colors duration-200 hover:bg-border-subtle text-text-secondary"
                   aria-label="Close navigation menu"
                 >
-                  <X size={18} style={{ color: '#8a8a9a' }} />
+                  <X size={18} />
                 </button>
               </div>
 
-              {/* Divider */}
-              <div
-                className="mx-3"
-                style={{ height: 1, background: 'rgba(255, 255, 255, 0.06)' }}
-              />
+              <div className="mx-3 h-px bg-border-subtle" />
 
-              {/* Nav items */}
               <div className="flex flex-col flex-1 px-3 py-3 gap-1">
                 {navItems.map(item => (
                   <MobileNavItem
@@ -524,10 +488,9 @@ function MobileDrawer() {
 
                 <div className="flex-1" />
 
-                <div
-                  className="mx-1 mb-1 mt-1"
-                  style={{ height: 1, background: 'rgba(255, 255, 255, 0.06)' }}
-                />
+                <div className="mx-1 mb-1 mt-1 h-px bg-border-subtle" />
+
+                <ThemeToggle expanded={true} mobile />
 
                 {bottomItems.map(item => (
                   <MobileNavItem

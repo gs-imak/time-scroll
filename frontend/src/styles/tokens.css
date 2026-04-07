@@ -37,6 +37,15 @@
   --color-era-industrial: #7a9e5a;
   --color-era-modern: #5a9aaa;
 
+  /* === Glass effects === */
+  --glass-bg: rgba(14, 14, 20, 0.65);
+  --glass-strong-bg: rgba(14, 14, 20, 0.9);
+  --glass-light-bg: rgba(14, 14, 20, 0.5);
+  --glass-shadow: rgba(0, 0, 0, 0.3);
+  --glass-shadow-strong: rgba(0, 0, 0, 0.4);
+  --glass-inset: rgba(255, 255, 255, 0.03);
+  --glass-inset-strong: rgba(255, 255, 255, 0.04);
+
   /* === Fonts === */
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
@@ -54,4 +63,34 @@
   --duration-slow: 400ms;
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* === Light Mode Overrides === */
+[data-theme="light"] {
+  --color-void: #f5f3ef;
+  --color-surface: #ebe8e3;
+  --color-elevated: #ffffff;
+  --color-overlay: rgba(245, 243, 239, 0.92);
+
+  --color-border-subtle: rgba(0, 0, 0, 0.08);
+  --color-border-active: rgba(0, 0, 0, 0.15);
+  --color-border-bright: rgba(0, 0, 0, 0.25);
+
+  --color-text-primary: #1a1a20;
+  --color-text-secondary: #5a5a6a;
+  --color-text-muted: #9a9aaa;
+
+  /* Accents — slightly deepened for light bg contrast */
+  --color-accent-gold: #b08830;
+  --color-accent-cyan: #3d7a8a;
+  --color-accent-rose: #a04040;
+
+  /* Glass effects — light frosted glass */
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-strong-bg: rgba(255, 255, 255, 0.88);
+  --glass-light-bg: rgba(255, 255, 255, 0.55);
+  --glass-shadow: rgba(0, 0, 0, 0.08);
+  --glass-shadow-strong: rgba(0, 0, 0, 0.12);
+  --glass-inset: rgba(255, 255, 255, 0.5);
+  --glass-inset-strong: rgba(255, 255, 255, 0.6);
 }
