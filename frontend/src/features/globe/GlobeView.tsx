@@ -16,6 +16,7 @@ import { getGeoJsonFromCache, cacheGeoJson } from '@/shared/data/geoJsonCache';
 import { useVisibilityTier } from './useVisibilityTier';
 import { useEventClustering } from './useEventClustering';
 import { useLabelCollision } from './useLabelCollision';
+import { usePolygonTransition } from './usePolygonTransition';
 
 // === Globe context for child components (landmarks, etc.) ===
 interface GlobeContextValue {
@@ -165,6 +166,9 @@ export function GlobeView({ children }: GlobeViewProps) {
   const selectEvent = useEventsStore(s => s.selectEvent);
   const journeyArcs = useJourneyArcsStore(s => s.arcs);
   const loadedFileRef = useRef<string | null>(null);
+
+  // Smooth polygon morphing between boundary snapshots
+  const transitionTo = usePolygonTransition(setPolygonsData);
 
   // Spotlight mode state
   const spotlightActive = useSpotlightStore(s => s.active);
@@ -325,7 +329,7 @@ export function GlobeView({ children }: GlobeViewProps) {
     // Try cache first (instant for spotlight playback)
     const cached = getGeoJsonFromCache(fileName);
     if (cached) {
-      setPolygonsData(cached);
+      transitionTo(cached);
       loadedFileRef.current = fileName;
       return;
     }
@@ -338,7 +342,7 @@ export function GlobeView({ children }: GlobeViewProps) {
         if (!res.ok) return;
         const geojson = await res.json();
         const features = geojson.features || [];
-        setPolygonsData(features);
+        transitionTo(features);
         cacheGeoJson(fileName, features);
         loadedFileRef.current = fileName;
       } catch {
