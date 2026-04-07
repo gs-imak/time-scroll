@@ -357,8 +357,8 @@ export function GlobeView({ children }: GlobeViewProps) {
   );
   const clusteredEvents = useEventClustering(filteredEvents);
 
-  // Label collision avoidance (runs on camera change via rAF)
-  useLabelCollision(globeRef, civilizationLabels.length > 0);
+  // Label collision avoidance — also avoids event marker positions
+  useLabelCollision(globeRef, civilizationLabels.length > 0, clusteredEvents);
 
   // Screen coords helper for child components (landmarks)
   const getScreenCoords = useCallback((lat: number, lng: number) => {

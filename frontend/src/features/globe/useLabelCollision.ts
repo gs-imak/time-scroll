@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import type { GlobeMethods } from 'react-globe.gl';
+import type { ClusterOrEvent } from './useEventClustering';
 
 interface PlacedBox {
   x: number;
@@ -19,14 +20,13 @@ function boxesOverlap(a: PlacedBox, b: PlacedBox): boolean {
 
 /**
  * Detects overlapping civilization labels on-screen and hides or offsets
- * lower-priority ones. Runs in a rAF loop tied to camera changes.
- *
- * Labels must have `data-civ-slug` and `data-civ-importance` attributes
- * set in the htmlElement callback.
+ * lower-priority ones. Also avoids event markers by treating their screen
+ * positions as occupied zones.
  */
 export function useLabelCollision(
   globeRef: React.RefObject<GlobeMethods | undefined>,
   enabled: boolean,
+  markers: ClusterOrEvent[],
 ) {
   const rafRef = useRef<number>(0);
   const lastRunRef = useRef<number>(0);
@@ -39,31 +39,51 @@ export function useLabelCollision(
 
     const runCollision = () => {
       const now = performance.now();
-      // Throttle to ~10fps for collision checks
       if (now - lastRunRef.current < 100) return;
       lastRunRef.current = now;
 
       const labels = document.querySelectorAll<HTMLElement>('[data-civ-slug]');
       if (labels.length === 0) return;
 
-      // Sort by importance descending — important labels get priority placement
+      // Build occupied boxes from event marker screen positions
+      // Markers are THREE.js objects, so we use getScreenCoords to find them
+      const occupied: PlacedBox[] = [];
+      const MARKER_SCREEN_W = 60; // approximate screen footprint of a marker
+      const MARKER_SCREEN_H = 80;
+
+      if (globeRef.current) {
+        for (const m of markers) {
+          const lat = m.type === 'cluster' ? m.lat : (m as any).displayLat ?? (m as any).latitude;
+          const lng = m.type === 'cluster' ? m.lng : (m as any).displayLng ?? (m as any).longitude;
+          const screenPos = globeRef.current.getScreenCoords(lat, lng, 0.01);
+          if (screenPos && screenPos.x > -100 && screenPos.y > -100) {
+            occupied.push({
+              x: screenPos.x - MARKER_SCREEN_W / 2,
+              y: screenPos.y - MARKER_SCREEN_H,
+              w: MARKER_SCREEN_W,
+              h: MARKER_SCREEN_H,
+            });
+          }
+        }
+      }
+
+      // Sort labels by importance descending
       const sorted = Array.from(labels).sort((a, b) => {
         const impA = parseInt(a.dataset.civImportance || '0', 10);
         const impB = parseInt(b.dataset.civImportance || '0', 10);
         return impB - impA;
       });
 
-      const placed: PlacedBox[] = [];
-      const OFFSET_STEP = 30;
-      const MAX_OFFSETS = 2;
+      const placed: PlacedBox[] = [...occupied]; // start with marker positions as "taken"
+      const OFFSET_STEP = 32;
+      const MAX_OFFSETS = 3;
 
       for (const el of sorted) {
-        // Reset any previous adjustments
+        // Reset previous adjustments
         el.style.display = '';
         el.style.marginTop = '0px';
 
         const rect = el.getBoundingClientRect();
-        // Skip labels that are off-screen or behind the globe
         if (rect.width === 0 || rect.height === 0) continue;
         if (rect.right < 0 || rect.bottom < 0) continue;
         if (rect.left > window.innerWidth || rect.top > window.innerHeight) continue;
@@ -75,7 +95,6 @@ export function useLabelCollision(
           h: rect.height,
         };
 
-        // Check overlap with already-placed labels
         const hasOverlap = placed.some(p => boxesOverlap(box, p));
 
         if (!hasOverlap) {
@@ -83,10 +102,9 @@ export function useLabelCollision(
           continue;
         }
 
-        // Try offsetting vertically
+        // Try offsetting vertically (down first, then up)
         let resolved = false;
         for (let attempt = 1; attempt <= MAX_OFFSETS; attempt++) {
-          // Try pushing down
           const downBox = { ...box, y: box.y + OFFSET_STEP * attempt };
           if (!placed.some(p => boxesOverlap(downBox, p))) {
             el.style.marginTop = `${OFFSET_STEP * attempt}px`;
@@ -94,7 +112,6 @@ export function useLabelCollision(
             resolved = true;
             break;
           }
-          // Try pushing up
           const upBox = { ...box, y: box.y - OFFSET_STEP * attempt };
           if (!placed.some(p => boxesOverlap(upBox, p))) {
             el.style.marginTop = `${-OFFSET_STEP * attempt}px`;
@@ -104,7 +121,6 @@ export function useLabelCollision(
           }
         }
 
-        // If still overlapping after offsets, hide the label
         if (!resolved) {
           el.style.display = 'none';
         }
@@ -116,7 +132,6 @@ export function useLabelCollision(
       rafRef.current = requestAnimationFrame(runCollision);
     };
 
-    // Run once immediately and then on every camera change
     onControlsChange();
     controls.addEventListener('change', onControlsChange);
 
@@ -124,12 +139,11 @@ export function useLabelCollision(
       controls.removeEventListener('change', onControlsChange);
       cancelAnimationFrame(rafRef.current);
 
-      // Clean up styles on unmount
       const labels = document.querySelectorAll<HTMLElement>('[data-civ-slug]');
       for (const el of labels) {
         el.style.display = '';
         el.style.marginTop = '0px';
       }
     };
-  }, [globeRef, enabled]);
+  }, [globeRef, enabled, markers]);
 }
