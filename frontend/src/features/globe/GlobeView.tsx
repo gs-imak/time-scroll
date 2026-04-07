@@ -12,7 +12,7 @@ import { BOUNDARY_YEAR_MAP } from '@/shared/utils/constants';
 import { getVisibleCivilizationLabels } from '@/shared/data/civilizationLabels';
 import { createEventMarker, createClusterMarker, CATEGORY_COLORS } from './eventMarkers';
 import { useSpotlightStore } from '@/shared/stores/spotlightStore';
-import { getGeoJsonFromCache, cacheGeoJson } from '@/shared/data/geoJsonCache';
+import { getGeoJsonFromCache, cacheGeoJson, preloadAllGeoJson } from '@/shared/data/geoJsonCache';
 import { useVisibilityTier } from './useVisibilityTier';
 import { useEventClustering } from './useEventClustering';
 import { useLabelCollision } from './useLabelCollision';
@@ -336,14 +336,18 @@ export function GlobeView({ children }: GlobeViewProps) {
     );
   }, [spotlightActive, spotlightCivId, spotlightCenterLat, spotlightCenterLng]);
 
-  // Load boundary GeoJSON when year changes — checks cache first, then fetches
-  const pendingLoadRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Preload all 53 GeoJSON boundary files on globe mount so every
+  // boundary switch is instant — no network delays during scrubbing
+  useEffect(() => {
+    preloadAllGeoJson();
+  }, []);
+
+  // Update boundaries when year changes — instant from preloaded cache
   useEffect(() => {
     const year = closestBoundaryYear(currentYear, SORTED_BOUNDARY_YEARS);
     const fileName = BOUNDARY_YEAR_MAP[year];
     if (!fileName || fileName === loadedFileRef.current) return;
 
-    // Try cache first (instant for spotlight playback)
     const cached = getGeoJsonFromCache(fileName);
     if (cached) {
       setPolygonsData(assignStableIds(cached));
@@ -351,9 +355,8 @@ export function GlobeView({ children }: GlobeViewProps) {
       return;
     }
 
-    // Debounce fetch for non-cached files
-    if (pendingLoadRef.current) clearTimeout(pendingLoadRef.current);
-    pendingLoadRef.current = setTimeout(async () => {
+    // Fallback: fetch if preload hasn't finished yet (first few seconds)
+    (async () => {
       try {
         const res = await fetch(`/assets/geo/${fileName}.geojson`);
         if (!res.ok) return;
@@ -362,12 +365,8 @@ export function GlobeView({ children }: GlobeViewProps) {
         setPolygonsData(assignStableIds(features));
         cacheGeoJson(fileName, features);
         loadedFileRef.current = fileName;
-      } catch {
-        // Boundary file not found
-      }
-    }, 150);
-
-    return () => { if (pendingLoadRef.current) clearTimeout(pendingLoadRef.current); };
+      } catch { /* skip */ }
+    })();
   }, [currentYear]);
 
   // Get visible events, then filter by zoom tier, then cluster nearby ones
