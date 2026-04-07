@@ -58,7 +58,6 @@ export function MiniGlobe() {
 
   const onReady = useCallback(() => {
     if (!globeRef.current) return;
-    // Closer view so territories and markers are more visible
     globeRef.current.pointOfView({ lat: 25, lng: 30, altitude: 1.6 }, 0);
 
     const controls = globeRef.current.controls();
@@ -66,25 +65,42 @@ export function MiniGlobe() {
       controls.autoRotate = true;
       controls.autoRotateSpeed = 0.4;
       controls.enableDamping = true;
-      controls.dampingFactor = 0.1;
+      controls.dampingFactor = 0.12;
       controls.enableZoom = false;
+      controls.minPolarAngle = Math.PI * 0.2; // prevent flipping too far
+      controls.maxPolarAngle = Math.PI * 0.8;
     }
 
-    // Add cloud layer for visual richness
+    // Tighten camera for better depth precision (reduces z-fighting)
+    const camera = globeRef.current.camera() as THREE.PerspectiveCamera;
+    if (camera && 'near' in camera) {
+      camera.near = 1;
+      camera.far = 1500;
+      camera.updateProjectionMatrix();
+    }
+
+    // Enhance globe surface
     const scene = globeRef.current.scene();
     if (scene) {
+      scene.traverse((obj: any) => {
+        if (obj.isMesh && obj.material?.map) {
+          obj.material.map.anisotropy = 8;
+          obj.material.needsUpdate = true;
+        }
+      });
+
+      // Cloud layer
       const cloudTexture = new THREE.TextureLoader().load('/assets/images/earth-clouds.png');
       cloudTexture.anisotropy = 4;
       const cloudGeo = new THREE.SphereGeometry(101.2, 64, 32);
       const cloudMat = new THREE.MeshPhongMaterial({
         map: cloudTexture,
         transparent: true,
-        opacity: 0.18,
+        opacity: 0.15,
         depthWrite: false,
         side: THREE.FrontSide,
       });
       const cloudMesh = new THREE.Mesh(cloudGeo, cloudMat);
-      cloudMesh.name = 'loginCloudLayer';
       scene.add(cloudMesh);
 
       const animateClouds = () => {
@@ -106,7 +122,8 @@ export function MiniGlobe() {
 
   const updateMarkerPosition = useCallback((obj: any, d: any) => {
     if (!globeRef.current) return;
-    const coords = globeRef.current.getCoords(d.latitude, d.longitude, 0.01);
+    // Position markers ABOVE polygons (0.02 vs polygon 0.006) to prevent z-fighting
+    const coords = globeRef.current.getCoords(d.latitude, d.longitude, 0.02);
     if (coords) {
       Object.assign(obj.position, coords);
       const pos = new THREE.Vector3(coords.x, coords.y, coords.z);
@@ -116,7 +133,10 @@ export function MiniGlobe() {
         up,
       );
       obj.setRotationFromQuaternion(quaternion);
-      obj.scale.setScalar(2.0); // Large and prominent
+      obj.scale.setScalar(1.8);
+
+      // Hide the glow disc (child 0) which causes most flickering
+      if (obj.children?.[0]) obj.children[0].visible = false;
     }
   }, []);
 
