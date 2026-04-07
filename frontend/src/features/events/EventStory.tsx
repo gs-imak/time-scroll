@@ -15,7 +15,7 @@ import { ERAS } from '@/shared/utils/constants';
 import type { HistoricalEvent } from '@/shared/types/events';
 import { EventQuiz } from './EventQuiz';
 import { EventMapVisual } from './EventMapVisual';
-import { getEventPlacements, getIllustrationUrl, getFloatClasses } from '@/shared/data/illustrationPlacements';
+import { getEventPlacements, getIllustrationUrl, getFloatClasses, getGalleryImages } from '@/shared/data/illustrationPlacements';
 import { useMonumentViewer } from '@/features/monuments/useMonumentViewer';
 
 // ── Category visuals ──
@@ -128,6 +128,7 @@ export function EventStory() {
   const cat = event ? CATEGORY_META[event.category] : null;
   const icon = event ? EVENT_ICONS[event.id] ?? '●' : '●';
   const illustrations = event ? getEventPlacements(event.id) : null;
+  const galleryImages = useMemo(() => event ? getGalleryImages(event.id) : [], [event?.id]);
   const favoriteEvents = useProgressStore(s => s.favoriteEvents);
   const toggleFavorite = useProgressStore(s => s.toggleFavorite);
   const eventNotes = useProgressStore(s => s.eventNotes);
@@ -500,24 +501,26 @@ export function EventStory() {
               {/* Parallax illustration accents */}
               {illustrations?.parallaxRight && (
                 <motion.div
-                  className="absolute right-[1%] top-[1400px] z-[1]"
+                  className="absolute right-[1%] top-[1400px] z-[1] hidden lg:block"
                   style={{ y: sideRightY2, opacity: sideOpacity2 }}
                 >
                   <img
                     src={getIllustrationUrl(illustrations.parallaxRight.slug, illustrations.parallaxRight.num)}
-                    alt="" className="w-[140px] opacity-[0.2] drop-shadow-lg" loading="lazy"
+                    alt="" className="w-[240px] opacity-[0.3] drop-shadow-xl" loading="lazy"
+                    style={{ filter: 'blur(0.5px)' }}
                     onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                   />
                 </motion.div>
               )}
               {illustrations?.parallaxLeft && (
                 <motion.div
-                  className="absolute left-[1%] top-[2200px] z-[1]"
+                  className="absolute left-[1%] top-[2200px] z-[1] hidden lg:block"
                   style={{ y: sideLeftY1, opacity: sideOpacity1 }}
                 >
                   <img
                     src={getIllustrationUrl(illustrations.parallaxLeft.slug, illustrations.parallaxLeft.num)}
-                    alt="" className="w-[120px] opacity-[0.15] drop-shadow-lg" loading="lazy"
+                    alt="" className="w-[200px] opacity-[0.25] drop-shadow-xl" loading="lazy"
+                    style={{ filter: 'blur(0.5px)' }}
                     onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                   />
                 </motion.div>
@@ -580,19 +583,19 @@ export function EventStory() {
                 )}
               </AnimatePresence>
 
-              {/* LARGE hero illustration — the main visual identity of this event */}
+              {/* LARGE hero illustration — the dominant visual identity of this event */}
               {illustrations?.heroImage && (
                 <motion.div
-                  className="absolute z-[5] bottom-0 right-0 w-[40%] md:w-[45%] lg:w-[50%] max-w-[600px] pointer-events-none select-none hidden sm:block"
+                  className="absolute z-[5] bottom-0 right-0 w-[55%] sm:w-[55%] md:w-[60%] lg:w-[65%] max-w-[720px] pointer-events-none select-none"
                   initial={{ opacity: 0, x: 40 }}
-                  animate={{ opacity: 0.6, x: 0 }}
+                  animate={{ opacity: 0.9, x: 0 }}
                   transition={{ delay: 0.3, duration: 1, ease: [0.16, 1, 0.3, 1] }}
                 >
                   <img
                     src={getIllustrationUrl(illustrations.heroImage.slug, illustrations.heroImage.num)}
                     alt=""
                     className="w-full h-auto drop-shadow-2xl"
-                    loading="lazy"
+                    loading="eager"
                     onError={(e) => { (e.target as HTMLImageElement).parentElement!.style.display = 'none'; }}
                   />
                 </motion.div>
@@ -695,16 +698,15 @@ export function EventStory() {
               <Reveal delay={0.05}>
                 <div className="mb-16">
                   {(illustrations?.sceneBreaks?.[0] || event.imageUrl) ? (
-                    <div className="rounded-2xl overflow-hidden">
+                    <figure className="rounded-2xl overflow-hidden -mx-2 sm:-mx-4">
                       <img
                         src={illustrations?.sceneBreaks?.[0] ? getIllustrationUrl(illustrations.sceneBreaks[0].slug, illustrations.sceneBreaks[0].num) : event.imageUrl!}
                         alt={event.title}
-                        className="w-full h-auto object-cover"
-                        style={{ maxHeight: '440px' }}
+                        className="w-full h-auto object-contain"
                         loading="lazy"
                         onError={(e) => { (e.target as HTMLImageElement).parentElement!.style.display = 'none'; }}
                       />
-                    </div>
+                    </figure>
                   ) : event.videoUrl ? (
                     <div className="rounded-2xl overflow-hidden aspect-video">
                       <iframe src={event.videoUrl} className="w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen title={event.title} />
@@ -819,25 +821,25 @@ export function EventStory() {
                     <p className="text-[15px] sm:text-[16px] text-[#8a8a9a] leading-[1.9] mb-6">{para}</p>
                     {i === 0 && pullQuote && (
                       <Reveal delay={0.1}>
-                        <blockquote className="my-10 py-6 px-8 border-l-[3px] rounded-r-xl clear-both" style={{ borderColor: cat.color, background: `${cat.color}06` }}>
+                        <blockquote className="my-10 py-6 px-8 border-l-[3px] rounded-r-xl clear-both relative z-[2]" style={{ borderColor: cat.color, background: `${cat.color}06` }}>
                           <p className="text-[18px] sm:text-[20px] text-[#8a8a9a] leading-[1.7] italic font-light">
                             "{pullQuote}"
                           </p>
                         </blockquote>
                       </Reveal>
                     )}
-                    {/* Full-width scene illustrations between paragraphs */}
+                    {/* Full-width scene illustrations between paragraphs — breakout width */}
                     {illustrations?.sceneBreaks?.filter(sb => sb.afterParagraph === i).map((sb, si) => (
                       <Reveal key={`scene-${i}-${si}`} delay={0.15}>
-                        <div className="my-12 -mx-6 sm:-mx-10 clear-both">
+                        <figure className="my-10 sm:my-14 -mx-4 sm:-mx-8 md:-mx-12 clear-both">
                           <img
                             src={getIllustrationUrl(sb.slug, sb.num)}
                             alt=""
-                            className="w-full h-auto object-contain max-h-[400px]"
+                            className="w-full h-auto object-contain"
                             loading="lazy"
-                            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                            onError={(e) => { (e.target as HTMLImageElement).parentElement!.style.display = 'none'; }}
                           />
-                        </div>
+                        </figure>
                       </Reveal>
                     ))}
                   </Reveal>
@@ -862,21 +864,33 @@ export function EventStory() {
                         : diff > 0
                           ? `${Math.abs(diff)} year${Math.abs(diff) !== 1 ? 's' : ''} after`
                           : `${Math.abs(diff)} year${Math.abs(diff) !== 1 ? 's' : ''} before`;
+                      const cePlacement = getEventPlacements(ce.id);
+                      const ceThumb = cePlacement?.heroImage;
                       return (
                         <Reveal key={ce.id} delay={i * 0.06}>
                           <motion.button
                             onClick={() => selectEvent(ce.id)}
-                            className="flex items-start gap-4 p-5 rounded-xl text-left cursor-pointer group w-full"
+                            className="flex items-start gap-4 p-5 rounded-xl text-left cursor-pointer group w-full overflow-hidden relative"
                             style={{ border: '1px solid rgba(255,255,255,0.05)' }}
                             whileHover={{ borderColor: `${ceCat?.color ?? '#8a8a9a'}25`, backgroundColor: 'rgba(255,255,255,0.02)', x: 4 }}
                             whileTap={{ scale: 0.98 }}
                           >
-                            <div className="mt-0.5 shrink-0">
-                              <span
-                                className="block w-2.5 h-2.5 rounded-full"
-                                style={{ background: ceCat?.color ?? '#8a8a9a' }}
-                              />
-                            </div>
+                            {/* Thumbnail from event's illustration pack */}
+                            {ceThumb && (
+                              <div className="shrink-0 w-12 h-12 rounded-lg overflow-hidden bg-[#0a0a12]">
+                                <img
+                                  src={getIllustrationUrl(ceThumb.slug, ceThumb.num)}
+                                  alt="" className="w-full h-full object-cover"
+                                  loading="lazy"
+                                  onError={(e) => { (e.target as HTMLImageElement).parentElement!.style.display = 'none'; }}
+                                />
+                              </div>
+                            )}
+                            {!ceThumb && (
+                              <div className="mt-0.5 shrink-0">
+                                <span className="block w-2.5 h-2.5 rounded-full" style={{ background: ceCat?.color ?? '#8a8a9a' }} />
+                              </div>
+                            )}
                             <div className="min-w-0 flex-1">
                               <p className="text-[13px] font-medium text-[#8a8a9a] group-hover:text-[#e0e0e6] transition-colors truncate">
                                 {ce.title}
@@ -897,7 +911,7 @@ export function EventStory() {
                 </section>
               )}
 
-              {/* Did You Know — with optional illustration accent */}
+              {/* Did You Know — with illustration accent from pack */}
               {event.impactText && (
                 <section id="impact" ref={setSectionRef('impact')} className="mb-20">
                   <Reveal>
@@ -906,7 +920,17 @@ export function EventStory() {
                         style={{ background: 'rgba(255, 255, 255, 0.02)', border: `1px solid ${cat.color}18` }}
                         whileHover={{ scale: 1.008 }} transition={{ type: 'spring', stiffness: 400, damping: 25 }}>
                         <div className="absolute top-0 left-0 w-1 h-full rounded-full" style={{ background: cat.color }} />
-                        <div className="pl-6">
+                        {/* Illustration accent — faded pack image on the right */}
+                        {galleryImages.length > 0 && (
+                          <img
+                            src={getIllustrationUrl(galleryImages[0].slug, galleryImages[0].num)}
+                            alt=""
+                            className="hidden sm:block absolute right-0 top-1/2 -translate-y-1/2 h-[140%] w-auto opacity-[0.07] pointer-events-none select-none"
+                            loading="lazy"
+                            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                          />
+                        )}
+                        <div className="pl-6 relative z-[1]">
                           <div className="flex items-center gap-2 mb-4">
                             <Lightbulb size={16} style={{ color: cat.color }} />
                             <span className="text-[12px] font-semibold tracking-wider uppercase" style={{ color: cat.color }}>Did you know?</span>
@@ -955,17 +979,38 @@ export function EventStory() {
                 </Reveal>
               </section>
 
-              {/* Gallery — only for events with explicit images array */}
-              {event.images && event.images.length > 0 && (
+              {/* Gallery — auto-populated from civilization pack images + explicit images */}
+              {(galleryImages.length > 0 || (event.images && event.images.length > 0)) && (
                 <section id="gallery" ref={setSectionRef('gallery')} className="mb-20">
                   <Reveal>
                     <SectionLabel>Gallery</SectionLabel>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                      {event.images.map((img, i) => (
-                        <motion.div key={i} className="rounded-xl overflow-hidden aspect-[4/3] cursor-pointer"
-                          whileHover={{ scale: 1.03 }} transition={{ type: 'spring', stiffness: 400, damping: 25 }}>
-                          <img src={img} alt={`${event.title} ${i + 1}`} className="w-full h-full object-cover" loading="lazy" />
-                        </motion.div>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                      {/* Civilization pack images — auto-discovered from unused images */}
+                      {galleryImages.map((img, i) => (
+                        <Reveal key={`pack-${img.slug}-${img.num}`} delay={i * 0.04}>
+                          <motion.div
+                            className="rounded-xl overflow-hidden bg-[#0a0a12] cursor-pointer"
+                            whileHover={{ scale: 1.03 }}
+                            transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                          >
+                            <img
+                              src={getIllustrationUrl(img.slug, img.num)}
+                              alt=""
+                              className="w-full h-auto object-contain"
+                              loading="lazy"
+                              onError={(e) => { (e.target as HTMLImageElement).parentElement!.style.display = 'none'; }}
+                            />
+                          </motion.div>
+                        </Reveal>
+                      ))}
+                      {/* Explicit images from event data */}
+                      {event.images?.map((img, i) => (
+                        <Reveal key={`ext-${i}`} delay={(galleryImages.length + i) * 0.04}>
+                          <motion.div className="rounded-xl overflow-hidden aspect-[4/3] cursor-pointer"
+                            whileHover={{ scale: 1.03 }} transition={{ type: 'spring', stiffness: 400, damping: 25 }}>
+                            <img src={img} alt={`${event.title} ${i + 1}`} className="w-full h-full object-cover" loading="lazy" />
+                          </motion.div>
+                        </Reveal>
                       ))}
                     </div>
                   </Reveal>
@@ -1054,7 +1099,7 @@ function NavButton({ dir, event, onSelect }: { dir: 'left' | 'right'; event: His
 }
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
-  return <h2 className="text-[11px] font-semibold tracking-[0.14em] uppercase text-[#3a3a4a] mb-6">{children}</h2>;
+  return <h2 className="text-[11px] font-semibold tracking-[0.14em] uppercase text-[#3a3a4a] mb-6 clear-both">{children}</h2>;
 }
 
 function FactCard({ icon, label, value, color }: { icon: React.ReactNode; label: string; value: string; color: string }) {
@@ -1092,14 +1137,23 @@ function DiveLink({ emoji, title, subtitle, href, color }: { emoji: string; titl
 function RelatedCard({ event, onSelect }: { event: HistoricalEvent; onSelect: (id: string) => void }) {
   const cat = CATEGORY_META[event.category];
   const icon = EVENT_ICONS[event.id] ?? '●';
+  const placement = getEventPlacements(event.id);
+  const thumb = placement?.heroImage;
   return (
     <motion.button onClick={() => onSelect(event.id)}
       className="flex items-center gap-4 p-5 rounded-xl text-left cursor-pointer group"
       style={{ border: '1px solid rgba(255,255,255,0.05)' }}
       whileHover={{ borderColor: `${cat?.color ?? '#8a8a9a'}25`, backgroundColor: 'rgba(255,255,255,0.02)', x: 4 }}
       whileTap={{ scale: 0.98 }}>
-      <span className="text-2xl w-11 h-11 flex items-center justify-center rounded-lg shrink-0"
-        style={{ background: (cat?.color ?? '#8a8a9a') + '12' }}>{icon}</span>
+      {thumb ? (
+        <div className="w-12 h-12 rounded-lg overflow-hidden bg-[#0a0a12] shrink-0">
+          <img src={getIllustrationUrl(thumb.slug, thumb.num)} alt="" className="w-full h-full object-cover" loading="lazy"
+            onError={(e) => { (e.target as HTMLImageElement).parentElement!.style.display = 'none'; }} />
+        </div>
+      ) : (
+        <span className="text-2xl w-11 h-11 flex items-center justify-center rounded-lg shrink-0"
+          style={{ background: (cat?.color ?? '#8a8a9a') + '12' }}>{icon}</span>
+      )}
       <div className="min-w-0 flex-1">
         <p className="text-[13px] font-medium text-[#8a8a9a] group-hover:text-[#e0e0e6] transition-colors truncate">{event.title}</p>
         <p className="text-[11px] text-[#3a3a4a] mt-1">

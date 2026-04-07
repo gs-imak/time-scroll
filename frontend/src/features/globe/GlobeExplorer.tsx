@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
-import { useParams, useSearchParams } from 'react-router';
-import { GlobeView, useGlobe } from './GlobeView';
+import { useParams } from 'react-router';
+import { GlobeView } from './GlobeView';
 import { TimelineScrubber } from '@/features/timeline/TimelineScrubber';
 import { EraIndicator } from '@/features/timeline/EraIndicator';
 import { EventStory } from '@/features/events/EventStory';
@@ -18,35 +18,27 @@ import { MonumentViewer } from '@/features/monuments/MonumentViewer';
 import { useTimeStore } from '@/shared/stores/timeStore';
 import { useEventsStore } from '@/shared/stores/eventsStore';
 
-/** Reads ?event= search param on mount and opens + flies to that event */
+/** Reads ?event= search param on mount and opens that event.
+ *  Lives outside GlobeView so it isn't gated by globe readiness.
+ *  Camera fly-to is handled by GlobeView watching selectedEventId.
+ *  IMPORTANT: Captures the param in a ref immediately at render time,
+ *  because EventStory's URL sync effect strips ?event= when no event is selected. */
 function EventUrlHandler() {
-  const [searchParams] = useSearchParams();
   const events = useEventsStore(s => s.events);
   const selectEvent = useEventsStore(s => s.selectEvent);
-  const { globeRef } = useGlobe();
+  // Capture the event param at first render before any effect can strip it
+  const initialEventParam = useRef(new URLSearchParams(window.location.search).get('event'));
   const hasHandled = useRef(false);
 
   useEffect(() => {
-    if (hasHandled.current) return;
-    const eventParam = searchParams.get('event');
-    if (!eventParam) return;
+    if (hasHandled.current || !initialEventParam.current) return;
 
-    const target = events.find(e => e.id === eventParam);
+    const target = events.find(e => e.id === initialEventParam.current);
     if (!target) return;
 
     hasHandled.current = true;
-    // Delay to let the globe finish initializing
-    const timer = setTimeout(() => {
-      selectEvent(target.id);
-      if (globeRef?.current) {
-        globeRef.current.pointOfView(
-          { lat: target.latitude, lng: target.longitude, altitude: 0.4 },
-          1200,
-        );
-      }
-    }, 800);
-    return () => clearTimeout(timer);
-  }, [searchParams, events, selectEvent, globeRef]);
+    selectEvent(target.id);
+  }, [events, selectEvent]);
 
   return null;
 }
@@ -64,8 +56,9 @@ export default function GlobeExplorer() {
       {/* 3D Globe — react-globe.gl with Three.js rendering */}
       <GlobeView>
         <LandmarkOverlay />
-        <EventUrlHandler />
       </GlobeView>
+      {/* Must be outside GlobeView so it mounts immediately, not gated by globe readiness */}
+      <EventUrlHandler />
 
       {/* Top cinematic gradient */}
       <div

@@ -146,6 +146,22 @@ export function GlobeView({ children }: GlobeViewProps) {
     }
   }, [setMapReady]);
 
+  // Fly to event location when selectedEventId changes and globe is ready
+  const selectedEventId = useEventsStore(s => s.selectedEventId);
+  const allEvents = useEventsStore(s => s.events);
+  const lastFlyToRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!ready || !selectedEventId || !globeRef.current) return;
+    if (lastFlyToRef.current === selectedEventId) return;
+    const target = allEvents.find(e => e.id === selectedEventId);
+    if (!target) return;
+    lastFlyToRef.current = selectedEventId;
+    globeRef.current.pointOfView(
+      { lat: target.latitude, lng: target.longitude, altitude: 0.4 },
+      1200,
+    );
+  }, [ready, selectedEventId, allEvents]);
+
   // Load boundary GeoJSON when year changes (debounced to prevent rapid flickering)
   const pendingLoadRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
