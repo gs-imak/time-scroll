@@ -1,9 +1,10 @@
 import { useMemo, useEffect, useState, useCallback } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate, useSearchParams } from 'react-router';
 import { motion } from 'framer-motion';
 import {
   Flame, Globe, Dices, Brain, Trophy, ArrowRight,
   Compass, Sparkles, Heart, CheckCircle, Scale, BookOpen, Clock, ChevronRight,
+  Scroll, Lock,
 } from 'lucide-react';
 import { useProgressStore, ACHIEVEMENTS } from '@/shared/stores/progressStore';
 import { useEventsStore } from '@/shared/stores/eventsStore';
@@ -91,8 +92,18 @@ function GlassCard({ children, className, ...props }: React.HTMLAttributes<HTMLD
   );
 }
 
+type DashboardTab = 'overview' | 'events' | 'achievements';
+
+const TABS: { id: DashboardTab; label: string; icon: typeof Globe }[] = [
+  { id: 'overview', label: 'Overview', icon: Compass },
+  { id: 'events', label: 'Events', icon: Scroll },
+  { id: 'achievements', label: 'Achievements', icon: Trophy },
+];
+
 export default function Dashboard() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = (searchParams.get('tab') as DashboardTab) || 'overview';
 
   const viewedEvents = useProgressStore(s => s.viewedEvents);
   const quizScores = useProgressStore(s => s.quizScores);
@@ -218,6 +229,37 @@ export default function Dashboard() {
           </div>
         </motion.header>
 
+        {/* ── Tab Navigation ── */}
+        <motion.div className="mb-10" {...section(0.12)}>
+          <div className="flex gap-1 p-1 rounded-xl" style={{ background: 'var(--glass-bg)', border: '1px solid var(--color-border-subtle)' }}>
+            {TABS.map(tab => {
+              const isActive = activeTab === tab.id;
+              const Icon = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setSearchParams(tab.id === 'overview' ? {} : { tab: tab.id })}
+                  className={cn(
+                    'flex items-center gap-2 px-4 py-2.5 rounded-lg text-[13px] font-medium transition-all duration-200 cursor-pointer flex-1 justify-center',
+                    isActive
+                      ? 'text-text-primary'
+                      : 'text-text-muted hover:text-text-secondary',
+                  )}
+                  style={isActive ? {
+                    background: 'var(--color-elevated)',
+                    border: '1px solid var(--color-border-active)',
+                    boxShadow: '0 2px 8px var(--glass-shadow)',
+                  } : { border: '1px solid transparent' }}
+                >
+                  <Icon size={15} />
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
+        </motion.div>
+
+        {activeTab === 'overview' && (<>
         {/* ── Daily Challenge ── */}
         {dailyEvent && (
           <motion.section className="mb-12" {...section(0.15)}>
@@ -768,8 +810,287 @@ export default function Dashboard() {
             <ActionButton icon={Globe} label="Explore Globe" desc="Open the 3D atlas" onClick={() => navigate('/explore')} />
           </div>
         </motion.section>
+        </>)}
+
+        {/* ══════════════════════ EVENTS TAB ══════════════════════ */}
+        {activeTab === 'events' && (
+          <EventsTab events={events} viewedEvents={viewedEvents} navigate={navigate} />
+        )}
+
+        {/* ══════════════════════ ACHIEVEMENTS TAB ══════════════════════ */}
+        {activeTab === 'achievements' && (
+          <AchievementsTab
+            viewedEvents={viewedEvents}
+            quizScores={quizScores}
+            unlockedAchievements={unlockedAchievements}
+            currentStreak={currentStreak}
+            totalEvents={events.length}
+          />
+        )}
       </div>
     </div>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════
+// Events Tab
+// ══════════════════════════════════════════════════════════════════
+
+const EVENT_CATEGORIES: { id: string; label: string; color: string }[] = [
+  { id: 'war', label: 'War', color: '#b85454' },
+  { id: 'discovery', label: 'Discovery', color: '#5a8fa5' },
+  { id: 'cultural', label: 'Cultural', color: '#c49a44' },
+  { id: 'political', label: 'Political', color: '#8b80b0' },
+  { id: 'construction', label: 'Construction', color: '#6d9476' },
+  { id: 'natural', label: 'Natural', color: '#b87a60' },
+];
+
+function EventsTab({ events, viewedEvents, navigate }: {
+  events: any[];
+  viewedEvents: string[];
+  navigate: (path: string) => void;
+}) {
+  const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
+  const [eraFilter, setEraFilter] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
+
+  const filtered = useMemo(() => {
+    return events.filter(e => {
+      if (categoryFilter && e.category !== categoryFilter) return false;
+      if (eraFilter && e.eraId !== eraFilter) return false;
+      if (search && !e.title.toLowerCase().includes(search.toLowerCase())) return false;
+      return true;
+    }).sort((a: any, b: any) => a.year - b.year);
+  }, [events, categoryFilter, eraFilter, search]);
+
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
+      {/* Filters */}
+      <div className="flex flex-wrap gap-3 mb-6">
+        <input
+          type="text"
+          placeholder="Search events..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          className="flex-1 min-w-[200px] px-4 py-2.5 rounded-lg text-[13px] text-text-primary placeholder:text-text-muted outline-none"
+          style={{
+            background: 'var(--glass-bg)',
+            border: '1px solid var(--color-border-subtle)',
+            fontFamily: "'Inter', sans-serif",
+          }}
+        />
+        <select
+          value={eraFilter || ''}
+          onChange={e => setEraFilter(e.target.value || null)}
+          className="px-3 py-2.5 rounded-lg text-[12px] text-text-secondary cursor-pointer outline-none"
+          style={{
+            background: 'var(--glass-bg)',
+            border: '1px solid var(--color-border-subtle)',
+          }}
+        >
+          <option value="">All Eras</option>
+          {ERAS.map(era => (
+            <option key={era.id} value={era.id}>{era.name}</option>
+          ))}
+        </select>
+      </div>
+
+      {/* Category pills */}
+      <div className="flex flex-wrap gap-2 mb-8">
+        <button
+          onClick={() => setCategoryFilter(null)}
+          className="px-3 py-1.5 rounded-full text-[11px] font-medium cursor-pointer transition-all"
+          style={{
+            background: !categoryFilter ? 'var(--color-accent-gold)' : 'var(--glass-bg)',
+            color: !categoryFilter ? 'var(--color-void)' : 'var(--color-text-muted)',
+            border: `1px solid ${!categoryFilter ? 'var(--color-accent-gold)' : 'var(--color-border-subtle)'}`,
+          }}
+        >
+          All ({events.length})
+        </button>
+        {EVENT_CATEGORIES.map(cat => {
+          const count = events.filter((e: any) => e.category === cat.id).length;
+          const active = categoryFilter === cat.id;
+          return (
+            <button
+              key={cat.id}
+              onClick={() => setCategoryFilter(active ? null : cat.id)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-medium cursor-pointer transition-all"
+              style={{
+                background: active ? `${cat.color}25` : 'var(--glass-bg)',
+                color: active ? cat.color : 'var(--color-text-muted)',
+                border: `1px solid ${active ? `${cat.color}60` : 'var(--color-border-subtle)'}`,
+              }}
+            >
+              <span className="w-2 h-2 rounded-full" style={{ background: cat.color, opacity: active ? 1 : 0.4 }} />
+              {cat.label} ({count})
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Event list */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        {filtered.map((event: any) => {
+          const catColor = CATEGORY_COLORS[event.category] ?? '#8a8a9a';
+          const viewed = viewedEvents.includes(event.id);
+          return (
+            <motion.div
+              key={event.id}
+              whileHover={{ y: -2 }}
+              transition={{ duration: 0.15 }}
+            >
+              <GlassCard
+                className="overflow-hidden cursor-pointer group"
+                style={{ border: '1px solid var(--color-border-subtle)' }}
+                onClick={() => navigate(`/explore?event=${event.id}`)}
+              >
+                <div
+                  className="w-full aspect-[16/10] relative overflow-hidden"
+                  style={{ background: `linear-gradient(135deg, ${catColor}30, ${catColor}10)` }}
+                >
+                  {event.imageUrl && (
+                    <img
+                      src={event.imageUrl}
+                      alt=""
+                      loading="lazy"
+                      className="absolute inset-0 w-full h-full object-cover"
+                      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                    />
+                  )}
+                  <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, var(--glass-strong-bg) 0%, transparent 60%)' }} />
+                  <div className="absolute top-3 left-3 flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full" style={{ background: catColor }} />
+                    <span className="text-[10px] font-medium uppercase tracking-wide" style={{ color: catColor }}>{event.category}</span>
+                  </div>
+                  {viewed && (
+                    <div className="absolute top-3 right-3">
+                      <CheckCircle size={14} style={{ color: '#6d9476' }} />
+                    </div>
+                  )}
+                </div>
+                <div className="px-4 py-3">
+                  <h3
+                    className="text-text-primary group-hover:text-accent-gold transition-colors truncate"
+                    style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '14px', fontWeight: 500 }}
+                  >
+                    {event.title}
+                  </h3>
+                  <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', color: 'var(--color-text-muted)' }}>
+                    {formatYear(event.year)}
+                  </span>
+                </div>
+              </GlassCard>
+            </motion.div>
+          );
+        })}
+      </div>
+
+      {filtered.length === 0 && (
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <Scroll size={32} className="text-text-muted mb-3" />
+          <p className="text-[14px] text-text-secondary">No events match your filters</p>
+        </div>
+      )}
+
+      <p className="text-center text-[11px] text-text-muted mt-8 pb-8">
+        {filtered.length} of {events.length} events
+      </p>
+    </motion.div>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════
+// Achievements Tab
+// ══════════════════════════════════════════════════════════════════
+
+function AchievementsTab({ viewedEvents, quizScores, unlockedAchievements, currentStreak, totalEvents }: {
+  viewedEvents: string[];
+  quizScores: Record<string, number>;
+  unlockedAchievements: string[];
+  currentStreak: number;
+  totalEvents: number;
+}) {
+  const explored = viewedEvents.length;
+  const quizCount = Object.keys(quizScores).length;
+  const avgScore = quizCount > 0
+    ? Math.round(Object.values(quizScores).reduce((a, b) => a + b, 0) / quizCount)
+    : 0;
+
+  const stats = [
+    { label: 'Events Explored', value: explored, total: totalEvents, color: '#5a9aaa' },
+    { label: 'Quizzes Taken', value: quizCount, total: null, color: '#c49a44' },
+    { label: 'Avg Quiz Score', value: `${avgScore}%`, total: null, color: '#6d9476' },
+    { label: 'Current Streak', value: `${currentStreak} day${currentStreak !== 1 ? 's' : ''}`, total: null, color: '#b85454' },
+  ];
+
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
+      {/* Stats grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-10">
+        {stats.map((stat, i) => (
+          <GlassCard key={i} className="px-5 py-4">
+            <p className="text-[10px] font-mono uppercase tracking-wider text-text-muted mb-1">{stat.label}</p>
+            <p className="text-[24px] font-bold" style={{ color: stat.color, fontFamily: "'Space Grotesk', sans-serif" }}>
+              {stat.value}
+              {stat.total && <span className="text-[14px] text-text-muted font-normal">/{stat.total}</span>}
+            </p>
+          </GlassCard>
+        ))}
+      </div>
+
+      {/* Achievements grid */}
+      <h2
+        className="uppercase tracking-[0.15em] mb-4"
+        style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '13px', fontWeight: 500, color: 'var(--color-text-muted)' }}
+      >
+        All Achievements ({unlockedAchievements.length}/{ACHIEVEMENTS.length})
+      </h2>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pb-12">
+        {ACHIEVEMENTS.map((ach) => {
+          const unlocked = unlockedAchievements.includes(ach.id);
+          return (
+            <GlassCard
+              key={ach.id}
+              className={cn(
+                'flex items-center gap-4 px-5 py-4',
+                !unlocked && 'opacity-40',
+              )}
+              style={{
+                border: unlocked
+                  ? '1px solid rgba(196, 154, 68, 0.25)'
+                  : '1px solid var(--color-border-subtle)',
+              }}
+            >
+              <div
+                className="flex items-center justify-center rounded-full shrink-0"
+                style={{
+                  width: 48,
+                  height: 48,
+                  background: unlocked ? 'rgba(196, 154, 68, 0.15)' : 'rgba(255,255,255,0.04)',
+                  border: unlocked ? '1px solid rgba(196, 154, 68, 0.3)' : '1px solid var(--color-border-subtle)',
+                  fontSize: 22,
+                }}
+              >
+                {unlocked ? ach.icon : <Lock size={16} className="text-text-muted" />}
+              </div>
+              <div className="min-w-0">
+                <h3 className="text-[14px] font-semibold text-text-primary" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                  {ach.title}
+                </h3>
+                <p className="text-[11px] text-text-secondary mt-0.5">{ach.desc}</p>
+                {unlocked && (
+                  <span className="inline-block text-[9px] font-mono mt-1 px-2 py-0.5 rounded-full" style={{ background: 'rgba(196, 154, 68, 0.12)', color: '#c49a44' }}>
+                    Unlocked
+                  </span>
+                )}
+              </div>
+            </GlassCard>
+          );
+        })}
+      </div>
+    </motion.div>
   );
 }
 
