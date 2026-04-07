@@ -17,6 +17,7 @@ import { useVisibilityTier } from './useVisibilityTier';
 import { useEventClustering } from './useEventClustering';
 import { useLabelCollision } from './useLabelCollision';
 import { CIV_ALIASES } from '@/shared/data/civAliases';
+import { CIV_DESCRIPTIONS } from '@/shared/data/civDescriptions';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // === Globe context for child components (landmarks, etc.) ===
@@ -748,84 +749,137 @@ export function GlobeView({ children }: GlobeViewProps) {
         )}
         {ready && children}
 
-        {/* Territory selection overlay — shows civ name + spotlight entry */}
+        {/* Territory info card — shows when a territory is clicked */}
         <AnimatePresence>
-          {selectedTerritory && !spotlightActive && (
-            <motion.div
-              className="fixed bottom-[200px] left-1/2 -translate-x-1/2 z-40 lg:ml-[32px]"
-              initial={{ opacity: 0, y: 20, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 20, scale: 0.95 }}
-              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            >
-              <div
-                className="flex items-center gap-4 px-5 py-3 rounded-xl"
-                style={{
-                  background: 'var(--glass-strong-bg)',
-                  backdropFilter: 'blur(20px)',
-                  border: `1.5px solid ${getCivColor(selectedTerritory)}50`,
-                  boxShadow: `0 0 24px ${getCivColor(selectedTerritory)}20, 0 4px 20px var(--glass-shadow)`,
-                }}
+          {selectedTerritory && !spotlightActive && (() => {
+            const civColor = getCivColor(selectedTerritory);
+            const civEntry = Object.entries(CIV_ALIASES).find(([, v]) =>
+              v.aliases.includes(selectedTerritory!),
+            );
+            const civId = civEntry?.[0];
+            const desc = civId ? CIV_DESCRIPTIONS[civId] : null;
+
+            return (
+              <motion.div
+                key={selectedTerritory}
+                className="fixed top-20 right-4 z-40 lg:right-6"
+                initial={{ opacity: 0, x: 30, scale: 0.95 }}
+                animate={{ opacity: 1, x: 0, scale: 1 }}
+                exit={{ opacity: 0, x: 30, scale: 0.95 }}
+                transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
               >
                 <div
-                  className="w-3.5 h-3.5 rounded-sm shrink-0"
+                  className="rounded-2xl overflow-hidden"
                   style={{
-                    background: getCivColor(selectedTerritory),
-                    boxShadow: `0 0 8px ${getCivColor(selectedTerritory)}90`,
+                    background: 'var(--glass-strong-bg)',
+                    backdropFilter: 'blur(24px)',
+                    border: `1.5px solid ${civColor}35`,
+                    boxShadow: `0 0 30px ${civColor}15, 0 8px 32px var(--glass-shadow-strong)`,
+                    width: 340,
                   }}
-                />
-                <div>
-                  <h3
-                    className="text-[15px] font-bold"
-                    style={{
-                      color: getCivColor(selectedTerritory),
-                      fontFamily: "'Space Grotesk', sans-serif",
-                    }}
-                  >
-                    {selectedTerritory}
-                  </h3>
-                  <p className="text-[10px] text-text-muted">{formatYear(currentYear)}</p>
-                </div>
-                {/* View Timeline button — enters spotlight mode if civ has aliases */}
-                {(() => {
-                  const civEntry = Object.entries(CIV_ALIASES).find(([, v]) =>
-                    v.aliases.includes(selectedTerritory!),
-                  );
-                  if (!civEntry) return null;
-                  const [civId] = civEntry;
-                  const enterSpotlight = useSpotlightStore.getState().enterSpotlight;
-                  return (
-                    <motion.button
-                      onClick={() => {
-                        setSelectedTerritory(null);
-                        enterSpotlight(civId);
-                      }}
-                      className="ml-2 px-4 py-2 rounded-lg text-[11px] font-semibold cursor-pointer"
-                      style={{
-                        background: `${getCivColor(selectedTerritory)}20`,
-                        border: `1px solid ${getCivColor(selectedTerritory)}40`,
-                        color: getCivColor(selectedTerritory),
-                      }}
-                      whileHover={{ scale: 1.05, background: `${getCivColor(selectedTerritory)}30` }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      View Timeline
-                    </motion.button>
-                  );
-                })()}
-                <motion.button
-                  onClick={() => setSelectedTerritory(null)}
-                  className="ml-1 w-7 h-7 rounded-full flex items-center justify-center cursor-pointer text-text-muted hover:text-text-primary"
-                  style={{ background: 'rgba(255,255,255,0.04)' }}
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  aria-label="Deselect territory"
                 >
-                  ✕
-                </motion.button>
-              </div>
-            </motion.div>
-          )}
+                  {/* Image */}
+                  {desc?.imageUrl && (
+                    <div className="relative w-full h-[140px] overflow-hidden">
+                      <img
+                        src={desc.imageUrl}
+                        alt=""
+                        className="absolute inset-0 w-full h-full object-cover"
+                        loading="lazy"
+                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                      />
+                      <div
+                        className="absolute inset-0"
+                        style={{ background: `linear-gradient(to top, var(--glass-strong-bg) 0%, transparent 60%)` }}
+                      />
+                      {/* Close button */}
+                      <motion.button
+                        onClick={() => setSelectedTerritory(null)}
+                        className="absolute top-3 right-3 w-7 h-7 rounded-full flex items-center justify-center cursor-pointer"
+                        style={{ background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(8px)' }}
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        aria-label="Close"
+                      >
+                        <span className="text-[12px] text-white/70">✕</span>
+                      </motion.button>
+                    </div>
+                  )}
+
+                  {/* Content */}
+                  <div className="px-5 pb-5" style={{ marginTop: desc?.imageUrl ? -8 : 16 }}>
+                    {/* Header */}
+                    <div className="flex items-center gap-2.5 mb-3">
+                      <div
+                        className="w-3 h-3 rounded-sm shrink-0"
+                        style={{ background: civColor, boxShadow: `0 0 8px ${civColor}80` }}
+                      />
+                      <div>
+                        <h3
+                          className="text-[16px] font-bold leading-tight"
+                          style={{ color: civColor, fontFamily: "'Space Grotesk', sans-serif" }}
+                        >
+                          {selectedTerritory}
+                        </h3>
+                        <p className="text-[10px] font-mono text-text-muted">{formatYear(currentYear)}</p>
+                      </div>
+                    </div>
+
+                    {/* Description */}
+                    {desc ? (
+                      <>
+                        <p className="text-[12px] text-text-secondary leading-[1.65] mb-3">
+                          {desc.summary}
+                        </p>
+                        <div
+                          className="rounded-lg px-3 py-2.5 mb-4"
+                          style={{ background: `${civColor}08`, border: `1px solid ${civColor}15` }}
+                        >
+                          <p className="text-[10px] font-semibold text-text-muted uppercase tracking-wider mb-1">Known for</p>
+                          <p className="text-[11px] text-text-secondary leading-[1.55]">{desc.knownFor}</p>
+                        </div>
+                      </>
+                    ) : (
+                      <p className="text-[12px] text-text-muted mb-4">
+                        A historical territory active during this period.
+                      </p>
+                    )}
+
+                    {/* Actions */}
+                    <div className="flex gap-2">
+                      {civId && (
+                        <motion.button
+                          onClick={() => {
+                            setSelectedTerritory(null);
+                            useSpotlightStore.getState().enterSpotlight(civId);
+                          }}
+                          className="flex-1 px-4 py-2.5 rounded-lg text-[12px] font-semibold cursor-pointer"
+                          style={{
+                            background: `${civColor}20`,
+                            border: `1px solid ${civColor}40`,
+                            color: civColor,
+                          }}
+                          whileHover={{ scale: 1.02, background: `${civColor}30` }}
+                          whileTap={{ scale: 0.97 }}
+                        >
+                          View Timeline
+                        </motion.button>
+                      )}
+                      <motion.button
+                        onClick={() => setSelectedTerritory(null)}
+                        className="px-4 py-2.5 rounded-lg text-[12px] font-medium cursor-pointer text-text-secondary"
+                        style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--color-border-subtle)' }}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.97 }}
+                      >
+                        Close
+                      </motion.button>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })()}
         </AnimatePresence>
       </div>
     </GlobeContext.Provider>
