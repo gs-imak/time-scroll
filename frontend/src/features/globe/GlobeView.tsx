@@ -5,13 +5,17 @@ import { useMapStore } from '@/shared/stores/mapStore';
 import { useTimeStore } from '@/shared/stores/timeStore';
 import { useEventsStore } from '@/shared/stores/eventsStore';
 import { useJourneyArcsStore } from '@/shared/stores/journeyArcsStore';
+import { useCameraStore } from '@/shared/stores/cameraStore';
 import { closestBoundaryYear } from '@/shared/utils/geo';
 import { formatYear } from '@/shared/utils/format';
 import { BOUNDARY_YEAR_MAP } from '@/shared/utils/constants';
 import { getVisibleCivilizationLabels } from '@/shared/data/civilizationLabels';
-import { createEventMarker, CATEGORY_COLORS } from './eventMarkers';
+import { createEventMarker, createClusterMarker, CATEGORY_COLORS } from './eventMarkers';
 import { useSpotlightStore } from '@/shared/stores/spotlightStore';
 import { getGeoJsonFromCache, cacheGeoJson } from '@/shared/data/geoJsonCache';
+import { useVisibilityTier } from './useVisibilityTier';
+import { useEventClustering } from './useEventClustering';
+import { useLabelCollision } from './useLabelCollision';
 
 // === Globe context for child components (landmarks, etc.) ===
 interface GlobeContextValue {
@@ -74,6 +78,73 @@ function getCivColor(name: string | undefined): string {
   return CIV_PALETTE[Math.abs(hash) % CIV_PALETTE.length]!;
 }
 
+// Deterministic hash for per-civ altitude stratification
+function hashString(s: string): number {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = ((h << 5) - h + s.charCodeAt(i)) | 0;
+  return Math.abs(h);
+}
+
+// === Material cache — avoids allocating new materials every render ===
+const capMaterialCache = new Map<string, THREE.MeshBasicMaterial>();
+const sideMaterialCache = new Map<string, THREE.MeshBasicMaterial>();
+
+function getCachedCapMaterial(
+  key: string,
+  color: THREE.ColorRepresentation,
+  opacity: number,
+  offsetFactor: number,
+): THREE.MeshBasicMaterial {
+  let mat = capMaterialCache.get(key);
+  if (mat) {
+    // Update mutable properties in case they changed
+    mat.color.set(color);
+    mat.opacity = opacity;
+    return mat;
+  }
+  mat = new THREE.MeshBasicMaterial({
+    color,
+    transparent: true,
+    opacity,
+    depthWrite: false,
+    depthTest: true,
+    polygonOffset: true,
+    polygonOffsetFactor: offsetFactor,
+    polygonOffsetUnits: -1,
+    side: THREE.DoubleSide,
+    blending: THREE.NormalBlending,
+  });
+  capMaterialCache.set(key, mat);
+  return mat;
+}
+
+function getCachedSideMaterial(
+  key: string,
+  color: THREE.ColorRepresentation,
+  opacity: number,
+): THREE.MeshBasicMaterial {
+  let mat = sideMaterialCache.get(key);
+  if (mat) {
+    mat.color.set(color);
+    mat.opacity = opacity;
+    return mat;
+  }
+  mat = new THREE.MeshBasicMaterial({
+    color,
+    transparent: true,
+    opacity,
+    depthWrite: false,
+    depthTest: true,
+    polygonOffset: true,
+    polygonOffsetFactor: 1,
+    polygonOffsetUnits: 1,
+    side: THREE.DoubleSide,
+    blending: THREE.NormalBlending,
+  });
+  sideMaterialCache.set(key, mat);
+  return mat;
+}
+
 // === Sorted boundary years ===
 const SORTED_BOUNDARY_YEARS = Object.keys(BOUNDARY_YEAR_MAP).map(Number).sort((a, b) => a - b);
 
@@ -100,7 +171,7 @@ export function GlobeView({ children }: GlobeViewProps) {
   const spotlightAliasSet = useSpotlightStore(s => s.aliasSet);
   const spotlightColor = useSpotlightStore(s => s.civColor);
 
-  const civilizationLabels = useMemo(
+  const allCivilizationLabels = useMemo(
     () => getVisibleCivilizationLabels(currentYear),
     [currentYear],
   );
@@ -135,6 +206,29 @@ export function GlobeView({ children }: GlobeViewProps) {
         controls.autoRotate = false;
         controls.enableDamping = true;
         controls.dampingFactor = 0.1;
+
+        // Track camera altitude for visibility tier system
+        const setCameraAltitude = useCameraStore.getState().setCameraAltitude;
+        let throttleTimer: ReturnType<typeof setTimeout> | null = null;
+        controls.addEventListener('change', () => {
+          if (throttleTimer) return;
+          throttleTimer = setTimeout(() => {
+            throttleTimer = null;
+            if (globeRef.current) {
+              const pov = globeRef.current.pointOfView();
+              setCameraAltitude(pov.altitude);
+            }
+          }, 60);
+        });
+      }
+
+      // Tighten camera near/far ratio for better depth buffer precision
+      // Reduces z-fighting between overlapping territory polygons
+      const camera = globeRef.current.camera() as THREE.PerspectiveCamera;
+      if (camera && 'near' in camera) {
+        camera.near = 0.5;
+        camera.far = 2000;
+        camera.updateProjectionMatrix();
       }
 
       // Enhance globe material for HD quality
@@ -255,8 +349,16 @@ export function GlobeView({ children }: GlobeViewProps) {
     return () => { if (pendingLoadRef.current) clearTimeout(pendingLoadRef.current); };
   }, [currentYear]);
 
-  // Get visible events
-  const events = getVisibleEvents(currentYear);
+  // Get visible events, then filter by zoom tier, then cluster nearby ones
+  const allVisibleEvents = getVisibleEvents(currentYear);
+  const { filteredLabels: civilizationLabels, filteredEvents } = useVisibilityTier(
+    allCivilizationLabels,
+    allVisibleEvents,
+  );
+  const clusteredEvents = useEventClustering(filteredEvents);
+
+  // Label collision avoidance (runs on camera change via rAF)
+  useLabelCollision(globeRef, civilizationLabels.length > 0);
 
   // Screen coords helper for child components (landmarks)
   const getScreenCoords = useCallback((lat: number, lng: number) => {
@@ -266,8 +368,14 @@ export function GlobeView({ children }: GlobeViewProps) {
     return { x: coords.x, y: coords.y };
   }, []);
 
-  // Create per-event billboard marker (unique icon + name badge)
+  // Create marker — dispatches to event or cluster renderer
   const createCustomMarker = useCallback((d: any) => {
+    if (d.type === 'cluster') {
+      return createClusterMarker({
+        count: d.count,
+        dominantCategory: d.dominantCategory,
+      });
+    }
     return createEventMarker({
       id: d.id,
       title: d.title,
@@ -276,10 +384,12 @@ export function GlobeView({ children }: GlobeViewProps) {
     });
   }, []);
 
-  // Update marker position using getCoords
+  // Update marker position using getCoords (works for both events and clusters)
   const updateMarkerPosition = useCallback((obj: any, d: any) => {
     if (!globeRef.current) return;
-    const coords = globeRef.current.getCoords(d.latitude, d.longitude, 0.01);
+    const lat = d.type === 'cluster' ? d.lat : d.latitude;
+    const lng = d.type === 'cluster' ? d.lng : d.longitude;
+    const coords = globeRef.current.getCoords(lat, lng, 0.01);
     if (coords) {
       Object.assign(obj.position, coords);
 
@@ -312,48 +422,47 @@ export function GlobeView({ children }: GlobeViewProps) {
             atmosphereAltitude={0.18}
             showAtmosphere={true}
 
-            // Historical boundaries — Civ VI inspired: glowing borders, vivid fills
+            // Historical boundaries — custom materials to eliminate z-fighting
             polygonsData={polygonsData}
             polygonGeoJsonGeometry={(d: any) => d.geometry}
-            polygonCapColor={(d: any) => {
-              const name = d.properties?.NAME;
+            polygonCapMaterial={(d: any) => {
+              const name: string | undefined = d.properties?.NAME;
               const isNamed = name && name !== '?';
 
               if (spotlightActive) {
-                if (spotlightAliasSet.has(name)) {
+                if (name && spotlightAliasSet.has(name)) {
                   const hex = spotlightColor || '#c49a44';
-                  const r = parseInt(hex.slice(1, 3), 16);
-                  const g = parseInt(hex.slice(3, 5), 16);
-                  const b = parseInt(hex.slice(5, 7), 16);
-                  return `rgba(${r}, ${g}, ${b}, 0.45)`;
+                  return getCachedCapMaterial(`spot-cap-${name}`, hex, 0.45, -2);
                 }
-                return 'rgba(25, 25, 35, 0.03)';
+                return getCachedCapMaterial('spot-cap-dim', '#191923', 0.03, 2);
               }
 
               const hex = getCivColor(name);
-              const r = parseInt(hex.slice(1, 3), 16);
-              const g = parseInt(hex.slice(3, 5), 16);
-              const b = parseInt(hex.slice(5, 7), 16);
-              return `rgba(${r}, ${g}, ${b}, ${isNamed ? 0.25 : 0.02})`;
+              // Deterministic offset per civ so overlapping territories don't fight
+              const offset = isNamed ? -(hashString(name!) % 10) - 1 : 2;
+              return getCachedCapMaterial(
+                `cap-${name ?? 'unknown'}`,
+                hex,
+                isNamed ? 0.25 : 0.02,
+                offset,
+              );
             }}
-            polygonSideColor={(d: any) => {
-              const name = d.properties?.NAME;
+            polygonSideMaterial={(d: any) => {
+              const name: string | undefined = d.properties?.NAME;
+
               if (spotlightActive) {
-                if (spotlightAliasSet.has(name)) {
+                if (name && spotlightAliasSet.has(name)) {
                   const hex = spotlightColor || '#c49a44';
-                  const r = Math.min(255, parseInt(hex.slice(1, 3), 16) + 60);
-                  const g = Math.min(255, parseInt(hex.slice(3, 5), 16) + 60);
-                  const b = Math.min(255, parseInt(hex.slice(5, 7), 16) + 60);
-                  return `rgba(${r}, ${g}, ${b}, 0.85)`;
+                  return getCachedSideMaterial(`spot-side-${name}`, hex, 0.85);
                 }
-                return 'rgba(20, 20, 28, 0.01)';
+                return getCachedSideMaterial('spot-side-dim', '#14141c', 0.01);
               }
-              if (!name || name === '?') return 'rgba(40, 40, 50, 0.05)';
+
+              if (!name || name === '?') {
+                return getCachedSideMaterial('side-unknown', '#282832', 0.05);
+              }
               const hex = getCivColor(name);
-              const r = parseInt(hex.slice(1, 3), 16);
-              const g = parseInt(hex.slice(3, 5), 16);
-              const b = parseInt(hex.slice(5, 7), 16);
-              return `rgba(${Math.min(255, r + 40)}, ${Math.min(255, g + 40)}, ${Math.min(255, b + 40)}, 0.6)`;
+              return getCachedSideMaterial(`side-${name}`, hex, 0.6);
             }}
             polygonStrokeColor={(d: any) => {
               const name = d.properties?.NAME;
@@ -379,7 +488,11 @@ export function GlobeView({ children }: GlobeViewProps) {
               if (spotlightActive) {
                 return spotlightAliasSet.has(name) ? 0.018 : 0.0003;
               }
-              return name && name !== '?' ? 0.01 : 0.001;
+              if (!name || name === '?') return 0.002;
+              // Hash-based altitude: each civ gets a unique height (0.008–0.022)
+              // This prevents same-altitude z-fighting between adjacent territories
+              const h = hashString(name) % 100;
+              return 0.008 + h * 0.00014;
             }}
             polygonLabel={(d: any) => {
               const name = d.properties?.NAME;
@@ -407,20 +520,57 @@ export function GlobeView({ children }: GlobeViewProps) {
             }}
             polygonsTransitionDuration={2000}
 
-            // Event markers — per-event billboard badges
-            customLayerData={events}
+            // Event markers + cluster badges
+            customLayerData={clusteredEvents}
             customThreeObject={createCustomMarker}
             customThreeObjectUpdate={updateMarkerPosition}
             onCustomLayerClick={(obj: any) => {
-              selectEvent(obj.id);
-              if (globeRef.current) {
-                globeRef.current.pointOfView(
-                  { lat: obj.latitude, lng: obj.longitude, altitude: 0.4 },
-                  1200
-                );
+              if (obj.type === 'cluster') {
+                // Zoom into cluster to expand it
+                if (globeRef.current) {
+                  globeRef.current.pointOfView(
+                    { lat: obj.lat, lng: obj.lng, altitude: 0.4 },
+                    1200,
+                  );
+                }
+              } else {
+                selectEvent(obj.id);
+                if (globeRef.current) {
+                  globeRef.current.pointOfView(
+                    { lat: obj.latitude, lng: obj.longitude, altitude: 0.4 },
+                    1200,
+                  );
+                }
               }
             }}
             customLayerLabel={(d: any) => {
+              if (d.type === 'cluster') {
+                const c = CATEGORY_COLORS[d.dominantCategory] ?? '#8a8a9a';
+                const titles = d.events
+                  .slice(0, 5)
+                  .map((e: any) => `<div style="font-size: 11px; color: #b0b0bc; padding: 2px 0;">· ${e.title}</div>`)
+                  .join('');
+                const more = d.events.length > 5
+                  ? `<div style="font-size: 10px; color: #55556a; padding-top: 4px;">+${d.events.length - 5} more</div>`
+                  : '';
+                return `<div style="
+                  background: rgba(14, 14, 20, 0.95);
+                  backdrop-filter: blur(20px);
+                  border: 1px solid rgba(255,255,255,0.06);
+                  border-left: 3px solid ${c};
+                  border-radius: 10px;
+                  padding: 10px 14px;
+                  max-width: 260px;
+                  font-family: 'Inter', system-ui, sans-serif;
+                  box-shadow: 0 4px 24px rgba(0,0,0,0.6);
+                ">
+                  <div style="font-size: 13px; font-weight: 600; color: #e0e0e6; margin-bottom: 6px;">
+                    ${d.count} events in this area
+                  </div>
+                  ${titles}${more}
+                  <div style="font-size: 9px; color: #55556a; margin-top: 6px;">Click to zoom in</div>
+                </div>`;
+              }
               const c = CATEGORY_COLORS[d.category] ?? '#8a8a9a';
               return `<div style="
                 background: rgba(14, 14, 20, 0.95);
@@ -453,10 +603,13 @@ export function GlobeView({ children }: GlobeViewProps) {
             htmlElement={(d: any) => {
               const el = document.createElement('div');
               const color = getCivColor(d.name);
+              el.dataset.civSlug = d.slug;
+              el.dataset.civImportance = String(d.importance ?? 1);
               el.style.cssText = `
                 pointer-events: none;
                 transform: translate(-50%, -50%);
                 white-space: nowrap;
+                transition: opacity 0.3s ease, margin-top 0.2s ease;
               `;
               el.innerHTML = `
                 <div style="

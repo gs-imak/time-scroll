@@ -266,6 +266,134 @@ function renderPinCanvas(
   return canvas;
 }
 
+// ── Cluster badge canvas ──────────────────────────────────────────
+
+function renderClusterCanvas(count: number, color: string): HTMLCanvasElement {
+  const dpr = 2;
+  const size = 72;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = size * dpr;
+  canvas.height = size * dpr;
+  const ctx = canvas.getContext('2d')!;
+  ctx.scale(dpr, dpr);
+
+  const cx = size / 2;
+  const cy = size / 2;
+  const r = 28;
+  const [cr, cg, cb] = hexToRgb(color);
+
+  // Outer glow
+  const glow = ctx.createRadialGradient(cx, cy, r - 4, cx, cy, r + 10);
+  glow.addColorStop(0, `rgba(${cr},${cg},${cb}, 0.25)`);
+  glow.addColorStop(1, `rgba(${cr},${cg},${cb}, 0)`);
+  ctx.fillStyle = glow;
+  ctx.fillRect(0, 0, size, size);
+
+  // Circle fill
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.fillStyle = `rgba(${cr},${cg},${cb}, 0.22)`;
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(14, 14, 20, 0.82)';
+  ctx.fill();
+
+  // Border
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.strokeStyle = `rgba(${cr},${cg},${cb}, 0.8)`;
+  ctx.lineWidth = 2.5;
+  ctx.stroke();
+
+  // Inner ring accent
+  ctx.beginPath();
+  ctx.arc(cx, cy, r - 3, 0, Math.PI * 2);
+  ctx.strokeStyle = `rgba(${cr},${cg},${cb}, 0.15)`;
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  // Count number
+  ctx.font = `bold 22px 'Inter', 'Space Grotesk', system-ui, sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = `rgb(${cr},${cg},${cb})`;
+  ctx.fillText(String(count), cx, cy + 1);
+
+  return canvas;
+}
+
+// ── Cluster 3D marker ─────────────────────────────────────────────
+
+export function createClusterMarker(cluster: {
+  count: number;
+  dominantCategory: string;
+}): THREE.Group {
+  const group = new THREE.Group();
+  const colorHex = CATEGORY_COLORS[cluster.dominantCategory] ?? '#8a8a9a';
+  const color = new THREE.Color(colorHex);
+
+  // Surface glow disc (wider for clusters)
+  const glowDisc = new THREE.Mesh(
+    new THREE.CircleGeometry(3.0, 24),
+    new THREE.MeshBasicMaterial({
+      color,
+      transparent: true,
+      opacity: 0.22,
+      side: THREE.DoubleSide,
+      depthWrite: false,
+    }),
+  );
+  glowDisc.rotation.x = -Math.PI / 2;
+  group.add(glowDisc);
+
+  // Surface ring
+  const ring = new THREE.Mesh(
+    new THREE.RingGeometry(1.2, 1.8, 24),
+    new THREE.MeshBasicMaterial({
+      color,
+      transparent: true,
+      opacity: 0.7,
+      side: THREE.DoubleSide,
+      depthWrite: false,
+    }),
+  );
+  ring.rotation.x = -Math.PI / 2;
+  group.add(ring);
+
+  // Pin line (shorter than event markers)
+  const pinH = 2.5;
+  const pin = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.08, 0.08, pinH, 4),
+    new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.35 }),
+  );
+  pin.position.y = pinH / 2;
+  group.add(pin);
+
+  // Cluster badge sprite
+  const canvas = renderClusterCanvas(cluster.count, colorHex);
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.minFilter = THREE.LinearFilter;
+  texture.magFilter = THREE.LinearFilter;
+
+  const sprite = new THREE.Sprite(
+    new THREE.SpriteMaterial({
+      map: texture,
+      transparent: true,
+      depthWrite: false,
+      sizeAttenuation: true,
+    }),
+  );
+  const badgeSize = 4.2;
+  sprite.scale.set(badgeSize, badgeSize, 1);
+  sprite.position.y = pinH + badgeSize / 2 + 0.2;
+  group.add(sprite);
+
+  return group;
+}
+
 // ── 3D marker construction ─────────────────────────────────────────
 
 export function createEventMarker(event: {

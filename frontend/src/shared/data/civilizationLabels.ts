@@ -7,6 +7,7 @@ export interface CivilizationLabel {
   lat: number;
   lng: number;
   eventIds: string[];
+  importance: number;
 }
 
 /**
@@ -20,6 +21,7 @@ function buildAllCivilizationLabels(): CivilizationLabel[] {
     const existing = bySlug.get(pack.slug);
     if (existing) {
       existing.eventIds.push(eventId);
+      existing.importance = existing.eventIds.length;
     } else {
       bySlug.set(pack.slug, {
         slug: pack.slug,
@@ -27,6 +29,7 @@ function buildAllCivilizationLabels(): CivilizationLabel[] {
         lat: pack.center.lat,
         lng: pack.center.lng,
         eventIds: [eventId],
+        importance: 1,
       });
     }
   }
