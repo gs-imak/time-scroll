@@ -17,7 +17,7 @@ export const CIV_ALIASES: Record<string, CivAlias> = {
     color: '#b85454',
     center: { lat: 41.9, lng: 12.5 },
     aliases: [
-      'Rome', 'Roman Republic', 'Roman Empire',
+      'Rome', 'Ancient Rome', 'Roman Republic', 'Roman Empire',
       'Rome (Constantinus)', 'Rome (Maximian)',
       'Rome (Galerius)', 'Rome (Diocletianus)',
       'Western Roman Empire',
@@ -42,7 +42,7 @@ export const CIV_ALIASES: Record<string, CivAlias> = {
     aliases: [
       'Achaemenid Empire', 'Parthian Empire',
       'Sasanian Empire', 'Sasanian dependencies',
-      'Safavid Empire', 'Persia', 'Iran',
+      'Safavid Empire', 'Persia', 'Ancient Persia', 'Iran',
     ],
   },
   china: {
@@ -53,7 +53,7 @@ export const CIV_ALIASES: Record<string, CivAlias> = {
       'Zhou states', 'Han', 'Han Empire', 'Han Zhao',
       'Sui Empire', 'Tang Empire', 'Song Empire',
       'Ming Empire', 'Ming Chinese Empire', 'Post-Ming Warlords',
-      'Qing Empire', 'China',
+      'Qing Empire', 'China', 'Ancient China',
     ],
   },
   greece: {
@@ -63,21 +63,21 @@ export const CIV_ALIASES: Record<string, CivAlias> = {
     aliases: [
       'Greek city-states', 'Greek colonies',
       'Macedon and Hellenic League', 'Macedonia',
-      'Greece',
+      'Greece', 'Ancient Greece',
     ],
   },
   egypt: {
     displayName: 'Egypt',
     color: '#c4944a',
     center: { lat: 30.0, lng: 31.2 },
-    aliases: ['Egypt', 'Ptolemaic Kingdom'],
+    aliases: ['Egypt', 'Ptolemaic Kingdom', 'Ancient Arabia'],
   },
   mongolia: {
     displayName: 'Mongol Empire',
     color: '#b85454',
     center: { lat: 47.9, lng: 106.9 },
     aliases: [
-      'Mongols', 'Mongol Empire', 'Mongolia',
+      'Mongols', 'Mongol Empire', 'Mongolia', 'Ancient Mongolia',
       'Chagatai Khanate', 'Ilkhanate',
       'Khanate of the Golden Horde', 'Golden Horde',
       'Great Khanate',
@@ -140,13 +140,13 @@ export const CIV_ALIASES: Record<string, CivAlias> = {
     color: '#8b80b0',
     center: { lat: 22.0, lng: 78.0 },
     aliases: [
-      'Hindu kingdoms', 'Hindu Kingdoms',
+      'Hindu kingdoms', 'Hindu Kingdoms', 'Ancient India',
       'Hindu kingdoms and republics', 'Hindu states',
-      'Mauryan Empire', 'Gupta Empire',
+      'Mauryan Empire', 'Mauryan empire', 'Gupta Empire',
       'Chola state', 'Chola', 'Cholas',
       'Sultanate of Delhi', 'Mughal Empire',
       'Rajput Kingdoms', 'Rajput kingdoms',
-      'India',
+      'India', 'Mauryan Empire',
       'minor Hindu and Buddhist states',
       'minor Hindu & Buddhist states',
       'minor Hindu and Buddhist kingdoms',
@@ -160,11 +160,53 @@ export const CIV_ALIASES: Record<string, CivAlias> = {
     center: { lat: 35.7, lng: 139.7 },
     aliases: [
       'Yamato', 'Imperial Japan (Fujiwara)',
-      'Shogun Japan (Kamakura)', 'Japan',
+      'Shogun Japan (Kamakura)', 'Japan', 'Ancient Japan',
       'Japan (Warring States)', 'Tokugawa Shogunate',
       'Tokugawa shogunate', 'Imperial Japan',
       'Empire of Japan',
     ],
+  },
+  vikings: {
+    displayName: 'Vikings',
+    color: '#7b8fa5',
+    center: { lat: 60.5, lng: 10.7 },
+    aliases: ['Vikings', 'Danes', 'Swedes', 'Norway'],
+  },
+  aztecs: {
+    displayName: 'Aztec Empire',
+    color: '#b87a60',
+    center: { lat: 19.4, lng: -99.1 },
+    aliases: ['Aztec Empire', 'Aztecs'],
+  },
+  phoenicia: {
+    displayName: 'Phoenicia',
+    color: '#9a7b5a',
+    center: { lat: 33.9, lng: 35.5 },
+    aliases: ['Ancient Phoenicia', 'Phoenicia', 'Phoenician city-states'],
+  },
+  khmer: {
+    displayName: 'Khmer Empire',
+    color: '#6d9476',
+    center: { lat: 13.4, lng: 103.9 },
+    aliases: ['Ancient Khmer', 'Khmer Empire', 'Angkor', 'Cambodia'],
+  },
+  babylon: {
+    displayName: 'Babylon',
+    color: '#c49a44',
+    center: { lat: 32.5, lng: 44.4 },
+    aliases: ['Ancient Babylon', 'Babylon', 'Ur', 'Sumer', 'Elam', 'city-states'],
+  },
+  kush: {
+    displayName: 'Kingdom of Kush',
+    color: '#c4944a',
+    center: { lat: 18.5, lng: 31.6 },
+    aliases: ['Kingdom of Kush', 'Kerma', 'Meroe', 'Axum'],
+  },
+  inca: {
+    displayName: 'Inca Empire',
+    color: '#7a9e5a',
+    center: { lat: -13.2, lng: -72.5 },
+    aliases: ['Inca Empire', 'Inca'],
   },
   maya: {
     displayName: 'Maya',
@@ -193,12 +235,7 @@ export const CIV_ALIASES: Record<string, CivAlias> = {
     center: { lat: 14.0, lng: 2.1 },
     aliases: ['Songhai'],
   },
-  meroe: {
-    displayName: 'Meroe / Kush',
-    color: '#c4944a',
-    center: { lat: 16.9, lng: 33.7 },
-    aliases: ['Meroe', 'Axum'],
-  },
+  // meroe/kush consolidated into 'kush' entry below
 };
 
 /** Build a Set of all aliases for O(1) matching in polygon render loops */
