@@ -219,18 +219,18 @@ export function MiniGlobe() {
           polygonLabel={() => ''}
           polygonsTransitionDuration={0}
 
-          // Golden arc connections between events
+          // Arc connections between events — bold golden trails
           arcsData={arcs}
           arcStartLat={(d: any) => d.startLat}
           arcStartLng={(d: any) => d.startLng}
           arcEndLat={(d: any) => d.endLat}
           arcEndLng={(d: any) => d.endLng}
-          arcColor={() => 'rgba(196, 154, 68, 0.3)'}
-          arcAltitude={0.12}
-          arcStroke={0.8}
-          arcDashLength={0.4}
-          arcDashGap={0.2}
-          arcDashAnimateTime={3000}
+          arcColor={() => ['rgba(196, 154, 68, 0.9)', 'rgba(196, 154, 68, 0.15)']}
+          arcAltitude={0.08}
+          arcStroke={1.6}
+          arcDashLength={0.6}
+          arcDashGap={0.15}
+          arcDashAnimateTime={2500}
 
           // Event markers — large and visible
           customLayerData={events}
