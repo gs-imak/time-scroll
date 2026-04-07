@@ -384,8 +384,7 @@ export function GlobeView({ children }: GlobeViewProps) {
     });
   }, []);
 
-  // Update marker position using getCoords (works for both events and clusters)
-  // Events use displayLat/displayLng which are spiderfied when close together
+  // Update marker position + scale based on density and zoom
   const updateMarkerPosition = useCallback((obj: any, d: any) => {
     if (!globeRef.current) return;
     const lat = d.type === 'cluster' ? d.lat : (d.displayLat ?? d.latitude);
@@ -402,6 +401,16 @@ export function GlobeView({ children }: GlobeViewProps) {
         up,
       );
       obj.setRotationFromQuaternion(quaternion);
+
+      // Scale markers down when they're in dense groups
+      // Solo markers (groupSize 1) = full size, dense groups scale down
+      if (d.type === 'event' && d.groupSize > 1) {
+        // Scale: 2 markers = 0.7, 3 = 0.58, 5 = 0.45, 8+ = 0.35
+        const densityScale = Math.max(0.35, 1 / (1 + d.groupSize * 0.25));
+        obj.scale.setScalar(densityScale);
+      } else if (d.type !== 'cluster') {
+        obj.scale.setScalar(1);
+      }
     }
   }, []);
 

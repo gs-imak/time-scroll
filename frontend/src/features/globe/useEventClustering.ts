@@ -21,13 +21,13 @@ export interface SpreadEvent extends HistoricalEvent {
   /** Display coordinates — offset from original when spiderfied */
   displayLat: number;
   displayLng: number;
+  /** How many markers are in this event's local group (1 = solo, 5 = dense cluster) */
+  groupSize: number;
 }
 
 export type ClusterOrEvent = EventCluster | SpreadEvent;
 
 // ── Spiderfying ───────────────────────────────────────────────────
-// When markers are close together at zoomed-in levels, fan them out
-// in a circle/spiral so they don't overlap.
 
 const CIRCLE_SPIRAL_SWITCHOVER = 9;
 
@@ -45,31 +45,35 @@ function spiderfyGroup(
       type: 'event' as const,
       displayLat: e.latitude,
       displayLng: e.longitude,
+      groupSize: 1,
     }));
   }
 
-  // Correct for longitude convergence at this latitude
   const lngCorrection = Math.cos(centerLat * Math.PI / 180) || 0.01;
 
+  // Scale separation down when group is larger — tighter circle, smaller markers
+  const densityScale = Math.max(0.5, 1 - (count - 2) * 0.06);
+  const adjustedSep = separationDeg * densityScale;
+
   if (count <= CIRCLE_SPIRAL_SWITCHOVER) {
-    // Circle layout
     const angleStep = (2 * Math.PI) / count;
     return events.map((e, i) => {
-      const angle = i * angleStep - Math.PI / 2; // start from top
+      const angle = i * angleStep - Math.PI / 2;
       return {
         ...e,
         type: 'event' as const,
-        displayLat: centerLat + separationDeg * Math.cos(angle),
-        displayLng: centerLng + (separationDeg * Math.sin(angle)) / lngCorrection,
+        displayLat: centerLat + adjustedSep * Math.cos(angle),
+        displayLng: centerLng + (adjustedSep * Math.sin(angle)) / lngCorrection,
+        groupSize: count,
       };
     });
   }
 
   // Spiral layout for 9+ markers
   const results: SpreadEvent[] = [];
-  let legLength = separationDeg * 0.6;
+  let legLength = adjustedSep * 0.6;
   let angle = 0;
-  const spiralStep = separationDeg * 1.2;
+  const spiralStep = adjustedSep * 1.2;
 
   for (let i = 0; i < count; i++) {
     angle += spiralStep / legLength + i * 0.0005;
@@ -78,8 +82,9 @@ function spiderfyGroup(
       type: 'event' as const,
       displayLat: centerLat + legLength * Math.cos(angle),
       displayLng: centerLng + (legLength * Math.sin(angle)) / lngCorrection,
+      groupSize: count,
     });
-    legLength += (2 * Math.PI * separationDeg * 0.25) / angle;
+    legLength += (2 * Math.PI * adjustedSep * 0.25) / angle;
   }
 
   return results;
@@ -102,7 +107,6 @@ function clusterEvents(
 
     const anchor = events[i]!;
 
-    // Never cluster the selected event
     if (anchor.id === selectedEventId) {
       claimed.add(i);
       continue;
@@ -152,7 +156,6 @@ function clusterEvents(
 }
 
 // ── Spiderfy pass ─────────────────────────────────────────────────
-// At zoomed-in levels, detect groups of close markers and spread them
 
 function spiderfyEvents(
   events: HistoricalEvent[],
@@ -182,16 +185,15 @@ function spiderfyEvents(
     }
 
     if (neighbors.length === 1) {
-      // Solo marker — no offset needed
       claimed.add(i);
       results.push({
         ...anchor,
         type: 'event' as const,
         displayLat: anchor.latitude,
         displayLng: anchor.longitude,
+        groupSize: 1,
       });
     } else {
-      // Group of close markers — spiderfy them
       const group = neighbors.map(idx => events[idx]!);
       neighbors.forEach(idx => claimed.add(idx));
 
@@ -217,15 +219,12 @@ export function useEventClustering(events: HistoricalEvent[]): ClusterOrEvent[] 
 
     // At REGIONAL/LOCAL zoom — spiderfy close markers instead of clustering
     if (tier === 'LOCAL' || tier === 'REGIONAL') {
-      // Scale proximity detection and spread radius with altitude
-      // Lower altitude = tighter detection, smaller spread (more precise)
       const proximityKm = Math.max(50, altitude * 400);
-      // Separation in degrees — how far apart spiderfied markers spread
       const separationDeg = Math.max(0.8, altitude * 3);
 
       const spread = spiderfyEvents(events, proximityKm, separationDeg);
 
-      // If there's a selected event, ensure it stays at its real position
+      // Selected event stays at its real position
       if (selectedEventId) {
         const idx = spread.findIndex(e => e.id === selectedEventId);
         if (idx >= 0) {
@@ -241,7 +240,6 @@ export function useEventClustering(events: HistoricalEvent[]): ClusterOrEvent[] 
     const thresholdKm = altitude * 800;
     const clusters = clusterEvents(events, thresholdKm, selectedEventId);
 
-    // Any unclaimed events (solo markers or selected event) become individual SpreadEvents
     const clusteredIds = new Set(clusters.flatMap(c => c.events.map(e => e.id)));
     const soloEvents: SpreadEvent[] = events
       .filter(e => !clusteredIds.has(e.id))
@@ -250,6 +248,7 @@ export function useEventClustering(events: HistoricalEvent[]): ClusterOrEvent[] 
         type: 'event' as const,
         displayLat: e.latitude,
         displayLng: e.longitude,
+        groupSize: 1,
       }));
 
     return [...clusters, ...soloEvents];
