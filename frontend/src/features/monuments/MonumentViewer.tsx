@@ -66,7 +66,7 @@ export function MonumentViewer() {
         <motion.div
           key="monument-viewer"
           className="fixed inset-0 z-50 flex flex-col"
-          style={{ background: '#08080c' }}
+          style={{ background: 'var(--color-void)' }}
           variants={overlayVariants}
           initial="hidden"
           animate="visible"
@@ -87,7 +87,7 @@ export function MonumentViewer() {
               className="flex items-center justify-between shrink-0 px-5 sm:px-6"
               style={{
                 height: '56px',
-                background: 'rgba(14, 14, 20, 0.9)',
+                background: 'var(--glass-strong-bg)',
                 backdropFilter: 'blur(24px)',
                 WebkitBackdropFilter: 'blur(24px)',
                 borderBottom: '1px solid rgba(255,255,255,0.06)',
@@ -110,7 +110,7 @@ export function MonumentViewer() {
                     style={{
                       fontSize: '14px',
                       fontWeight: 600,
-                      color: '#e0e0e6',
+                      color: 'var(--color-text-primary)',
                       lineHeight: 1.2,
                     }}
                   >
@@ -120,7 +120,7 @@ export function MonumentViewer() {
                     style={{
                       fontSize: '11px',
                       fontWeight: 400,
-                      color: '#8a8a9a',
+                      color: 'var(--color-text-secondary)',
                     }}
                   >
                     {formatYear(event.year)}
@@ -136,8 +136,8 @@ export function MonumentViewer() {
                   padding: '0 16px',
                   borderRadius: '8px',
                   background: 'rgba(255,255,255,0.06)',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                  color: '#e0e0e6',
+                  border: '1px solid var(--color-border-subtle)',
+                  color: 'var(--color-text-primary)',
                   fontSize: '13px',
                   fontWeight: 500,
                   transition: 'all 200ms ease-out',
@@ -173,7 +173,7 @@ export function MonumentViewer() {
             <footer
               className="shrink-0 px-5 sm:px-6 py-3"
               style={{
-                background: 'rgba(14, 14, 20, 0.85)',
+                background: 'var(--glass-strong-bg)',
                 backdropFilter: 'blur(24px)',
                 WebkitBackdropFilter: 'blur(24px)',
                 borderTop: '1px solid rgba(255,255,255,0.06)',
@@ -185,7 +185,7 @@ export function MonumentViewer() {
                     className="line-clamp-2 sm:line-clamp-1"
                     style={{
                       fontSize: '13px',
-                      color: '#8a8a9a',
+                      color: 'var(--color-text-secondary)',
                       lineHeight: 1.5,
                     }}
                   >
@@ -208,7 +208,7 @@ export function MonumentViewer() {
                   className="shrink-0 hidden sm:block"
                   style={{
                     fontSize: '11px',
-                    color: '#3a3a4a',
+                    color: 'var(--color-text-muted)',
                     whiteSpace: 'nowrap',
                   }}
                 >

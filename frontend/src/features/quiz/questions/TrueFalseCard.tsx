@@ -17,7 +17,7 @@ export function TrueFalseCard({ question, selected, isAnswered, onSelect }: Prop
 
   return (
     <div>
-      <p className="text-[17px] sm:text-[18px] font-medium text-[#e0e0e6] mb-8 leading-relaxed text-center">
+      <p className="text-[17px] sm:text-[18px] font-medium text-text-primary mb-8 leading-relaxed text-center">
         "{question.statement}"
       </p>
 
@@ -72,7 +72,7 @@ export function TrueFalseCard({ question, selected, isAnswered, onSelect }: Prop
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
           >
-            <p className="text-[13px] text-[#8a8a9a] leading-relaxed">
+            <p className="text-[13px] text-text-secondary leading-relaxed">
               <span className="text-[#6d9476] font-semibold">Why? </span>
               {question.explanation}
             </p>

@@ -27,7 +27,7 @@ export function SafeImage({ src, alt, className = '', style, fallbackColor = '#c
       >
         <div className="flex flex-col items-center gap-2 opacity-30">
           <ImageIcon size={24} />
-          <span className="text-[10px] text-[#3a3a4a]">{alt}</span>
+          <span className="text-[10px] text-text-muted">{alt}</span>
         </div>
       </div>
     );

@@ -47,7 +47,7 @@ export function QuizFilters({ selectedEras, selectedCategories, onToggleEra, onT
     <div className="space-y-4">
       {/* Era filters */}
       <div>
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-[#3a3a4a] mb-2">Era</p>
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-text-muted mb-2">Era</p>
         <div className="flex flex-wrap gap-2">
           {ERAS.map(era => (
             <Pill
@@ -62,7 +62,7 @@ export function QuizFilters({ selectedEras, selectedCategories, onToggleEra, onT
       </div>
       {/* Category filters */}
       <div>
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-[#3a3a4a] mb-2">Category</p>
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-text-muted mb-2">Category</p>
         <div className="flex flex-wrap gap-2">
           {CATEGORY_CONFIG.map(cat => (
             <Pill

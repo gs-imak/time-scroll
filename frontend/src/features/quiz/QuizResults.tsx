@@ -12,8 +12,8 @@ const TYPE_LABEL: Record<string, string> = { mcq: 'MCQ', 'true-false': 'T/F', 'i
 function GlassCard({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
     <div className={className} style={{
-      background: 'rgba(14, 14, 20, 0.6)', backdropFilter: 'blur(24px)',
-      border: '1px solid rgba(255, 255, 255, 0.06)',
+      background: 'var(--glass-bg)', backdropFilter: 'blur(24px)',
+      border: '1px solid var(--color-border-subtle)',
       boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.03)',
       borderRadius: 12,
     }}>
@@ -86,10 +86,10 @@ export function QuizResults({ result, onRetry, onBackToHub }: Props) {
           >
             {emoji}
           </motion.div>
-          <h2 className="text-[24px] font-bold text-[#e0e0e6] mb-2" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+          <h2 className="text-[24px] font-bold text-text-primary mb-2" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
             {message}
           </h2>
-          <p className="text-[14px] text-[#55556a] mb-8">
+          <p className="text-[14px] text-text-muted mb-8">
             {result.correctCount} of {result.totalQuestions} correct — {result.score} points earned
           </p>
 
@@ -113,8 +113,8 @@ export function QuizResults({ result, onRetry, onBackToHub }: Props) {
           ].map((stat) => (
             <GlassCard key={stat.label} className="p-4 text-center">
               <stat.icon size={16} className="mx-auto mb-2" style={{ color: stat.color }} />
-              <p className="text-[16px] font-bold text-[#e0e0e6]">{stat.value}</p>
-              <p className="text-[10px] uppercase tracking-wider text-[#3a3a4a] mt-1">{stat.label}</p>
+              <p className="text-[16px] font-bold text-text-primary">{stat.value}</p>
+              <p className="text-[10px] uppercase tracking-wider text-text-muted mt-1">{stat.label}</p>
             </GlassCard>
           ))}
         </motion.div>
@@ -134,7 +134,7 @@ export function QuizResults({ result, onRetry, onBackToHub }: Props) {
           <motion.button
             onClick={onBackToHub}
             className="flex items-center gap-2 px-5 py-3 rounded-xl text-[13px] font-medium cursor-pointer"
-            style={{ background: 'rgba(255,255,255,0.04)', color: '#8a8a9a', border: '1px solid rgba(255,255,255,0.08)' }}
+            style={{ background: 'rgba(255,255,255,0.04)', color: 'var(--color-text-secondary)', border: '1px solid var(--color-border-subtle)' }}
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
           >
@@ -149,7 +149,7 @@ export function QuizResults({ result, onRetry, onBackToHub }: Props) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5, duration: 0.6, ease: EASE }}
         >
-          <h3 className="text-[11px] font-semibold tracking-[0.14em] uppercase text-[#3a3a4a] mb-6">
+          <h3 className="text-[11px] font-semibold tracking-[0.14em] uppercase text-text-muted mb-6">
             Full Review
           </h3>
 
@@ -171,7 +171,7 @@ export function QuizResults({ result, onRetry, onBackToHub }: Props) {
                       : <XCircle size={14} className="text-[#b85454]" />
                     }
                     <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full"
-                      style={{ background: 'rgba(255,255,255,0.03)', color: '#55556a' }}>
+                      style={{ background: 'rgba(255,255,255,0.03)', color: 'var(--color-text-muted)' }}>
                       {TYPE_LABEL[q.type]}
                     </span>
                     <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full"
@@ -184,7 +184,7 @@ export function QuizResults({ result, onRetry, onBackToHub }: Props) {
                   </div>
 
                   {/* Question text */}
-                  <p className="text-[14px] text-[#8a8a9a] mb-3 leading-relaxed">
+                  <p className="text-[14px] text-text-secondary mb-3 leading-relaxed">
                     {q.type === 'true-false' ? `"${q.statement}"` : q.type === 'timeline-order' ? q.instruction : q.question}
                   </p>
 
@@ -192,14 +192,14 @@ export function QuizResults({ result, onRetry, onBackToHub }: Props) {
                   {answer && (
                     <div className="space-y-1.5 mb-3">
                       <p className="text-[12px]">
-                        <span className="text-[#55556a]">Your answer: </span>
+                        <span className="text-text-muted">Your answer: </span>
                         <span style={{ color: isCorrect ? '#6d9476' : '#b85454' }}>
                           {formatAnswer(q, answer.answer)}
                         </span>
                       </p>
                       {!isCorrect && (
                         <p className="text-[12px]">
-                          <span className="text-[#55556a]">Correct answer: </span>
+                          <span className="text-text-muted">Correct answer: </span>
                           <span className="text-[#6d9476]">{getCorrectAnswer(q)}</span>
                         </p>
                       )}
@@ -209,7 +209,7 @@ export function QuizResults({ result, onRetry, onBackToHub }: Props) {
                   {/* Explanation */}
                   {q.explanation && (
                     <div className="p-3 rounded-lg" style={{ background: 'rgba(109,148,118,0.05)', border: '1px solid rgba(109,148,118,0.1)' }}>
-                      <p className="text-[12px] text-[#8a8a9a] leading-relaxed">
+                      <p className="text-[12px] text-text-secondary leading-relaxed">
                         <span className="text-[#6d9476] font-semibold">Why? </span>
                         {q.explanation}
                       </p>

@@ -14,7 +14,7 @@ interface Props {
 export function ImageIdCard({ question, selected, isAnswered, eliminatedOptions, onSelect }: Props) {
   return (
     <div>
-      <p className="text-[15px] text-[#8a8a9a] mb-4 text-center">{question.question}</p>
+      <p className="text-[15px] text-text-secondary mb-4 text-center">{question.question}</p>
 
       {/* Image display */}
       <div className="mx-auto mb-6 max-w-[400px] rounded-xl overflow-hidden bg-[#0a0a12]">
@@ -93,7 +93,7 @@ export function ImageIdCard({ question, selected, isAnswered, eliminatedOptions,
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
           >
-            <p className="text-[13px] text-[#8a8a9a] leading-relaxed">
+            <p className="text-[13px] text-text-secondary leading-relaxed">
               <span className="text-[#6d9476] font-semibold">Why? </span>
               {question.explanation}
             </p>

@@ -114,10 +114,10 @@ export default function JourneyPlayer() {
     return (
       <div
         className="min-h-screen w-full flex items-center justify-center lg:pl-[64px]"
-        style={{ background: '#08080c' }}
+        style={{ background: 'var(--color-void)' }}
       >
         <div className="text-center">
-          <p style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '18px', color: '#8a8a9a' }}>
+          <p style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '18px', color: 'var(--color-text-secondary)' }}>
             Journey not found
           </p>
           <button
@@ -162,7 +162,7 @@ export default function JourneyPlayer() {
     <div
       className="min-h-screen w-full overflow-x-hidden overflow-y-auto lg:pl-[64px]"
       style={{
-        background: 'radial-gradient(ellipse 80% 50% at 50% 20%, #14141e 0%, #0c0c12 30%, #08080c 60%, #050508 100%)',
+        background: 'radial-gradient(ellipse 80% 50% at 50% 20%, var(--color-elevated) 0%, var(--color-surface) 30%, var(--color-void) 60%, var(--color-void) 100%)',
       }}
       onKeyDown={handleKeyDown}
       tabIndex={0}
@@ -193,14 +193,14 @@ export default function JourneyPlayer() {
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold/50',
             )}
             style={{
-              background: 'rgba(14, 14, 20, 0.8)',
+              background: 'var(--glass-strong-bg)',
               backdropFilter: 'blur(16px)',
-              border: '1px solid rgba(255, 255, 255, 0.06)',
+              border: '1px solid var(--color-border-subtle)',
             }}
             aria-label="Exit journey"
           >
-            <X size={16} style={{ color: '#8a8a9a' }} />
-            <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: '#8a8a9a' }}>
+            <X size={16} style={{ color: 'var(--color-text-secondary)' }} />
+            <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: 'var(--color-text-secondary)' }}>
               Exit
             </span>
           </button>
@@ -208,19 +208,19 @@ export default function JourneyPlayer() {
           <div
             className="flex items-center gap-3 h-[44px] px-4 rounded-[10px]"
             style={{
-              background: 'rgba(14, 14, 20, 0.8)',
+              background: 'var(--glass-strong-bg)',
               backdropFilter: 'blur(16px)',
-              border: '1px solid rgba(255, 255, 255, 0.06)',
+              border: '1px solid var(--color-border-subtle)',
             }}
           >
             <span style={{ fontSize: '16px' }}>{journey.icon}</span>
             <span
               className="hidden sm:inline"
-              style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '13px', fontWeight: 500, color: '#e0e0e6' }}
+              style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '13px', fontWeight: 500, color: 'var(--color-text-primary)' }}
             >
               {journey.title}
             </span>
-            <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', color: '#55556a' }}>
+            <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', color: 'var(--color-text-muted)' }}>
               {currentEventIndex + 1} of {journey.eventIds.length}
             </span>
           </div>
@@ -281,26 +281,26 @@ export default function JourneyPlayer() {
                 <Check size={28} style={{ color: '#c49a44' }} />
               </div>
               <h2
-                style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '24px', fontWeight: 700, color: '#e0e0e6' }}
+                style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '24px', fontWeight: 700, color: 'var(--color-text-primary)' }}
               >
                 Journey Complete
               </h2>
               <p
                 className="mt-2 mb-6"
-                style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '14px', color: '#8a8a9a' }}
+                style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '14px', color: 'var(--color-text-secondary)' }}
               >
                 You explored {completedEvents} events across the "{journey.title}" journey
               </p>
               <div className="flex items-center justify-center gap-6 mb-6">
                 <div className="flex items-center gap-2">
-                  <BookOpen size={16} style={{ color: '#55556a' }} />
-                  <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: '#8a8a9a' }}>
+                  <BookOpen size={16} style={{ color: 'var(--color-text-muted)' }} />
+                  <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: 'var(--color-text-secondary)' }}>
                     {journey.eventIds.length} events
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Clock size={16} style={{ color: '#55556a' }} />
-                  <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: '#8a8a9a' }}>
+                  <Clock size={16} style={{ color: 'var(--color-text-muted)' }} />
+                  <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: 'var(--color-text-secondary)' }}>
                     ~{journey.estimatedMinutes} min
                   </span>
                 </div>
@@ -327,7 +327,7 @@ export default function JourneyPlayer() {
       <div
         className="fixed bottom-0 left-0 lg:left-[64px] right-0 z-20"
         style={{
-          background: 'linear-gradient(to top, rgba(8, 8, 12, 0.95) 0%, rgba(8, 8, 12, 0.7) 70%, transparent 100%)',
+          background: 'linear-gradient(to top, var(--color-overlay) 0%, var(--glass-bg) 70%, transparent 100%)',
           paddingTop: '48px',
         }}
       >
@@ -342,13 +342,13 @@ export default function JourneyPlayer() {
               isFirstStep && 'opacity-30 cursor-not-allowed',
             )}
             style={{
-              background: 'rgba(14, 14, 20, 0.8)',
+              background: 'var(--glass-strong-bg)',
               backdropFilter: 'blur(16px)',
-              border: '1px solid rgba(255, 255, 255, 0.06)',
+              border: '1px solid var(--color-border-subtle)',
               fontFamily: "'Space Grotesk', sans-serif",
               fontSize: '14px',
               fontWeight: 500,
-              color: '#e0e0e6',
+              color: 'var(--color-text-primary)',
             }}
             whileHover={!isFirstStep ? { scale: 1.03 } : undefined}
             whileTap={!isFirstStep ? { scale: 0.97 } : undefined}
@@ -443,7 +443,7 @@ function EventCard({
       {event.imageUrl && (
         <div
           className="w-full aspect-[21/9] rounded-[16px] overflow-hidden mb-6 relative"
-          style={{ border: '1px solid rgba(255, 255, 255, 0.06)' }}
+          style={{ border: '1px solid var(--color-border-subtle)' }}
         >
           <img
             src={event.imageUrl}
@@ -453,7 +453,7 @@ function EventCard({
           />
           <div
             className="absolute inset-0"
-            style={{ background: 'linear-gradient(to top, rgba(8, 8, 12, 0.7) 0%, transparent 40%)' }}
+            style={{ background: 'linear-gradient(to top, var(--glass-bg) 0%, transparent 40%)' }}
           />
         </div>
       )}
@@ -464,13 +464,13 @@ function EventCard({
           className="w-2.5 h-2.5 rounded-full flex-shrink-0"
           style={{ background: catColor, boxShadow: `0 0 8px ${catColor}60` }}
         />
-        <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: '#55556a' }}>
+        <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: 'var(--color-text-muted)' }}>
           {formatYear(event.year)}
         </span>
         {event.locationName && (
           <>
-            <span style={{ color: '#55556a' }}>&middot;</span>
-            <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: '#55556a' }}>
+            <span style={{ color: 'var(--color-text-muted)' }}>&middot;</span>
+            <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: 'var(--color-text-muted)' }}>
               {event.locationName}
             </span>
           </>
@@ -484,7 +484,7 @@ function EventCard({
           fontFamily: "'Space Grotesk', sans-serif",
           fontSize: 'clamp(22px, 3.5vw, 28px)',
           fontWeight: 700,
-          color: '#e0e0e6',
+          color: 'var(--color-text-primary)',
           lineHeight: 1.2,
         }}
       >
@@ -500,7 +500,7 @@ function EventCard({
               fontFamily: "'Space Grotesk', sans-serif",
               fontSize: '15px',
               lineHeight: 1.7,
-              color: '#8a8a9a',
+              color: 'var(--color-text-secondary)',
             }}
           >
             {p}
@@ -523,7 +523,7 @@ function EventCard({
           >
             Did you know?
           </span>
-          <p style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '14px', lineHeight: 1.6, color: '#8a8a9a' }}>
+          <p style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '14px', lineHeight: 1.6, color: 'var(--color-text-secondary)' }}>
             {event.impactText}
           </p>
         </div>
@@ -557,12 +557,12 @@ function TransitionCard({
     >
       {/* From label */}
       <div className="flex items-center gap-3 mb-6">
-        <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', color: '#55556a' }}>
+        <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', color: 'var(--color-text-muted)' }}>
           {formatYear(fromEvent.year)}
         </span>
         <span
           className="max-w-[200px] truncate"
-          style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '13px', fontWeight: 500, color: '#8a8a9a' }}
+          style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '13px', fontWeight: 500, color: 'var(--color-text-secondary)' }}
         >
           {fromEvent.title}
         </span>
@@ -578,7 +578,7 @@ function TransitionCard({
       <div
         className="max-w-[640px] rounded-[16px] px-8 py-8 mb-6"
         style={{
-          background: 'rgba(14, 14, 20, 0.6)',
+          background: 'var(--glass-bg)',
           backdropFilter: 'blur(24px)',
           border: '1px solid rgba(196, 154, 68, 0.12)',
           boxShadow: '0 0 40px rgba(196, 154, 68, 0.04)',
@@ -589,7 +589,7 @@ function TransitionCard({
             fontFamily: "'Space Grotesk', sans-serif",
             fontSize: '16px',
             lineHeight: 1.8,
-            color: '#e0e0e6',
+            color: 'var(--color-text-primary)',
             textAlign: 'center',
           }}
         >
@@ -605,7 +605,7 @@ function TransitionCard({
 
       {/* To label */}
       <div className="flex items-center gap-3">
-        <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', color: '#55556a' }}>
+        <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', color: 'var(--color-text-muted)' }}>
           {formatYear(toEvent.year)}
         </span>
         <span

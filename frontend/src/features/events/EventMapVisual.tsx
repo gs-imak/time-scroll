@@ -338,7 +338,7 @@ function StatCard({ stat, index, type }: { stat: StatEntry; index: number; type:
       transition={{ duration: 0.6, delay: index * 0.1, ease: [0.16, 1, 0.3, 1] }}
       className="relative overflow-hidden rounded-xl border p-4"
       style={{
-        background: 'rgba(14, 14, 20, 0.6)',
+        background: 'var(--glass-bg)',
         borderColor: 'rgba(196, 154, 68, 0.12)',
       }}
     >
@@ -467,7 +467,7 @@ function VisualSectionTitle({ title, type }: { title: string; type: string }) {
         <p className="text-[11px] font-semibold tracking-[0.14em] uppercase" style={{ color: '#c49a44' }}>
           {typeLabels[type] ?? 'Data'}
         </p>
-        <p className="text-[14px] text-[#8a8a9a] font-medium">{title}</p>
+        <p className="text-[14px] text-text-secondary font-medium">{title}</p>
       </div>
     </div>
   );
@@ -498,7 +498,7 @@ export function EventMapVisual({ eventId }: EventMapVisualProps) {
       transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
       className="mb-16 rounded-2xl border p-5 sm:p-6"
       style={{
-        background: 'rgba(14, 14, 20, 0.5)',
+        background: 'var(--glass-bg)',
         borderColor: 'rgba(196, 154, 68, 0.08)',
         backdropFilter: 'blur(24px)',
       }}

@@ -210,7 +210,7 @@ export function SearchOverlay() {
           {/* Backdrop */}
           <motion.div
             className="absolute inset-0"
-            style={{ background: 'rgba(8, 8, 12, 0.6)' }}
+            style={{ background: 'var(--color-overlay)' }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -220,12 +220,12 @@ export function SearchOverlay() {
           <motion.div
             className="relative w-full max-w-[520px] mx-4"
             style={{
-              background: 'rgba(14, 14, 20, 0.95)',
+              background: 'var(--glass-strong-bg)',
               backdropFilter: 'blur(24px)',
               WebkitBackdropFilter: 'blur(24px)',
-              border: '1px solid rgba(255, 255, 255, 0.07)',
+              border: '1px solid var(--color-border-subtle)',
               borderRadius: '16px',
-              boxShadow: '0 24px 80px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255,255,255,0.03)',
+              boxShadow: '0 24px 80px var(--glass-shadow), inset 0 1px 0 rgba(255,255,255,0.03)',
             }}
             initial={{ opacity: 0, scale: 0.97, y: -8 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -237,7 +237,7 @@ export function SearchOverlay() {
           >
             {/* Input area */}
             <div className="flex items-center gap-3 px-5 py-4" style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.05)' }}>
-              <Search size={18} className="shrink-0" style={{ color: '#55556a' }} />
+              <Search size={18} className="shrink-0" style={{ color: 'var(--color-text-muted)' }} />
               <input
                 ref={inputRef}
                 type="text"
@@ -247,7 +247,7 @@ export function SearchOverlay() {
                 placeholder="Search events, locations..."
                 className="flex-1 bg-transparent text-[14px] font-medium outline-none placeholder:font-normal"
                 style={{
-                  color: '#e0e0e6',
+                  color: 'var(--color-text-primary)',
                   caretColor: '#5a9aaa',
                 }}
                 aria-label="Search"
@@ -261,8 +261,8 @@ export function SearchOverlay() {
                 className="hidden sm:flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium shrink-0"
                 style={{
                   background: 'rgba(255, 255, 255, 0.05)',
-                  color: '#55556a',
-                  border: '1px solid rgba(255, 255, 255, 0.06)',
+                  color: 'var(--color-text-muted)',
+                  border: '1px solid var(--color-border-subtle)',
                 }}
               >
                 ESC
@@ -280,8 +280,8 @@ export function SearchOverlay() {
               >
                 {results.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-8 gap-2">
-                    <Search size={24} style={{ color: '#55556a', opacity: 0.5 }} />
-                    <p className="text-[13px]" style={{ color: '#55556a' }}>
+                    <Search size={24} style={{ color: 'var(--color-text-muted)', opacity: 0.5 }} />
+                    <p className="text-[13px]" style={{ color: 'var(--color-text-muted)' }}>
                       No results for "{query}"
                     </p>
                   </div>
@@ -291,7 +291,7 @@ export function SearchOverlay() {
                       <div>
                         <div
                           className="flex items-center gap-2 px-3 pt-2 pb-2"
-                          style={{ color: '#55556a' }}
+                          style={{ color: 'var(--color-text-muted)' }}
                         >
                           <Scroll size={12} />
                           <span className="text-[11px] font-medium tracking-wide uppercase">
@@ -331,7 +331,7 @@ export function SearchOverlay() {
                               </div>
                               <span
                                 className="text-[11px] font-mono shrink-0"
-                                style={{ color: '#55556a' }}
+                                style={{ color: 'var(--color-text-muted)' }}
                               >
                                 {formatYear(result.year)}
                               </span>
@@ -351,7 +351,7 @@ export function SearchOverlay() {
                         )}
                         <div
                           className="flex items-center gap-2 px-3 pt-2 pb-2"
-                          style={{ color: '#55556a' }}
+                          style={{ color: 'var(--color-text-muted)' }}
                         >
                           <MapPin size={12} />
                           <span className="text-[11px] font-medium tracking-wide uppercase">
@@ -390,7 +390,7 @@ export function SearchOverlay() {
                               </div>
                               <span
                                 className="text-[11px] shrink-0"
-                                style={{ color: '#55556a' }}
+                                style={{ color: 'var(--color-text-muted)' }}
                               >
                                 {result.country}
                               </span>
@@ -408,14 +408,14 @@ export function SearchOverlay() {
             {!query.trim() && (
               <div
                 className="flex items-center justify-center gap-4 px-5 py-4"
-                style={{ color: '#55556a' }}
+                style={{ color: 'var(--color-text-muted)' }}
               >
                 <span className="flex items-center gap-1.5 text-[11px]">
                   <kbd
                     className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px]"
                     style={{
                       background: 'rgba(255, 255, 255, 0.05)',
-                      border: '1px solid rgba(255, 255, 255, 0.06)',
+                      border: '1px solid var(--color-border-subtle)',
                     }}
                   >
                     <span className="mr-0.5" style={{ fontSize: '9px' }}>&#8593;</span>
@@ -428,7 +428,7 @@ export function SearchOverlay() {
                     className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px]"
                     style={{
                       background: 'rgba(255, 255, 255, 0.05)',
-                      border: '1px solid rgba(255, 255, 255, 0.06)',
+                      border: '1px solid var(--color-border-subtle)',
                     }}
                   >
                     &#9166;
@@ -440,7 +440,7 @@ export function SearchOverlay() {
                     className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px]"
                     style={{
                       background: 'rgba(255, 255, 255, 0.05)',
-                      border: '1px solid rgba(255, 255, 255, 0.06)',
+                      border: '1px solid var(--color-border-subtle)',
                     }}
                   >
                     esc
@@ -486,7 +486,7 @@ export function SearchTrigger() {
               style={{
                 background: 'rgba(255, 255, 255, 0.08)',
                 border: '1px solid rgba(255, 255, 255, 0.1)',
-                color: '#8a8a9a',
+                color: 'var(--color-text-secondary)',
               }}
             >
               <Command size={9} />K

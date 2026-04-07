@@ -51,7 +51,7 @@ export function ScoreRing({ score, size = 160, strokeWidth = 8, color }: Props) 
         >
           {score}%
         </motion.span>
-        <span className="text-[11px] text-[#55556a] uppercase tracking-wider">Score</span>
+        <span className="text-[11px] text-text-muted uppercase tracking-wider">Score</span>
       </div>
     </div>
   );

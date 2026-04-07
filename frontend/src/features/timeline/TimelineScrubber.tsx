@@ -140,7 +140,7 @@ export function TimelineScrubber() {
             <span
               className="font-mono text-3xl font-bold tracking-widest tabular-nums sm:text-4xl md:text-5xl"
               style={{
-                color: '#e0e0e6',
+                color: 'var(--color-text-primary)',
                 textShadow: `0 0 24px ${eraHex}40`,
               }}
             >

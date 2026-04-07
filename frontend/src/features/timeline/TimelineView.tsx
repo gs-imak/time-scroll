@@ -46,7 +46,7 @@ function EraDivider({ name, startYear, endYear, eraId }: {
         <span
           style={{
             fontFamily: "'JetBrains Mono', monospace",
-            fontSize: '11px', color: '#55556a',
+            fontSize: '11px', color: 'var(--color-text-muted)',
           }}
         >
           {formatYear(startYear)} &mdash; {formatYear(endYear)}
@@ -90,12 +90,12 @@ function EventCard({ id, title, year, category, icon, viewed, side, index }: {
           rounded-[12px] px-4 py-3 text-left cursor-pointer
           transition-all duration-200
           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c49a44]/50
-          focus-visible:ring-offset-2 focus-visible:ring-offset-[#08080c]
+          focus-visible:ring-offset-2 focus-visible:ring-offset-void
         `}
         style={{
-          background: 'rgba(14, 14, 20, 0.6)',
+          background: 'var(--glass-bg)',
           backdropFilter: 'blur(24px)',
-          border: '1px solid rgba(255, 255, 255, 0.06)',
+          border: '1px solid var(--color-border-subtle)',
           opacity: viewed ? 1 : 0.55,
         }}
         whileHover={{
@@ -123,7 +123,7 @@ function EventCard({ id, title, year, category, icon, viewed, side, index }: {
             className="block truncate group-hover:text-white transition-colors"
             style={{
               fontFamily: "'Space Grotesk', sans-serif",
-              fontSize: '14px', fontWeight: 500, color: '#e0e0e6',
+              fontSize: '14px', fontWeight: 500, color: 'var(--color-text-primary)',
             }}
           >
             {title}
@@ -131,7 +131,7 @@ function EventCard({ id, title, year, category, icon, viewed, side, index }: {
           <span
             style={{
               fontFamily: "'JetBrains Mono', monospace",
-              fontSize: '11px', color: '#55556a',
+              fontSize: '11px', color: 'var(--color-text-muted)',
             }}
           >
             {formatYear(year)}
@@ -178,7 +178,7 @@ export default function TimelineView() {
   return (
     <div
       className="min-h-screen w-full overflow-x-hidden overflow-y-auto lg:pl-[64px]"
-      style={{ background: '#08080c' }}
+      style={{ background: 'var(--color-void)' }}
     >
       <div className="w-full max-w-[900px] mx-auto px-4 md:px-8 py-12 md:py-16">
 
@@ -193,15 +193,15 @@ export default function TimelineView() {
             onClick={() => navigate('/dashboard')}
             className="flex items-center justify-center w-[44px] h-[44px] rounded-[10px] cursor-pointer shrink-0"
             style={{
-              background: 'rgba(14, 14, 20, 0.6)',
+              background: 'var(--glass-bg)',
               backdropFilter: 'blur(24px)',
-              border: '1px solid rgba(255, 255, 255, 0.06)',
+              border: '1px solid var(--color-border-subtle)',
             }}
             whileHover={{ scale: 1.08, borderColor: 'rgba(196, 154, 68, 0.3)' }}
             whileTap={{ scale: 0.93 }}
             aria-label="Back to dashboard"
           >
-            <ArrowLeft size={20} style={{ color: '#8a8a9a' }} />
+            <ArrowLeft size={20} style={{ color: 'var(--color-text-secondary)' }} />
           </motion.button>
 
           <div className="flex-1">
@@ -209,14 +209,14 @@ export default function TimelineView() {
               style={{
                 fontFamily: "'Space Grotesk', sans-serif",
                 fontSize: 'clamp(24px, 4vw, 32px)', fontWeight: 700,
-                color: '#e0e0e6', lineHeight: 1.1,
+                color: 'var(--color-text-primary)', lineHeight: 1.1,
               }}
             >
               Timeline
             </h1>
             <p style={{
               fontFamily: "'JetBrains Mono', monospace",
-              fontSize: '12px', color: '#55556a', marginTop: '4px',
+              fontSize: '12px', color: 'var(--color-text-muted)', marginTop: '4px',
             }}>
               {viewedCount} of {totalCount} events explored
             </p>

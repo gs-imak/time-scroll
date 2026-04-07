@@ -12,9 +12,9 @@ function GlassCard({ children, className, ...props }: React.HTMLAttributes<HTMLD
     <div
       className={cn('rounded-[12px] transition-all duration-200', className)}
       style={{
-        background: 'rgba(14, 14, 20, 0.6)',
+        background: 'var(--glass-bg)',
         backdropFilter: 'blur(24px)',
-        border: '1px solid rgba(255, 255, 255, 0.06)',
+        border: '1px solid var(--color-border-subtle)',
         boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.03)',
       }}
       {...props}
@@ -31,7 +31,7 @@ export default function CivilizationIndex() {
     <div
       className="min-h-screen w-full overflow-x-hidden overflow-y-auto lg:pl-[64px]"
       style={{
-        background: 'radial-gradient(ellipse 80% 50% at 50% 20%, #14141e 0%, #0c0c12 30%, #08080c 60%, #050508 100%)',
+        background: 'radial-gradient(ellipse 80% 50% at 50% 20%, var(--color-elevated) 0%, var(--color-surface) 30%, var(--color-void) 60%, var(--color-void) 100%)',
       }}
     >
       <div className="w-full max-w-[1100px] mx-auto px-6 md:px-10 py-12 md:py-16">
@@ -55,7 +55,7 @@ export default function CivilizationIndex() {
             style={{
               fontFamily: "'JetBrains Mono', monospace",
               fontSize: '13px',
-              color: '#55556a',
+              color: 'var(--color-text-muted)',
               marginTop: '4px',
             }}
           >
@@ -98,7 +98,7 @@ export default function CivilizationIndex() {
                     <div
                       className="absolute inset-0"
                       style={{
-                        background: 'linear-gradient(to top, rgba(14, 14, 20, 0.95) 0%, rgba(14, 14, 20, 0.3) 60%, transparent 100%)',
+                        background: 'linear-gradient(to top, var(--color-overlay) 0%, var(--glass-light-bg) 60%, transparent 100%)',
                       }}
                     />
                     <div className="absolute bottom-3 left-4 right-4">
@@ -122,7 +122,7 @@ export default function CivilizationIndex() {
                         style={{
                           fontFamily: "'JetBrains Mono', monospace",
                           fontSize: '11px',
-                          color: '#55556a',
+                          color: 'var(--color-text-muted)',
                         }}
                       >
                         <MapPin size={12} />

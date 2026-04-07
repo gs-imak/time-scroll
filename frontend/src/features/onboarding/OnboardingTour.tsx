@@ -252,7 +252,7 @@ export function OnboardingTour() {
             <rect
               width="100%"
               height="100%"
-              fill="rgba(8, 8, 12, 0.85)"
+              fill="var(--color-overlay)"
               mask="url(#onboarding-spotlight)"
             />
           </svg>
@@ -315,14 +315,14 @@ export function OnboardingTour() {
                 className="flex flex-col"
                 style={{
                   width: isCentered ? 380 : 320,
-                  background: 'rgba(14, 14, 20, 0.92)',
+                  background: 'var(--glass-strong-bg)',
                   backdropFilter: 'blur(24px)',
                   WebkitBackdropFilter: 'blur(24px)',
-                  border: '1px solid rgba(255, 255, 255, 0.07)',
+                  border: '1px solid var(--color-border-subtle)',
                   borderRadius: 16,
                   padding: 24,
                   boxShadow:
-                    '0 20px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(196, 154, 68, 0.04)',
+                    '0 20px 60px var(--glass-shadow), 0 0 40px rgba(196, 154, 68, 0.04)',
                 }}
               >
                 {/* Step counter */}
@@ -352,7 +352,7 @@ export function OnboardingTour() {
                     style={{
                       fontSize: 11,
                       fontWeight: 500,
-                      color: '#55556a',
+                      color: 'var(--color-text-muted)',
                       letterSpacing: '0.04em',
                     }}
                   >
@@ -365,7 +365,7 @@ export function OnboardingTour() {
                   style={{
                     fontSize: isCentered ? 22 : 16,
                     fontWeight: 600,
-                    color: '#e0e0e6',
+                    color: 'var(--color-text-primary)',
                     lineHeight: 1.2,
                     margin: 0,
                     marginBottom: 8,
@@ -379,7 +379,7 @@ export function OnboardingTour() {
                   style={{
                     fontSize: 14,
                     fontWeight: 400,
-                    color: '#8a8a9a',
+                    color: 'var(--color-text-secondary)',
                     lineHeight: 1.6,
                     margin: 0,
                     marginBottom: 20,
@@ -399,7 +399,7 @@ export function OnboardingTour() {
                       padding: '8px 0',
                       fontSize: 13,
                       fontWeight: 400,
-                      color: '#55556a',
+                      color: 'var(--color-text-muted)',
                       transition: 'color 200ms',
                     }}
                     onMouseEnter={(e) => {

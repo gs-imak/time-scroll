@@ -72,7 +72,7 @@ export function ComparisonTool() {
       {isOpen && eventA && eventB && (
         <motion.div
           className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-8"
-          style={{ background: 'rgba(8, 8, 12, 0.97)' }}
+          style={{ background: 'var(--color-overlay)' }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -85,13 +85,13 @@ export function ComparisonTool() {
             style={{
               width: '44px', height: '44px',
               background: 'rgba(255,255,255,0.04)',
-              border: '1px solid rgba(255,255,255,0.08)',
+              border: '1px solid var(--color-border-subtle)',
             }}
             whileHover={{ scale: 1.1, background: 'rgba(255,255,255,0.08)' }}
             whileTap={{ scale: 0.9 }}
             aria-label="Close comparison"
           >
-            <X size={20} style={{ color: '#8a8a9a' }} />
+            <X size={20} style={{ color: 'var(--color-text-secondary)' }} />
           </motion.button>
 
           {/* Main content */}
@@ -109,12 +109,12 @@ export function ComparisonTool() {
                   fontFamily: "'Space Grotesk', sans-serif",
                   fontSize: 'clamp(20px, 3vw, 28px)',
                   fontWeight: 700,
-                  color: '#e0e0e6',
+                  color: 'var(--color-text-primary)',
                 }}
               >
                 Event Comparison
               </h2>
-              <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '13px', color: '#55556a', marginTop: '4px' }}>
+              <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '13px', color: 'var(--color-text-muted)', marginTop: '4px' }}>
                 Side-by-side historical analysis
               </p>
             </div>
@@ -202,10 +202,10 @@ export function ComparisonTool() {
 
                 {/* Year labels */}
                 <div className="flex justify-between mt-3">
-                  <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: '#8a8a9a' }}>
+                  <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: 'var(--color-text-secondary)' }}>
                     {formatYear(Math.min(eventA.year, eventB.year))}
                   </span>
-                  <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: '#8a8a9a' }}>
+                  <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: 'var(--color-text-secondary)' }}>
                     {formatYear(Math.max(eventA.year, eventB.year))}
                   </span>
                 </div>
@@ -233,8 +233,8 @@ export function ComparisonTool() {
                   fontSize: '14px',
                   fontWeight: 500,
                   background: 'rgba(255,255,255,0.04)',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                  color: '#8a8a9a',
+                  border: '1px solid var(--color-border-subtle)',
+                  color: 'var(--color-text-secondary)',
                 }}
                 whileHover={{ scale: 1.04, borderColor: 'rgba(255,255,255,0.15)' }}
                 whileTap={{ scale: 0.96 }}
@@ -276,9 +276,9 @@ function ComparisonCard({ event, era, delay }: ComparisonCardProps) {
     <motion.div
       className="rounded-[12px] overflow-hidden"
       style={{
-        background: 'rgba(14, 14, 20, 0.6)',
+        background: 'var(--glass-bg)',
         backdropFilter: 'blur(24px)',
-        border: '1px solid rgba(255, 255, 255, 0.06)',
+        border: '1px solid var(--color-border-subtle)',
         boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.03)',
       }}
       initial={{ opacity: 0, y: 20 }}
@@ -304,7 +304,7 @@ function ComparisonCard({ event, era, delay }: ComparisonCardProps) {
               fontFamily: "'Space Grotesk', sans-serif",
               fontSize: '18px',
               fontWeight: 600,
-              color: '#e0e0e6',
+              color: 'var(--color-text-primary)',
               lineHeight: 1.3,
             }}
           >
@@ -338,7 +338,7 @@ function ComparisonCard({ event, era, delay }: ComparisonCardProps) {
             fontFamily: "'Space Grotesk', sans-serif",
             fontSize: '13px',
             lineHeight: 1.6,
-            color: '#8a8a9a',
+            color: 'var(--color-text-secondary)',
             borderTop: '1px solid rgba(255,255,255,0.04)',
           }}
         >
@@ -362,8 +362,8 @@ function DetailRow({
 }) {
   return (
     <div className="flex items-center gap-3">
-      <Icon size={14} style={{ color: '#55556a', flexShrink: 0 }} />
-      <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', color: '#55556a', minWidth: '60px' }}>
+      <Icon size={14} style={{ color: 'var(--color-text-muted)', flexShrink: 0 }} />
+      <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', color: 'var(--color-text-muted)', minWidth: '60px' }}>
         {label}
       </span>
       <span

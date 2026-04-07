@@ -47,11 +47,11 @@ export function EventDetailSheet() {
               : 'fixed top-5 right-5 z-40 w-[380px] rounded-2xl max-h-[85vh] overflow-y-auto'
           }
           style={{
-            background: 'rgba(14, 14, 20, 0.92)',
+            background: 'var(--glass-strong-bg)',
             backdropFilter: 'blur(24px)',
             WebkitBackdropFilter: 'blur(24px)',
-            border: '1px solid rgba(255, 255, 255, 0.07)',
-            boxShadow: '0 8px 40px rgba(0, 0, 0, 0.5), 0 0 1px rgba(255, 255, 255, 0.1)',
+            border: '1px solid var(--color-border-subtle)',
+            boxShadow: '0 8px 40px var(--glass-shadow), 0 0 1px rgba(255, 255, 255, 0.1)',
           }}
           initial={isMobile ? { y: 120, opacity: 0 } : { x: 120, opacity: 0 }}
           animate={isMobile ? { y: 0, opacity: 1 } : { x: 0, opacity: 1 }}
@@ -73,11 +73,11 @@ export function EventDetailSheet() {
                   className="w-2 h-2 rounded-full shrink-0"
                   style={{ background: cat.color }}
                 />
-                <span className="text-[11px] font-medium tracking-wide text-[#8a8a9a] uppercase">
+                <span className="text-[11px] font-medium tracking-wide text-text-secondary uppercase">
                   {cat.label}
                 </span>
-                <span className="text-[11px] text-[#55556a]">·</span>
-                <span className="flex items-center gap-1 text-[11px] text-[#55556a]">
+                <span className="text-[11px] text-text-muted">·</span>
+                <span className="flex items-center gap-1 text-[11px] text-text-muted">
                   <Calendar size={11} />
                   {formatYear(event.year)}
                 </span>
@@ -86,20 +86,20 @@ export function EventDetailSheet() {
             </div>
 
             {/* Title */}
-            <h2 className="text-[18px] font-semibold leading-snug text-[#e0e0e6] mb-1.5">
+            <h2 className="text-[18px] font-semibold leading-snug text-text-primary mb-1.5">
               {event.title}
             </h2>
 
             {/* Era tag */}
             {era && (
-              <p className="text-[11px] text-[#55556a] mb-4">{era.name}</p>
+              <p className="text-[11px] text-text-muted mb-4">{era.name}</p>
             )}
 
             {/* Divider */}
             <div className="h-px bg-white/[0.06] mb-4" />
 
             {/* Description */}
-            <p className="text-[13px] text-[#8a8a9a] leading-[1.65] mb-5">
+            <p className="text-[13px] text-text-secondary leading-[1.65] mb-5">
               {event.description}
             </p>
 
@@ -109,8 +109,8 @@ export function EventDetailSheet() {
               className="w-full flex items-center justify-center gap-2 h-10 rounded-lg text-[13px] font-medium transition-all cursor-pointer hover:bg-white/[0.08] active:scale-[0.98]"
               style={{
                 background: 'rgba(255, 255, 255, 0.04)',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
-                color: '#8a8a9a',
+                border: '1px solid var(--color-border-subtle)',
+                color: 'var(--color-text-secondary)',
               }}
             >
               <Navigation size={13} />
@@ -124,12 +124,12 @@ export function EventDetailSheet() {
                   <button
                     onClick={() => selectEvent(prevEvent.id)}
                     className="flex-1 flex items-center gap-2 px-3 py-2.5 rounded-lg transition-colors text-left cursor-pointer hover:bg-white/[0.04]"
-                    style={{ border: '1px solid rgba(255, 255, 255, 0.05)' }}
+                    style={{ border: '1px solid var(--color-border-subtle)' }}
                   >
-                    <ChevronLeft size={12} className="text-[#55556a] shrink-0" />
+                    <ChevronLeft size={12} className="text-text-muted shrink-0" />
                     <div className="min-w-0">
-                      <span className="text-[10px] text-[#55556a] block">Previous</span>
-                      <span className="text-[11px] text-[#8a8a9a] truncate block">{prevEvent.title}</span>
+                      <span className="text-[10px] text-text-muted block">Previous</span>
+                      <span className="text-[11px] text-text-secondary truncate block">{prevEvent.title}</span>
                     </div>
                   </button>
                 )}
@@ -137,13 +137,13 @@ export function EventDetailSheet() {
                   <button
                     onClick={() => selectEvent(nextEvent.id)}
                     className="flex-1 flex items-center gap-2 px-3 py-2.5 rounded-lg transition-colors text-left cursor-pointer hover:bg-white/[0.04]"
-                    style={{ border: '1px solid rgba(255, 255, 255, 0.05)' }}
+                    style={{ border: '1px solid var(--color-border-subtle)' }}
                   >
                     <div className="min-w-0 flex-1">
-                      <span className="text-[10px] text-[#55556a] block text-right">Next</span>
-                      <span className="text-[11px] text-[#8a8a9a] truncate block text-right">{nextEvent.title}</span>
+                      <span className="text-[10px] text-text-muted block text-right">Next</span>
+                      <span className="text-[11px] text-text-secondary truncate block text-right">{nextEvent.title}</span>
                     </div>
-                    <ChevronRight size={12} className="text-[#55556a] shrink-0" />
+                    <ChevronRight size={12} className="text-text-muted shrink-0" />
                   </button>
                 )}
               </div>

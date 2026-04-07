@@ -76,7 +76,7 @@ function ToastCard({
       transition={{ type: 'spring', stiffness: 400, damping: 30 }}
       className="pointer-events-auto"
       style={{
-        background: 'rgba(14, 14, 20, 0.92)',
+        background: 'var(--glass-strong-bg)',
         backdropFilter: 'blur(24px)',
         WebkitBackdropFilter: 'blur(24px)',
         border: '1px solid rgba(196, 154, 68, 0.2)',
@@ -84,7 +84,7 @@ function ToastCard({
         padding: '16px 20px',
         minWidth: 260,
         maxWidth: 340,
-        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.04)',
+        boxShadow: '0 8px 32px var(--glass-shadow), 0 0 0 1px rgba(255, 255, 255, 0.04)',
       }}
     >
       <div className="flex items-start gap-3">
@@ -105,13 +105,13 @@ function ToastCard({
           </p>
           <p
             className="text-[14px] font-semibold mt-1.5 leading-tight"
-            style={{ color: '#e0e0e6' }}
+            style={{ color: 'var(--color-text-primary)' }}
           >
             {entry.achievement.title}
           </p>
           <p
             className="text-[11px] mt-0.5 leading-snug"
-            style={{ color: '#8a8a9a' }}
+            style={{ color: 'var(--color-text-secondary)' }}
           >
             {entry.achievement.desc}
           </p>

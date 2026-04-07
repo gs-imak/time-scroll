@@ -59,7 +59,7 @@ export function QuizSession({ state, onSelectAnswer, onConfirmAnswer, onUseHint,
               answers={state.answers}
               accentColor="#c49a44"
             />
-            <span className="text-[11px] text-[#3a3a4a] font-mono">
+            <span className="text-[11px] text-text-muted font-mono">
               {state.currentIndex + 1}/{state.questions.length}
             </span>
           </div>
@@ -78,7 +78,7 @@ export function QuizSession({ state, onSelectAnswer, onConfirmAnswer, onUseHint,
               onClick={onQuit}
               className="w-8 h-8 rounded-full flex items-center justify-center cursor-pointer hover:bg-white/[0.06] transition-colors"
             >
-              <X size={16} className="text-[#55556a]" />
+              <X size={16} className="text-text-muted" />
             </button>
           </div>
         </div>
@@ -86,7 +86,7 @@ export function QuizSession({ state, onSelectAnswer, onConfirmAnswer, onUseHint,
         {/* Question type + difficulty badges */}
         <div className="flex items-center gap-2 mb-6">
           <span className="text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full"
-            style={{ background: 'rgba(255,255,255,0.04)', color: '#55556a', border: '1px solid rgba(255,255,255,0.06)' }}>
+            style={{ background: 'rgba(255,255,255,0.04)', color: 'var(--color-text-muted)', border: '1px solid var(--color-border-subtle)' }}>
             {TYPE_LABEL[question.type] ?? question.type}
           </span>
           {diff && (
@@ -103,7 +103,7 @@ export function QuizSession({ state, onSelectAnswer, onConfirmAnswer, onUseHint,
           <motion.div
             key={state.currentIndex}
             className="rounded-2xl p-6 sm:p-8"
-            style={{ background: 'rgba(14, 14, 20, 0.6)', backdropFilter: 'blur(24px)', border: '1px solid rgba(255,255,255,0.06)' }}
+            style={{ background: 'var(--glass-bg)', backdropFilter: 'blur(24px)', border: '1px solid var(--color-border-subtle)' }}
             initial={{ opacity: 0, x: 30 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -30 }}

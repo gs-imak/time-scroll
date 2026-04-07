@@ -15,8 +15,8 @@ const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
 function GlassCard({ children, className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div className={`rounded-xl transition-all duration-200 ${className ?? ''}`} style={{
-      background: 'rgba(14, 14, 20, 0.6)', backdropFilter: 'blur(24px)',
-      border: '1px solid rgba(255, 255, 255, 0.06)',
+      background: 'var(--glass-bg)', backdropFilter: 'blur(24px)',
+      border: '1px solid var(--color-border-subtle)',
       boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.03)',
     }} {...props}>
       {children}
@@ -119,12 +119,12 @@ export default function QuizHub() {
         <motion.header className="mb-12" {...section(0)}>
           <div className="flex items-center gap-3 mb-3">
             <BrainCircuit size={28} className="text-[#c49a44]" />
-            <h1 className="text-[28px] sm:text-[32px] font-bold text-[#e0e0e6]"
+            <h1 className="text-[28px] sm:text-[32px] font-bold text-text-primary"
               style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
               Quiz Center
             </h1>
           </div>
-          <p className="text-[14px] text-[#55556a] max-w-[500px]">
+          <p className="text-[14px] text-text-muted max-w-[500px]">
             Test your knowledge of history across {questionCount} questions covering 12,000 years of human civilization.
           </p>
         </motion.header>
@@ -138,18 +138,18 @@ export default function QuizHub() {
           ].map(stat => (
             <GlassCard key={stat.label} className="p-4 text-center">
               <stat.icon size={16} className="mx-auto mb-2" style={{ color: stat.color }} />
-              <p className="text-[18px] font-bold text-[#e0e0e6]"
+              <p className="text-[18px] font-bold text-text-primary"
                 style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
                 {stat.value}
               </p>
-              <p className="text-[10px] uppercase tracking-wider text-[#3a3a4a] mt-1">{stat.label}</p>
+              <p className="text-[10px] uppercase tracking-wider text-text-muted mt-1">{stat.label}</p>
             </GlassCard>
           ))}
         </motion.div>
 
         {/* Mode selection */}
         <motion.section className="mb-10" {...section(0.2)}>
-          <h2 className="text-[11px] font-semibold tracking-[0.14em] uppercase text-[#3a3a4a] mb-4">
+          <h2 className="text-[11px] font-semibold tracking-[0.14em] uppercase text-text-muted mb-4">
             Choose Your Mode
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -159,7 +159,7 @@ export default function QuizHub() {
                 onClick={() => handleStartQuiz(mode)}
                 className="p-6 rounded-xl text-left cursor-pointer group"
                 style={{
-                  background: 'rgba(14, 14, 20, 0.6)', backdropFilter: 'blur(24px)',
+                  background: 'var(--glass-bg)', backdropFilter: 'blur(24px)',
                   border: `1px solid ${color}15`,
                 }}
                 whileHover={{ scale: 1.02, borderColor: `${color}40`, y: -2 }}
@@ -169,11 +169,11 @@ export default function QuizHub() {
                   style={{ background: `${color}12` }}>
                   <Icon size={20} style={{ color }} />
                 </div>
-                <h3 className="text-[15px] font-semibold text-[#e0e0e6] mb-1 flex items-center gap-2">
+                <h3 className="text-[15px] font-semibold text-text-primary mb-1 flex items-center gap-2">
                   {title}
-                  <ChevronRight size={14} className="text-[#28282f] group-hover:text-[#55556a] transition-colors" />
+                  <ChevronRight size={14} className="text-[#28282f] group-hover:text-text-muted transition-colors" />
                 </h3>
-                <p className="text-[12px] text-[#55556a] leading-relaxed">{desc}</p>
+                <p className="text-[12px] text-text-muted leading-relaxed">{desc}</p>
               </motion.button>
             ))}
           </div>
@@ -181,7 +181,7 @@ export default function QuizHub() {
 
         {/* Filters */}
         <motion.section className="mb-10" {...section(0.3)}>
-          <h2 className="text-[11px] font-semibold tracking-[0.14em] uppercase text-[#3a3a4a] mb-4">
+          <h2 className="text-[11px] font-semibold tracking-[0.14em] uppercase text-text-muted mb-4">
             Focus Your Quiz
           </h2>
           <GlassCard className="p-5">
@@ -192,7 +192,7 @@ export default function QuizHub() {
               onToggleCategory={toggleCategory}
             />
             {(selectedEras.length > 0 || selectedCategories.length > 0) && (
-              <p className="text-[11px] text-[#55556a] mt-3">
+              <p className="text-[11px] text-text-muted mt-3">
                 {QUIZ_QUESTIONS.filter(q => {
                   if (selectedEras.length && !selectedEras.includes(q.era)) return false;
                   if (selectedCategories.length && !selectedCategories.includes(q.category)) return false;
@@ -205,7 +205,7 @@ export default function QuizHub() {
 
         {/* How it works */}
         <motion.section {...section(0.4)}>
-          <h2 className="text-[11px] font-semibold tracking-[0.14em] uppercase text-[#3a3a4a] mb-4">
+          <h2 className="text-[11px] font-semibold tracking-[0.14em] uppercase text-text-muted mb-4">
             How It Works
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -217,7 +217,7 @@ export default function QuizHub() {
             ].map(({ emoji, text }) => (
               <div key={text} className="flex items-start gap-3 p-4 rounded-xl" style={{ background: 'rgba(255,255,255,0.02)' }}>
                 <span className="text-[18px]">{emoji}</span>
-                <p className="text-[12px] text-[#8a8a9a] leading-relaxed">{text}</p>
+                <p className="text-[12px] text-text-secondary leading-relaxed">{text}</p>
               </div>
             ))}
           </div>

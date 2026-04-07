@@ -71,7 +71,7 @@ export function SpotlightOverlay() {
             <div
               className="flex items-center gap-3 px-5 py-3 rounded-xl"
               style={{
-                background: 'rgba(10, 10, 16, 0.85)',
+                background: 'var(--glass-strong-bg)',
                 backdropFilter: 'blur(20px)',
                 border: `1.5px solid ${color}40`,
                 boxShadow: `0 0 24px ${color}20, 0 4px 20px rgba(0,0,0,0.4)`,
@@ -82,11 +82,11 @@ export function SpotlightOverlay() {
                 <h2 className="text-[16px] font-bold" style={{ color, fontFamily: "'Space Grotesk', sans-serif", textShadow: `0 0 16px ${color}40` }}>
                   {displayName}
                 </h2>
-                <p className="text-[11px] text-[#55556a]">
+                <p className="text-[11px] text-text-muted">
                   {currentEra?.name} — {formatYear(currentYear)}
                 </p>
               </div>
-              <div className="ml-4 text-[10px] font-mono text-[#3a3a4a]">
+              <div className="ml-4 text-[10px] font-mono text-text-muted">
                 {currentSnapshotIndex + 1}/{snapshotYears.length}
               </div>
             </div>
@@ -97,7 +97,7 @@ export function SpotlightOverlay() {
             onClick={exitSpotlight}
             className="fixed top-4 right-4 z-50 w-10 h-10 rounded-full flex items-center justify-center cursor-pointer"
             style={{
-              background: 'rgba(10, 10, 16, 0.8)',
+              background: 'var(--glass-strong-bg)',
               backdropFilter: 'blur(16px)',
               border: '1px solid rgba(255,255,255,0.1)',
             }}
@@ -107,7 +107,7 @@ export function SpotlightOverlay() {
             whileHover={{ borderColor: 'rgba(184, 84, 84, 0.5)', scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
           >
-            <X size={16} className="text-[#8a8a9a]" />
+            <X size={16} className="text-text-secondary" />
           </motion.button>
 
           {/* Playback controls */}
@@ -121,7 +121,7 @@ export function SpotlightOverlay() {
             <div
               className="flex items-center gap-2 px-4 py-2.5 rounded-xl"
               style={{
-                background: 'rgba(10, 10, 16, 0.85)',
+                background: 'var(--glass-strong-bg)',
                 backdropFilter: 'blur(20px)',
                 border: `1px solid ${color}25`,
                 boxShadow: `0 0 16px ${color}15, 0 4px 16px rgba(0,0,0,0.4)`,
@@ -166,7 +166,7 @@ export function SpotlightOverlay() {
               <motion.button
                 onClick={cycleSpeed}
                 className="ml-2 px-2.5 py-1 rounded-full text-[10px] font-bold cursor-pointer"
-                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#8a8a9a' }}
+                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--color-border-subtle)', color: 'var(--color-text-secondary)' }}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 title="Cycle speed"
@@ -192,7 +192,7 @@ function ControlBtn({ onClick, disabled, children, title }: { onClick: () => voi
       whileTap={!disabled ? { scale: 0.9 } : {}}
       title={title}
     >
-      <span className="text-[#8a8a9a]">{children}</span>
+      <span className="text-text-secondary">{children}</span>
     </motion.button>
   );
 }

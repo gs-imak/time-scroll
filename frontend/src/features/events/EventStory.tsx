@@ -358,7 +358,7 @@ export function EventStory() {
           exit={{ opacity: 0 }}
           transition={{ duration: 0.35 }}
         >
-          <div className="absolute inset-0 bg-[#08080c]" onClick={onClose} aria-hidden="true" />
+          <div className="absolute inset-0 bg-void" onClick={onClose} aria-hidden="true" />
 
           {/* ── Progress Bar (fixed to viewport top) ── */}
           <div className="absolute top-0 left-0 right-0 h-[3px] z-40 overflow-hidden">
@@ -378,11 +378,11 @@ export function EventStory() {
               <button
                 key={s}
                 onClick={() => scrollToSection(s)}
-                className="group flex items-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5a9aaa] focus-visible:ring-offset-2 focus-visible:ring-offset-[#08080c] rounded-full"
+                className="group flex items-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5a9aaa] focus-visible:ring-offset-2 focus-visible:ring-offset-void rounded-full"
                 aria-label={`Scroll to ${SECTION_LABELS[s]} section`}
                 aria-current={activeSection === s ? 'true' : undefined}
               >
-                <span className="text-[9px] font-medium tracking-wider uppercase opacity-0 group-hover:opacity-100 transition-opacity text-[#55556a] translate-x-1 group-hover:translate-x-0">
+                <span className="text-[9px] font-medium tracking-wider uppercase opacity-0 group-hover:opacity-100 transition-opacity text-text-muted translate-x-1 group-hover:translate-x-0">
                   {SECTION_LABELS[s]}
                 </span>
                 <span
@@ -403,8 +403,8 @@ export function EventStory() {
             {showScrollTop && (
               <motion.button
                 onClick={scrollToTop}
-                className="fixed bottom-8 right-8 z-40 w-11 h-11 rounded-full flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5a9aaa] focus-visible:ring-offset-2 focus-visible:ring-offset-[#08080c]"
-                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(12px)' }}
+                className="fixed bottom-8 right-8 z-40 w-11 h-11 rounded-full flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5a9aaa] focus-visible:ring-offset-2 focus-visible:ring-offset-void"
+                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid var(--color-border-subtle)', backdropFilter: 'blur(12px)' }}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 20 }}
@@ -412,7 +412,7 @@ export function EventStory() {
                 whileTap={{ scale: 0.95 }}
                 aria-label="Scroll to top"
               >
-                <ArrowUp size={16} className="text-[#8a8a9a]" aria-hidden="true" />
+                <ArrowUp size={16} className="text-text-secondary" aria-hidden="true" />
               </motion.button>
             )}
           </AnimatePresence>
@@ -444,7 +444,7 @@ export function EventStory() {
                 className="absolute left-[3%] top-[1000px] z-[1]"
                 style={{ y: sideLeftY2, opacity: sideOpacity2 }}
               >
-                <div className="font-mono text-[12px] leading-relaxed" style={{ color: '#3a3a4a' }}>
+                <div className="font-mono text-[12px] leading-relaxed" style={{ color: 'var(--color-text-muted)' }}>
                   <div>{event.latitude.toFixed(4)}°N</div>
                   <div>{event.longitude.toFixed(4)}°E</div>
                   <div className="mt-2 w-8 h-px" style={{ background: `${cat.color}25` }} />
@@ -547,7 +547,7 @@ export function EventStory() {
                 <div className="flex items-center gap-2">
                   <motion.button
                     onClick={() => event && toggleFavorite(event.id)}
-                    className="w-10 h-10 rounded-full flex items-center justify-center bg-white/[0.06] hover:bg-white/[0.1] transition-colors cursor-pointer backdrop-blur-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5a9aaa] focus-visible:ring-offset-2 focus-visible:ring-offset-[#08080c]"
+                    className="w-10 h-10 rounded-full flex items-center justify-center bg-white/[0.06] hover:bg-white/[0.1] transition-colors cursor-pointer backdrop-blur-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5a9aaa] focus-visible:ring-offset-2 focus-visible:ring-offset-void"
                     whileTap={{ scale: 0.9 }}
                     aria-label={isFavorited ? 'Remove from favorites' : 'Add to favorites'}>
                     <Heart
@@ -558,15 +558,15 @@ export function EventStory() {
                     />
                   </motion.button>
                   <motion.button onClick={onShare}
-                    className="w-10 h-10 rounded-full flex items-center justify-center bg-white/[0.06] hover:bg-white/[0.1] transition-colors cursor-pointer backdrop-blur-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5a9aaa] focus-visible:ring-offset-2 focus-visible:ring-offset-[#08080c]"
+                    className="w-10 h-10 rounded-full flex items-center justify-center bg-white/[0.06] hover:bg-white/[0.1] transition-colors cursor-pointer backdrop-blur-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5a9aaa] focus-visible:ring-offset-2 focus-visible:ring-offset-void"
                     whileTap={{ scale: 0.9 }}
                     aria-label={copied ? 'Copied to clipboard' : 'Share this event'}>
-                    <Share2 size={15} className="text-[#55556a]" aria-hidden="true" />
+                    <Share2 size={15} className="text-text-muted" aria-hidden="true" />
                   </motion.button>
                   <button onClick={onClose}
-                    className="w-10 h-10 rounded-full flex items-center justify-center bg-white/[0.06] hover:bg-white/[0.1] transition-colors cursor-pointer backdrop-blur-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5a9aaa] focus-visible:ring-offset-2 focus-visible:ring-offset-[#08080c]"
+                    className="w-10 h-10 rounded-full flex items-center justify-center bg-white/[0.06] hover:bg-white/[0.1] transition-colors cursor-pointer backdrop-blur-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5a9aaa] focus-visible:ring-offset-2 focus-visible:ring-offset-void"
                     aria-label="Close event story">
-                    <X size={18} className="text-[#8a8a9a]" aria-hidden="true" />
+                    <X size={18} className="text-text-secondary" aria-hidden="true" />
                   </button>
                 </div>
                 <NavButton dir="right" event={next} onSelect={selectEvent} />
@@ -575,8 +575,8 @@ export function EventStory() {
               {/* Copied toast */}
               <AnimatePresence>
                 {copied && (
-                  <motion.div className="absolute top-16 left-1/2 -translate-x-1/2 z-20 px-4 py-2 rounded-full text-[11px] text-[#8a8a9a]"
-                    style={{ background: 'rgba(14, 14, 20, 0.92)', border: '1px solid rgba(255,255,255,0.08)' }}
+                  <motion.div className="absolute top-16 left-1/2 -translate-x-1/2 z-20 px-4 py-2 rounded-full text-[11px] text-text-secondary"
+                    style={{ background: 'var(--glass-strong-bg)', border: '1px solid var(--color-border-subtle)' }}
                     initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
                     Copied to clipboard
                   </motion.div>
@@ -623,16 +623,16 @@ export function EventStory() {
                     {cat.label}
                   </span>
                 </div>
-                <h1 className="text-4xl sm:text-5xl md:text-[3.5rem] font-bold leading-[1.08] text-[#e0e0e6] mb-5">
+                <h1 className="text-4xl sm:text-5xl md:text-[3.5rem] font-bold leading-[1.08] text-text-primary mb-5">
                   {event.title}
                 </h1>
 
                 {/* Animated year display */}
-                <div className="text-[28px] sm:text-[36px] font-light text-[#3a3a4a] mb-4 tabular-nums">
+                <div className="text-[28px] sm:text-[36px] font-light text-text-muted mb-4 tabular-nums">
                   <AnimatedYear year={event.year} />
                 </div>
 
-                <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px] text-[#55556a]">
+                <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px] text-text-muted">
                   {event.locationName && (
                     <span className="flex items-center gap-1.5"><MapPin size={13} />{event.locationName}</span>
                   )}
@@ -643,7 +643,7 @@ export function EventStory() {
                 </div>
               </motion.div>
 
-              <div className="absolute bottom-0 inset-x-0 h-32" style={{ background: 'linear-gradient(transparent, #08080c)' }} />
+              <div className="absolute bottom-0 inset-x-0 h-32" style={{ background: 'linear-gradient(transparent, var(--color-void))' }} />
             </div>
 
             {/* ═══ BODY ═══ */}
@@ -652,9 +652,9 @@ export function EventStory() {
               {/* Timeline */}
               <Reveal>
                 <div className="py-10">
-                  <div className="flex items-center justify-between text-[10px] text-[#3a3a4a] uppercase tracking-wider mb-3">
+                  <div className="flex items-center justify-between text-[10px] text-text-muted uppercase tracking-wider mb-3">
                     <span>{formatYear(era.startYear)}</span>
-                    <span className="text-[#55556a]">{era.name}</span>
+                    <span className="text-text-muted">{era.name}</span>
                     <span>{formatYear(era.endYear)}</span>
                   </div>
                   <div className="relative h-[3px] rounded-full bg-white/[0.06]">
@@ -683,7 +683,7 @@ export function EventStory() {
                               border: isActive ? '2px solid #08080c' : 'none',
                               boxShadow: isActive ? `0 0 10px ${cat.color}60` : 'none',
                             }} />
-                          <span className="absolute bottom-5 left-1/2 -translate-x-1/2 whitespace-nowrap px-2.5 py-1 rounded-md text-[10px] bg-[#0e0e14] text-[#8a8a9a] border border-white/[0.08] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                          <span className="absolute bottom-5 left-1/2 -translate-x-1/2 whitespace-nowrap px-2.5 py-1 rounded-md text-[10px] bg-surface text-text-secondary border border-white/[0.08] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                             {ee.title}
                           </span>
                         </button>
@@ -713,20 +713,20 @@ export function EventStory() {
                     </div>
                   ) : (
                     <div className="rounded-2xl overflow-hidden aspect-[21/9] flex items-center justify-center relative"
-                      style={{ background: cat.gradient, border: '1px solid rgba(255,255,255,0.04)' }}>
+                      style={{ background: cat.gradient, border: '1px solid var(--color-border-subtle)' }}>
                       <div className="absolute inset-0 opacity-[0.04]" style={{
                         backgroundImage: `radial-gradient(circle at 30% 40%, ${cat.color}30 0%, transparent 50%), radial-gradient(circle at 70% 60%, ${cat.color}20 0%, transparent 50%)`,
                       }} />
                       <div className="text-center relative z-10">
                         <div className="flex items-center justify-center gap-4 mb-3">
-                          <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                            <ImageIcon size={20} className="text-[#3a3a4a]" />
+                          <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--color-border-subtle)' }}>
+                            <ImageIcon size={20} className="text-text-muted" />
                           </div>
-                          <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                            <Play size={20} className="text-[#3a3a4a]" />
+                          <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--color-border-subtle)' }}>
+                            <Play size={20} className="text-text-muted" />
                           </div>
                         </div>
-                        <p className="text-[11px] text-[#3a3a4a]">Media coming soon</p>
+                        <p className="text-[11px] text-text-muted">Media coming soon</p>
                       </div>
                     </div>
                   )}
@@ -738,7 +738,7 @@ export function EventStory() {
                 <Reveal>
                   <section className="mb-16">
                     <SectionLabel>3D Model — Explore in 3D</SectionLabel>
-                    <div className="rounded-2xl overflow-hidden aspect-[16/10]" style={{ border: '1px solid rgba(255,255,255,0.06)' }}>
+                    <div className="rounded-2xl overflow-hidden aspect-[16/10]" style={{ border: '1px solid var(--color-border-subtle)' }}>
                       <iframe
                         src={event.modelUrl}
                         className="w-full h-full"
@@ -749,7 +749,7 @@ export function EventStory() {
                       />
                     </div>
                     <div className="flex items-center justify-between mt-3">
-                      <p className="text-[11px] text-[#3a3a4a]">
+                      <p className="text-[11px] text-text-muted">
                         Drag to rotate · Scroll to zoom · Shift+drag to pan
                       </p>
                       <motion.button
@@ -760,8 +760,8 @@ export function EventStory() {
                           padding: '0 16px',
                           borderRadius: '8px',
                           background: 'rgba(255,255,255,0.06)',
-                          border: '1px solid rgba(255,255,255,0.08)',
-                          color: '#e0e0e6',
+                          border: '1px solid var(--color-border-subtle)',
+                          color: 'var(--color-text-primary)',
                           fontSize: '13px',
                           fontWeight: 500,
                         }}
@@ -818,11 +818,11 @@ export function EventStory() {
                         />
                       );
                     })}
-                    <p className="text-[15px] sm:text-[16px] text-[#8a8a9a] leading-[1.9] mb-6">{para}</p>
+                    <p className="text-[15px] sm:text-[16px] text-text-secondary leading-[1.9] mb-6">{para}</p>
                     {i === 0 && pullQuote && (
                       <Reveal delay={0.1}>
                         <blockquote className="my-10 py-6 px-8 border-l-[3px] rounded-r-xl clear-both relative z-[2]" style={{ borderColor: cat.color, background: `${cat.color}06` }}>
-                          <p className="text-[18px] sm:text-[20px] text-[#8a8a9a] leading-[1.7] italic font-light">
+                          <p className="text-[18px] sm:text-[20px] text-text-secondary leading-[1.7] italic font-light">
                             "{pullQuote}"
                           </p>
                         </blockquote>
@@ -871,7 +871,7 @@ export function EventStory() {
                           <motion.button
                             onClick={() => selectEvent(ce.id)}
                             className="flex items-start gap-4 p-5 rounded-xl text-left cursor-pointer group w-full overflow-hidden relative"
-                            style={{ border: '1px solid rgba(255,255,255,0.05)' }}
+                            style={{ border: '1px solid var(--color-border-subtle)' }}
                             whileHover={{ borderColor: `${ceCat?.color ?? '#8a8a9a'}25`, backgroundColor: 'rgba(255,255,255,0.02)', x: 4 }}
                             whileTap={{ scale: 0.98 }}
                           >
@@ -892,17 +892,17 @@ export function EventStory() {
                               </div>
                             )}
                             <div className="min-w-0 flex-1">
-                              <p className="text-[13px] font-medium text-[#8a8a9a] group-hover:text-[#e0e0e6] transition-colors truncate">
+                              <p className="text-[13px] font-medium text-text-secondary group-hover:text-text-primary transition-colors truncate">
                                 {ce.title}
                               </p>
-                              <p className="text-[11px] text-[#3a3a4a] mt-1">
+                              <p className="text-[11px] text-text-muted mt-1">
                                 {formatYear(ce.year)}{ce.locationName && ` · ${ce.locationName}`}
                               </p>
                               <p className="text-[10px] mt-1.5" style={{ color: ceCat?.color ?? '#8a8a9a' }}>
                                 {diffLabel}
                               </p>
                             </div>
-                            <ChevronRight size={14} className="text-[#28282f] group-hover:text-[#3a3a4a] transition-colors shrink-0 mt-1" />
+                            <ChevronRight size={14} className="text-[#28282f] group-hover:text-text-muted transition-colors shrink-0 mt-1" />
                           </motion.button>
                         </Reveal>
                       );
@@ -935,7 +935,7 @@ export function EventStory() {
                             <Lightbulb size={16} style={{ color: cat.color }} />
                             <span className="text-[12px] font-semibold tracking-wider uppercase" style={{ color: cat.color }}>Did you know?</span>
                           </div>
-                          <p className="text-[16px] text-[#8a8a9a] leading-[1.8]">{event.impactText}</p>
+                          <p className="text-[16px] text-text-secondary leading-[1.8]">{event.impactText}</p>
                         </div>
                       </motion.div>
                     </div>
@@ -959,8 +959,8 @@ export function EventStory() {
               <Reveal>
                 <section className="mb-20">
                   <SectionLabel>Your Notes</SectionLabel>
-                  <div className="rounded-2xl p-6 relative" style={{ background: 'rgba(14, 14, 20, 0.6)', backdropFilter: 'blur(24px)', border: '1px solid rgba(255, 255, 255, 0.06)' }}>
-                    <textarea value={noteText} onChange={e => handleNoteChange(e.target.value)} onBlur={handleNoteBlur} maxLength={500} rows={4} placeholder="Write your notes about this event..." className="notes-textarea w-full bg-transparent resize-none outline-none text-[14px] leading-[1.8]" style={{ color: '#e0e0e6', fontFamily: "'Space Grotesk', sans-serif" }} />
+                  <div className="rounded-2xl p-6 relative" style={{ background: 'var(--glass-bg)', backdropFilter: 'blur(24px)', border: '1px solid var(--color-border-subtle)' }}>
+                    <textarea value={noteText} onChange={e => handleNoteChange(e.target.value)} onBlur={handleNoteBlur} maxLength={500} rows={4} placeholder="Write your notes about this event..." className="notes-textarea w-full bg-transparent resize-none outline-none text-[14px] leading-[1.8]" style={{ color: 'var(--color-text-primary)', fontFamily: "'Space Grotesk', sans-serif" }} />
                     <div className="flex justify-end mt-2 text-[11px]" style={{ fontFamily: "'JetBrains Mono', monospace", color: noteText.length >= 450 ? '#b85454' : '#3a3a4a' }}>{noteText.length}/500</div>
                   </div>
                 </section>
@@ -1027,7 +1027,7 @@ export function EventStory() {
                     </div>
                   ) : (
                     <motion.div className="aspect-video rounded-2xl flex flex-col items-center justify-center gap-4"
-                      style={{ background: 'rgba(255,255,255,0.015)', border: '1px solid rgba(255,255,255,0.04)' }}
+                      style={{ background: 'rgba(255,255,255,0.015)', border: '1px solid var(--color-border-subtle)' }}
                       whileHover={{ borderColor: `${cat.color}30` }}>
                       <motion.div className="w-16 h-16 rounded-full flex items-center justify-center"
                         style={{ background: 'rgba(255,255,255,0.04)' }}
@@ -1049,7 +1049,7 @@ export function EventStory() {
                       {event.sources.map((src, i) => (
                         <motion.a key={i} href={src} target="_blank" rel="noopener noreferrer"
                           className="flex items-center gap-2.5 p-4 rounded-xl text-[13px] text-[#5a8fa5]"
-                          style={{ border: '1px solid rgba(255,255,255,0.04)' }}
+                          style={{ border: '1px solid var(--color-border-subtle)' }}
                           whileHover={{ backgroundColor: 'rgba(255,255,255,0.02)', borderColor: `${cat.color}20`, x: 4 }}>
                           <ExternalLink size={13} /><span className="truncate">{src}</span>
                         </motion.a>
@@ -1088,29 +1088,29 @@ function NavButton({ dir, event, onSelect }: { dir: 'left' | 'right'; event: His
   if (!event) return <div className="w-10" aria-hidden="true" />;
   return (
     <motion.button onClick={() => onSelect(event.id)}
-      className="flex items-center gap-2 px-3 py-2 rounded-full bg-white/[0.05] hover:bg-white/[0.08] backdrop-blur-sm transition-colors cursor-pointer max-w-[200px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5a9aaa] focus-visible:ring-offset-2 focus-visible:ring-offset-[#08080c]"
+      className="flex items-center gap-2 px-3 py-2 rounded-full bg-white/[0.05] hover:bg-white/[0.08] backdrop-blur-sm transition-colors cursor-pointer max-w-[200px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5a9aaa] focus-visible:ring-offset-2 focus-visible:ring-offset-void"
       aria-label={dir === 'left' ? `Previous event: ${event.title}` : `Next event: ${event.title}`}
       whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
-      {dir === 'left' && <ChevronLeft size={14} className="text-[#55556a] shrink-0" aria-hidden="true" />}
-      <span className="text-[11px] text-[#55556a] truncate" aria-hidden="true">{event.title}</span>
-      {dir === 'right' && <ChevronRight size={14} className="text-[#55556a] shrink-0" aria-hidden="true" />}
+      {dir === 'left' && <ChevronLeft size={14} className="text-text-muted shrink-0" aria-hidden="true" />}
+      <span className="text-[11px] text-text-muted truncate" aria-hidden="true">{event.title}</span>
+      {dir === 'right' && <ChevronRight size={14} className="text-text-muted shrink-0" aria-hidden="true" />}
     </motion.button>
   );
 }
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
-  return <h2 className="text-[11px] font-semibold tracking-[0.14em] uppercase text-[#3a3a4a] mb-6 clear-both">{children}</h2>;
+  return <h2 className="text-[11px] font-semibold tracking-[0.14em] uppercase text-text-muted mb-6 clear-both">{children}</h2>;
 }
 
 function FactCard({ icon, label, value, color }: { icon: React.ReactNode; label: string; value: string; color: string }) {
   return (
-    <motion.div className="rounded-xl p-5" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}
+    <motion.div className="rounded-xl p-5" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid var(--color-border-subtle)' }}
       whileHover={{ borderColor: `${color}25`, y: -3 }} transition={{ type: 'spring', stiffness: 400, damping: 25 }}>
       <div className="flex items-center gap-1.5 mb-2">
         <span style={{ color: color + '80' }}>{icon}</span>
-        <span className="text-[10px] font-medium uppercase tracking-wider text-[#3a3a4a]">{label}</span>
+        <span className="text-[10px] font-medium uppercase tracking-wider text-text-muted">{label}</span>
       </div>
-      <p className="text-[14px] text-[#8a8a9a] font-medium">{value}</p>
+      <p className="text-[14px] text-text-secondary font-medium">{value}</p>
     </motion.div>
   );
 }
@@ -1119,17 +1119,17 @@ function DiveLink({ emoji, title, subtitle, href, color }: { emoji: string; titl
   return (
     <motion.a href={href} target="_blank" rel="noopener noreferrer"
       className="flex items-center gap-4 p-5 rounded-xl cursor-pointer"
-      style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}
+      style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid var(--color-border-subtle)' }}
       whileHover={{ borderColor: `${color}30`, backgroundColor: 'rgba(255,255,255,0.03)', x: 4 }}
       transition={{ type: 'spring', stiffness: 400, damping: 25 }}>
       <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'rgba(255,255,255,0.04)' }}>
         <span className="text-lg">{emoji}</span>
       </div>
       <div>
-        <p className="text-[13px] font-medium text-[#8a8a9a]">{title}</p>
-        <p className="text-[11px] text-[#3a3a4a]">{subtitle}</p>
+        <p className="text-[13px] font-medium text-text-secondary">{title}</p>
+        <p className="text-[11px] text-text-muted">{subtitle}</p>
       </div>
-      <ExternalLink size={14} className="text-[#3a3a4a] ml-auto shrink-0" />
+      <ExternalLink size={14} className="text-text-muted ml-auto shrink-0" />
     </motion.a>
   );
 }
@@ -1142,7 +1142,7 @@ function RelatedCard({ event, onSelect }: { event: HistoricalEvent; onSelect: (i
   return (
     <motion.button onClick={() => onSelect(event.id)}
       className="flex items-center gap-4 p-5 rounded-xl text-left cursor-pointer group"
-      style={{ border: '1px solid rgba(255,255,255,0.05)' }}
+      style={{ border: '1px solid var(--color-border-subtle)' }}
       whileHover={{ borderColor: `${cat?.color ?? '#8a8a9a'}25`, backgroundColor: 'rgba(255,255,255,0.02)', x: 4 }}
       whileTap={{ scale: 0.98 }}>
       {thumb ? (
@@ -1155,12 +1155,12 @@ function RelatedCard({ event, onSelect }: { event: HistoricalEvent; onSelect: (i
           style={{ background: (cat?.color ?? '#8a8a9a') + '12' }}>{icon}</span>
       )}
       <div className="min-w-0 flex-1">
-        <p className="text-[13px] font-medium text-[#8a8a9a] group-hover:text-[#e0e0e6] transition-colors truncate">{event.title}</p>
-        <p className="text-[11px] text-[#3a3a4a] mt-1">
+        <p className="text-[13px] font-medium text-text-secondary group-hover:text-text-primary transition-colors truncate">{event.title}</p>
+        <p className="text-[11px] text-text-muted mt-1">
           {formatYear(event.year)}{event.locationName && ` · ${event.locationName}`}
         </p>
       </div>
-      <ChevronRight size={14} className="text-[#28282f] group-hover:text-[#3a3a4a] transition-colors shrink-0" />
+      <ChevronRight size={14} className="text-[#28282f] group-hover:text-text-muted transition-colors shrink-0" />
     </motion.button>
   );
 }

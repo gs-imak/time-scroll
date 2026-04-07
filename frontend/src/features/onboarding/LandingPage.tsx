@@ -179,7 +179,7 @@ export default function LandingPage() {
           className="fixed inset-0 z-50 flex flex-col items-center overflow-y-auto overflow-x-hidden"
           style={{
             background:
-              'radial-gradient(ellipse 80% 60% at 50% 40%, #14141e 0%, #0c0c12 40%, #08080c 70%, #050508 100%)',
+              'radial-gradient(ellipse 80% 50% at 50% 20%, var(--color-elevated) 0%, var(--color-surface) 30%, var(--color-void) 60%, var(--color-void) 100%)',
           }}
           exit={{ scale: 1.15, opacity: 0, filter: 'blur(20px)' }}
           transition={{ duration: 0.9, ease: [0.4, 0, 0.2, 1] }}
@@ -189,7 +189,7 @@ export default function LandingPage() {
 
           <div
             className="absolute inset-x-0 bottom-0 h-48 pointer-events-none"
-            style={{ background: 'linear-gradient(to top, #08080c 0%, transparent 100%)' }}
+            style={{ background: 'linear-gradient(to top, var(--color-void) 0%, transparent 100%)' }}
           />
 
           <motion.div
@@ -233,7 +233,7 @@ export default function LandingPage() {
               className="mt-6 text-center leading-relaxed max-w-lg"
               style={{
                 fontSize: '18px',
-                color: '#8a8a9a',
+                color: 'var(--color-text-secondary)',
                 fontFamily: "'Space Grotesk', sans-serif",
                 fontWeight: 300,
                 lineHeight: 1.7,
@@ -255,8 +255,8 @@ export default function LandingPage() {
                   key={f.label}
                   className="flex items-center gap-3 px-5 py-3 rounded-xl"
                   style={{
-                    background: 'rgba(14, 14, 20, 0.65)',
-                    border: '1px solid rgba(255, 255, 255, 0.07)',
+                    background: 'var(--glass-bg)',
+                    border: '1px solid var(--color-border-subtle)',
                     backdropFilter: 'blur(24px)',
                   }}
                   initial={{ opacity: 0, y: 14 }}
@@ -287,7 +287,7 @@ export default function LandingPage() {
                       className="block"
                       style={{
                         fontSize: '12px',
-                        color: '#55556a',
+                        color: 'var(--color-text-muted)',
                         fontFamily: "'JetBrains Mono', monospace",
                       }}
                     >
@@ -304,7 +304,7 @@ export default function LandingPage() {
                 className="text-center uppercase tracking-[0.2em] font-medium mb-6"
                 style={{
                   fontSize: '13px',
-                  color: '#55556a',
+                  color: 'var(--color-text-muted)',
                   fontFamily: "'JetBrains Mono', monospace",
                 }}
               >
@@ -341,10 +341,10 @@ export default function LandingPage() {
                               focusVisibleRingColor: `${color}80`,
                             }
                           : {
-                              background: 'rgba(14, 14, 20, 0.55)',
+                              background: 'var(--glass-bg)',
                               backdropFilter: 'blur(12px)',
                               boxShadow:
-                                'inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 12px rgba(0,0,0,0.3)',
+                                'inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 12px var(--glass-shadow)',
                             }),
                       }}
                       whileHover={!isSelected ? { y: -2, scale: 1.02 } : undefined}
@@ -399,7 +399,7 @@ export default function LandingPage() {
                     style={{
                       fontSize: '14px',
                       lineHeight: 1.6,
-                      color: '#8a8a9a',
+                      color: 'var(--color-text-secondary)',
                     }}
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -460,7 +460,7 @@ export default function LandingPage() {
                 className="mt-5 uppercase tracking-[0.25em]"
                 style={{
                   fontSize: '11px',
-                  color: '#55556a',
+                  color: 'var(--color-text-muted)',
                   fontFamily: "'JetBrains Mono', monospace",
                 }}
               >
@@ -475,7 +475,7 @@ export default function LandingPage() {
         <motion.div
           key="exit-void"
           className="fixed inset-0 z-50"
-          style={{ background: '#08080c' }}
+          style={{ background: 'var(--color-void)' }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.4 }}

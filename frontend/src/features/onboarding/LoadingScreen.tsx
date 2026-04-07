@@ -74,7 +74,7 @@ export function LoadingScreen() {
       {visible && (
         <motion.div
           className="fixed inset-0 z-60 flex flex-col items-center justify-center"
-          style={{ background: '#08080c' }}
+          style={{ background: 'var(--color-void)' }}
           initial={{ opacity: 1 }}
           exit={{
             opacity: 0,
@@ -132,7 +132,7 @@ export function LoadingScreen() {
                 fontSize: '42px',
                 fontWeight: 300,
                 letterSpacing: '0.3em',
-                color: '#e0e0e6',
+                color: 'var(--color-text-primary)',
                 lineHeight: 1,
                 textIndent: '0.3em',
               }}
@@ -150,7 +150,7 @@ export function LoadingScreen() {
                 fontSize: '14px',
                 fontWeight: 400,
                 letterSpacing: '0.08em',
-                color: '#55556a',
+                color: 'var(--color-text-muted)',
                 lineHeight: 1.5,
               }}
               initial={{ opacity: 0, y: 12 }}

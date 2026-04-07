@@ -35,9 +35,9 @@ function GlassCard({ children, className, ...props }: React.HTMLAttributes<HTMLD
     <div
       className={cn('rounded-[12px] transition-all duration-200', className)}
       style={{
-        background: 'rgba(14, 14, 20, 0.6)',
+        background: 'var(--glass-bg)',
         backdropFilter: 'blur(24px)',
-        border: '1px solid rgba(255, 255, 255, 0.06)',
+        border: '1px solid var(--color-border-subtle)',
         boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.03)',
       }}
       {...props}
@@ -121,7 +121,7 @@ function JourneyCard({ journey, index }: { journey: Journey; index: number }) {
 
               <p
                 className="line-clamp-2 mb-3"
-                style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '13px', color: '#8a8a9a', lineHeight: 1.5 }}
+                style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '13px', color: 'var(--color-text-secondary)', lineHeight: 1.5 }}
               >
                 {journey.description}
               </p>
@@ -143,7 +143,7 @@ function JourneyCard({ journey, index }: { journey: Journey; index: number }) {
 
                 <span
                   className="inline-flex items-center gap-1"
-                  style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', color: '#55556a' }}
+                  style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', color: 'var(--color-text-muted)' }}
                 >
                   <BookOpen size={12} />
                   {journey.eventIds.length} events
@@ -151,7 +151,7 @@ function JourneyCard({ journey, index }: { journey: Journey; index: number }) {
 
                 <span
                   className="inline-flex items-center gap-1"
-                  style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', color: '#55556a' }}
+                  style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', color: 'var(--color-text-muted)' }}
                 >
                   <Clock size={12} />
                   {journey.estimatedMinutes} min
@@ -179,7 +179,7 @@ export default function JourneyBrowser() {
     <div
       className="min-h-screen w-full overflow-x-hidden overflow-y-auto lg:pl-[64px]"
       style={{
-        background: 'radial-gradient(ellipse 80% 50% at 50% 20%, #14141e 0%, #0c0c12 30%, #08080c 60%, #050508 100%)',
+        background: 'radial-gradient(ellipse 80% 50% at 50% 20%, var(--color-elevated) 0%, var(--color-surface) 30%, var(--color-void) 60%, var(--color-void) 100%)',
       }}
     >
       <div className="w-full max-w-[1100px] mx-auto px-6 md:px-10 py-12 md:py-16">
@@ -196,7 +196,7 @@ export default function JourneyBrowser() {
             Guided Journeys
           </h1>
           <p
-            style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '13px', color: '#55556a', marginTop: '4px' }}
+            style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '13px', color: 'var(--color-text-muted)', marginTop: '4px' }}
           >
             Curated paths through history, connecting events into narrative arcs
           </p>

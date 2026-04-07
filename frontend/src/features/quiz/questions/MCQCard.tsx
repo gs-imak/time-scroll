@@ -13,7 +13,7 @@ interface Props {
 export function MCQCard({ question, selected, isAnswered, eliminatedOptions, onSelect }: Props) {
   return (
     <div>
-      <p className="text-[17px] sm:text-[18px] font-medium text-[#e0e0e6] mb-6 leading-relaxed">
+      <p className="text-[17px] sm:text-[18px] font-medium text-text-primary mb-6 leading-relaxed">
         {question.question}
       </p>
 
@@ -95,7 +95,7 @@ export function MCQCard({ question, selected, isAnswered, eliminatedOptions, onS
             animate={{ opacity: 1, y: 0, height: 'auto' }}
             transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
           >
-            <p className="text-[13px] text-[#8a8a9a] leading-relaxed">
+            <p className="text-[13px] text-text-secondary leading-relaxed">
               <span className="text-[#6d9476] font-semibold">Why? </span>
               {question.explanation}
             </p>

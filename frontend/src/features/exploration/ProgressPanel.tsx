@@ -52,7 +52,7 @@ export function ProgressPanel() {
               className="rounded-[var(--radius-md)] p-3 mb-3"
               style={{
                 background: 'rgba(255, 255, 255, 0.03)',
-                border: '1px solid rgba(255, 255, 255, 0.07)',
+                border: '1px solid var(--color-border-subtle)',
               }}
             >
               <div className="flex items-center justify-between mb-2">
@@ -97,7 +97,7 @@ export function ProgressPanel() {
                 className="flex items-center gap-2 rounded-[var(--radius-md)] px-3 py-2 mb-3"
                 style={{
                   background: 'rgba(255, 255, 255, 0.03)',
-                  border: '1px solid rgba(255, 255, 255, 0.07)',
+                  border: '1px solid var(--color-border-subtle)',
                 }}
               >
                 <Flame size={16} style={{ color: '#c49a44' }} />

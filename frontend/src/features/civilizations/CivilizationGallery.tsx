@@ -15,9 +15,9 @@ function GlassCard({ children, className, ...props }: React.HTMLAttributes<HTMLD
     <div
       className={cn('rounded-[12px] transition-all duration-200', className)}
       style={{
-        background: 'rgba(14, 14, 20, 0.6)',
+        background: 'var(--glass-bg)',
         backdropFilter: 'blur(24px)',
-        border: '1px solid rgba(255, 255, 255, 0.06)',
+        border: '1px solid var(--color-border-subtle)',
         boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.03)',
       }}
       {...props}
@@ -62,12 +62,12 @@ export default function CivilizationGallery() {
       <div
         className="min-h-screen w-full flex items-center justify-center lg:pl-[64px]"
         style={{
-          background: 'radial-gradient(ellipse 80% 50% at 50% 20%, #14141e 0%, #0c0c12 30%, #08080c 60%, #050508 100%)',
+          background: 'radial-gradient(ellipse 80% 50% at 50% 20%, var(--color-elevated) 0%, var(--color-surface) 30%, var(--color-void) 60%, var(--color-void) 100%)',
         }}
       >
         <div className="text-center">
           <p
-            style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '18px', color: '#8a8a9a' }}
+            style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '18px', color: 'var(--color-text-secondary)' }}
           >
             Civilization not found
           </p>
@@ -93,7 +93,7 @@ export default function CivilizationGallery() {
     <div
       className="min-h-screen w-full overflow-x-hidden overflow-y-auto lg:pl-[64px]"
       style={{
-        background: 'radial-gradient(ellipse 80% 50% at 50% 20%, #14141e 0%, #0c0c12 30%, #08080c 60%, #050508 100%)',
+        background: 'radial-gradient(ellipse 80% 50% at 50% 20%, var(--color-elevated) 0%, var(--color-surface) 30%, var(--color-void) 60%, var(--color-void) 100%)',
       }}
     >
       <div className="w-full max-w-[1100px] mx-auto px-6 md:px-10 py-12 md:py-16">
@@ -109,7 +109,7 @@ export default function CivilizationGallery() {
               fontFamily: "'Space Grotesk', sans-serif",
               fontSize: '13px',
               fontWeight: 500,
-              color: '#8a8a9a',
+              color: 'var(--color-text-secondary)',
             }}
             aria-label="Back to all civilizations"
           >
@@ -150,7 +150,7 @@ export default function CivilizationGallery() {
               style={{
                 fontFamily: "'JetBrains Mono', monospace",
                 fontSize: '12px',
-                color: '#55556a',
+                color: 'var(--color-text-muted)',
               }}
             >
               {civData.totalImages} illustrations
@@ -170,7 +170,7 @@ export default function CivilizationGallery() {
               fontFamily: "'Space Grotesk', sans-serif",
               fontSize: '16px',
               fontWeight: 600,
-              color: '#e0e0e6',
+              color: 'var(--color-text-primary)',
             }}
           >
             Gallery
@@ -186,8 +186,8 @@ export default function CivilizationGallery() {
                 <div
                   className="group relative aspect-square rounded-[12px] overflow-hidden cursor-pointer transition-transform duration-200 hover:scale-[1.03]"
                   style={{
-                    background: 'rgba(14, 14, 20, 0.8)',
-                    border: '1px solid rgba(255, 255, 255, 0.06)',
+                    background: 'var(--glass-strong-bg)',
+                    border: '1px solid var(--color-border-subtle)',
                   }}
                 >
                   <img
@@ -203,7 +203,7 @@ export default function CivilizationGallery() {
                   <div
                     className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-end"
                     style={{
-                      background: 'linear-gradient(to top, rgba(8, 8, 12, 0.8) 0%, transparent 50%)',
+                      background: 'linear-gradient(to top, var(--glass-strong-bg) 0%, transparent 50%)',
                     }}
                   >
                     <span
@@ -211,7 +211,7 @@ export default function CivilizationGallery() {
                       style={{
                         fontFamily: "'JetBrains Mono', monospace",
                         fontSize: '11px',
-                        color: '#8a8a9a',
+                        color: 'var(--color-text-secondary)',
                       }}
                     >
                       #{i + 1}
@@ -235,7 +235,7 @@ export default function CivilizationGallery() {
                 fontFamily: "'Space Grotesk', sans-serif",
                 fontSize: '16px',
                 fontWeight: 600,
-                color: '#e0e0e6',
+                color: 'var(--color-text-primary)',
               }}
             >
               Related Events
@@ -291,7 +291,7 @@ export default function CivilizationGallery() {
                           style={{
                             fontFamily: "'Space Grotesk', sans-serif",
                             fontSize: '12px',
-                            color: '#55556a',
+                            color: 'var(--color-text-muted)',
                             marginTop: '2px',
                           }}
                         >

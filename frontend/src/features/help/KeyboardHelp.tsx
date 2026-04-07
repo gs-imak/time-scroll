@@ -57,10 +57,10 @@ export function KeyboardHelp() {
           <motion.div
             className="relative w-[420px] max-w-[90vw] rounded-2xl p-8"
             style={{
-              background: 'rgba(14, 14, 20, 0.85)',
+              background: 'var(--glass-strong-bg)',
               backdropFilter: 'blur(32px)',
-              border: '1px solid rgba(255, 255, 255, 0.08)',
-              boxShadow: '0 24px 80px rgba(0, 0, 0, 0.6)',
+              border: '1px solid var(--color-border-subtle)',
+              boxShadow: '0 24px 80px var(--glass-shadow)',
             }}
             initial={{ scale: 0.92, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
@@ -73,7 +73,7 @@ export function KeyboardHelp() {
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
               <h2
-                className="text-[16px] font-semibold text-[#e0e0e6]"
+                className="text-[16px] font-semibold text-text-primary"
                 style={{ fontFamily: "'Space Grotesk', sans-serif" }}
               >
                 Keyboard Shortcuts
@@ -83,7 +83,7 @@ export function KeyboardHelp() {
                 className="w-8 h-8 rounded-full flex items-center justify-center bg-white/[0.06] hover:bg-white/[0.1] transition-colors cursor-pointer"
                 aria-label="Close shortcuts dialog"
               >
-                <X size={14} className="text-[#8a8a9a]" />
+                <X size={14} className="text-text-secondary" />
               </button>
             </div>
 
@@ -110,7 +110,7 @@ export function KeyboardHelp() {
                           background: 'rgba(255, 255, 255, 0.06)',
                           border: '1px solid rgba(255, 255, 255, 0.1)',
                           color: '#c49a44',
-                          boxShadow: '0 1px 2px rgba(0, 0, 0, 0.3)',
+                          boxShadow: '0 1px 2px var(--glass-shadow)',
                         }}
                       >
                         {key}
@@ -126,11 +126,11 @@ export function KeyboardHelp() {
               className="mt-6 pt-4 text-center text-[11px]"
               style={{
                 fontFamily: "'JetBrains Mono', monospace",
-                color: '#3a3a4a',
+                color: 'var(--color-text-muted)',
                 borderTop: '1px solid rgba(255, 255, 255, 0.06)',
               }}
             >
-              Press <kbd className="inline-flex items-center justify-center min-w-[20px] h-[18px] px-1.5 rounded text-[10px] mx-1" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#55556a' }}>?</kbd> to toggle this dialog
+              Press <kbd className="inline-flex items-center justify-center min-w-[20px] h-[18px] px-1.5 rounded text-[10px] mx-1" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--color-text-muted)' }}>?</kbd> to toggle this dialog
             </div>
           </motion.div>
         </motion.div>

@@ -71,13 +71,13 @@ export function EventQuiz({ eventId, eventTitle, categoryColor, onComplete }: Ev
     return (
       <motion.div
         className="rounded-2xl p-8 text-center"
-        style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}
+        style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid var(--color-border-subtle)' }}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
         <div className="text-[40px] mb-4">🧠</div>
-        <h3 className="text-[18px] font-semibold text-[#e0e0e6] mb-2">Test Your Knowledge</h3>
-        <p className="text-[13px] text-[#55556a] mb-6">
+        <h3 className="text-[18px] font-semibold text-text-primary mb-2">Test Your Knowledge</h3>
+        <p className="text-[13px] text-text-muted mb-6">
           {total} questions about {eventTitle}
         </p>
         <motion.button
@@ -112,8 +112,8 @@ export function EventQuiz({ eventId, eventTitle, categoryColor, onComplete }: Ev
         >
           {emoji}
         </motion.div>
-        <h3 className="text-[20px] font-semibold text-[#e0e0e6] mb-1">{message}</h3>
-        <p className="text-[14px] text-[#8a8a9a] mb-6">
+        <h3 className="text-[20px] font-semibold text-text-primary mb-1">{message}</h3>
+        <p className="text-[14px] text-text-secondary mb-6">
           You got <span style={{ color: categoryColor, fontWeight: 600 }}>{correctCount} out of {total}</span> correct
         </p>
 
@@ -150,7 +150,7 @@ export function EventQuiz({ eventId, eventTitle, categoryColor, onComplete }: Ev
           <motion.button
             onClick={handleRestart}
             className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-[12px] font-medium cursor-pointer transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-void"
-            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#8a8a9a' }}
+            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--color-border-subtle)', color: 'var(--color-text-secondary)' }}
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
           >
@@ -163,10 +163,10 @@ export function EventQuiz({ eventId, eventTitle, categoryColor, onComplete }: Ev
   }
 
   return (
-    <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.06)' }}>
+    <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid var(--color-border-subtle)' }}>
       {/* Progress header */}
       <div className="px-6 py-4 flex items-center justify-between" style={{ background: 'rgba(255,255,255,0.02)' }}>
-        <span className="text-[11px] font-semibold tracking-wider uppercase text-[#55556a]">
+        <span className="text-[11px] font-semibold tracking-wider uppercase text-text-muted">
           Question {currentQ + 1} of {total}
         </span>
         <div className="flex gap-1.5">
@@ -192,7 +192,7 @@ export function EventQuiz({ eventId, eventTitle, categoryColor, onComplete }: Ev
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.3 }}
           >
-            <p className="text-[16px] font-medium text-[#e0e0e6] mb-6 leading-relaxed">
+            <p className="text-[16px] font-medium text-text-primary mb-6 leading-relaxed">
               {question?.question}
             </p>
 
@@ -203,7 +203,7 @@ export function EventQuiz({ eventId, eventTitle, categoryColor, onComplete }: Ev
                 const isRight = i === question.correctIndex;
                 let bg = 'rgba(255,255,255,0.02)';
                 let border = 'rgba(255,255,255,0.06)';
-                let textColor = '#8a8a9a';
+                let textColor = 'var(--color-text-secondary)';
 
                 if (answered) {
                   if (isRight) {
@@ -218,7 +218,7 @@ export function EventQuiz({ eventId, eventTitle, categoryColor, onComplete }: Ev
                 } else if (isThis) {
                   bg = `${categoryColor}10`;
                   border = `${categoryColor}30`;
-                  textColor = '#e0e0e6';
+                  textColor = 'var(--color-text-primary)';
                 }
 
                 return (
@@ -233,7 +233,7 @@ export function EventQuiz({ eventId, eventTitle, categoryColor, onComplete }: Ev
                   >
                     {/* Letter indicator */}
                     <span className="w-7 h-7 rounded-lg flex items-center justify-center text-[11px] font-semibold shrink-0"
-                      style={{ background: 'rgba(255,255,255,0.04)', color: '#55556a' }}>
+                      style={{ background: 'rgba(255,255,255,0.04)', color: 'var(--color-text-muted)' }}>
                       {String.fromCharCode(65 + i)}
                     </span>
 

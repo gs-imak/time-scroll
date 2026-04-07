@@ -79,9 +79,9 @@ function GlassCard({ children, className, ...props }: React.HTMLAttributes<HTMLD
     <div
       className={cn('rounded-[12px] transition-all duration-200', className)}
       style={{
-        background: 'rgba(14, 14, 20, 0.6)',
+        background: 'var(--glass-bg)',
         backdropFilter: 'blur(24px)',
-        border: '1px solid rgba(255, 255, 255, 0.06)',
+        border: '1px solid var(--color-border-subtle)',
         boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.03)',
       }}
       {...props}
@@ -165,7 +165,7 @@ export default function Dashboard() {
     <div
       className="min-h-screen w-full overflow-x-hidden overflow-y-auto lg:pl-[64px]"
       style={{
-        background: 'radial-gradient(ellipse 80% 50% at 50% 20%, #14141e 0%, #0c0c12 30%, #08080c 60%, #050508 100%)',
+        background: 'radial-gradient(ellipse 80% 50% at 50% 20%, var(--color-elevated) 0%, var(--color-surface) 30%, var(--color-void) 60%, var(--color-void) 100%)',
       }}
     >
       <div className="w-full max-w-[1100px] mx-auto px-6 md:px-10 py-12 md:py-16">
@@ -182,7 +182,7 @@ export default function Dashboard() {
             >
               Welcome, Explorer
             </h1>
-            <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '13px', color: '#55556a', marginTop: '4px' }}>
+            <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '13px', color: 'var(--color-text-muted)', marginTop: '4px' }}>
               Your journey through time continues
             </p>
           </div>
@@ -289,7 +289,7 @@ export default function Dashboard() {
                   </h3>
                   <span
                     className="mt-1"
-                    style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '13px', color: '#55556a' }}
+                    style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '13px', color: 'var(--color-text-muted)' }}
                   >
                     {formatYear(dailyEvent.year)}{dailyEvent.locationName ? ` \u00b7 ${dailyEvent.locationName}` : ''}
                   </span>
@@ -337,7 +337,7 @@ export default function Dashboard() {
               <span className="block text-text-primary" style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '32px', fontWeight: 700, lineHeight: 1 }}>
                 <AnimatedNumber value={exploredCount} />
               </span>
-              <span className="block mt-1" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: '#55556a' }}>
+              <span className="block mt-1" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: 'var(--color-text-muted)' }}>
                 of {totalEvents} events explored
               </span>
             </div>
@@ -354,7 +354,7 @@ export default function Dashboard() {
               <span className="block text-text-primary" style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '32px', fontWeight: 700, lineHeight: 1 }}>
                 <AnimatedNumber value={quizCount} />
               </span>
-              <span className="block mt-1" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: '#55556a' }}>
+              <span className="block mt-1" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: 'var(--color-text-muted)' }}>
                 quizzes{quizCount > 0 ? ` \u00b7 ${avgScore}% avg` : ' completed'}
               </span>
             </div>
@@ -371,7 +371,7 @@ export default function Dashboard() {
               <span className="block text-text-primary" style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '32px', fontWeight: 700, lineHeight: 1 }}>
                 <AnimatedNumber value={achievementCount} />
               </span>
-              <span className="block mt-1" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: '#55556a' }}>
+              <span className="block mt-1" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: 'var(--color-text-muted)' }}>
                 of {ACHIEVEMENTS.length} achievements
               </span>
             </div>
@@ -385,7 +385,7 @@ export default function Dashboard() {
             <button
               onClick={() => navigate('/journeys')}
               className="flex items-center gap-1 cursor-pointer transition-colors duration-200 hover:text-[#c49a44]"
-              style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: '#55556a' }}
+              style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: 'var(--color-text-muted)' }}
             >
               View all <ChevronRight size={14} />
             </button>
@@ -403,7 +403,7 @@ export default function Dashboard() {
                 >
                   <GlassCard
                     className="group relative overflow-hidden cursor-pointer transition-all duration-200 hover:border-white/[0.14] hover:translate-y-[-2px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-void active:scale-[0.97]"
-                    style={{ border: '1px solid rgba(255,255,255,0.06)' }}
+                    style={{ border: '1px solid var(--color-border-subtle)' }}
                     onClick={() => navigate(`/journeys/${journey.id}`)}
                     role="button"
                     tabIndex={0}
@@ -430,15 +430,15 @@ export default function Dashboard() {
                       </div>
                       <p
                         className="line-clamp-2 mb-3"
-                        style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '13px', color: '#8a8a9a', lineHeight: 1.5 }}
+                        style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '13px', color: 'var(--color-text-secondary)', lineHeight: 1.5 }}
                       >
                         {journey.description}
                       </p>
                       <div className="flex items-center gap-3">
-                        <span className="inline-flex items-center gap-1" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', color: '#55556a' }}>
+                        <span className="inline-flex items-center gap-1" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', color: 'var(--color-text-muted)' }}>
                           <BookOpen size={12} /> {journey.eventIds.length} events
                         </span>
-                        <span className="inline-flex items-center gap-1" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', color: '#55556a' }}>
+                        <span className="inline-flex items-center gap-1" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', color: 'var(--color-text-muted)' }}>
                           <Clock size={12} /> {journey.estimatedMinutes} min
                         </span>
                       </div>
@@ -465,7 +465,7 @@ export default function Dashboard() {
                     transition={{ duration: 0.5, delay: 0.4 + i * 0.08, ease: EASE }}
                   >
                     <GlassCard className="group overflow-hidden cursor-pointer transition-all duration-200 hover:border-white/[0.14] hover:translate-y-[-2px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-void active:scale-[0.97]"
-                      style={{ border: '1px solid rgba(255,255,255,0.06)' }}
+                      style={{ border: '1px solid var(--color-border-subtle)' }}
                       onClick={() => navigate(`/explore?event=${event.id}`)}
                       role="button"
                       tabIndex={0}
@@ -495,7 +495,7 @@ export default function Dashboard() {
                           className="absolute top-2.5 right-2.5 flex items-center justify-center rounded-[8px] opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
                           style={{
                             width: '36px', height: '36px',
-                            background: 'rgba(8, 8, 12, 0.7)',
+                            background: 'var(--color-overlay)',
                             backdropFilter: 'blur(8px)',
                             border: '1px solid rgba(255,255,255,0.1)',
                           }}
@@ -504,7 +504,7 @@ export default function Dashboard() {
                           whileTap={{ scale: 0.9 }}
                           title="Compare this event"
                         >
-                          <Scale size={14} style={{ color: '#8a8a9a' }} />
+                          <Scale size={14} style={{ color: 'var(--color-text-secondary)' }} />
                         </motion.button>
                       </div>
                       <div className="px-4 py-3">
@@ -514,7 +514,7 @@ export default function Dashboard() {
                         >
                           {event.title}
                         </h3>
-                        <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: '#55556a' }}>
+                        <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: 'var(--color-text-muted)' }}>
                           {formatYear(event.year)}
                         </span>
                       </div>
@@ -554,7 +554,7 @@ export default function Dashboard() {
                     transition={{ duration: 0.5, delay: 0.4 + i * 0.08, ease: EASE }}
                   >
                     <GlassCard className="group overflow-hidden cursor-pointer transition-all duration-200 hover:border-white/[0.14] hover:translate-y-[-2px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-void active:scale-[0.97]"
-                      style={{ border: '1px solid rgba(255,255,255,0.06)' }}
+                      style={{ border: '1px solid var(--color-border-subtle)' }}
                       onClick={() => navigate(`/explore?event=${event.id}`)}
                       role="button"
                       tabIndex={0}
@@ -585,7 +585,7 @@ export default function Dashboard() {
                           className="absolute top-2.5 right-8 flex items-center justify-center rounded-[8px] opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
                           style={{
                             width: '36px', height: '36px',
-                            background: 'rgba(8, 8, 12, 0.7)',
+                            background: 'var(--color-overlay)',
                             backdropFilter: 'blur(8px)',
                             border: '1px solid rgba(255,255,255,0.1)',
                           }}
@@ -594,7 +594,7 @@ export default function Dashboard() {
                           whileTap={{ scale: 0.9 }}
                           title="Compare this event"
                         >
-                          <Scale size={14} style={{ color: '#8a8a9a' }} />
+                          <Scale size={14} style={{ color: 'var(--color-text-secondary)' }} />
                         </motion.button>
                       </div>
                       <div className="px-4 py-3">
@@ -604,7 +604,7 @@ export default function Dashboard() {
                         >
                           {event.title}
                         </h3>
-                        <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: '#55556a' }}>
+                        <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: 'var(--color-text-muted)' }}>
                           {formatYear(event.year)}
                         </span>
                       </div>
@@ -632,7 +632,7 @@ export default function Dashboard() {
                 >
                   <GlassCard
                     className="group px-5 py-4 cursor-pointer transition-all duration-200 hover:border-white/[0.14] hover:translate-y-[-2px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-void active:scale-[0.97]"
-                    style={{ border: '1px solid rgba(255,255,255,0.06)' }}
+                    style={{ border: '1px solid var(--color-border-subtle)' }}
                     onClick={() => navigate(`/explore/${era.startYear}`)}
                     role="button"
                     tabIndex={0}
@@ -656,7 +656,7 @@ export default function Dashboard() {
                           transition={{ duration: 0.8, delay: 0.6 + i * 0.06, ease: EASE }}
                         />
                       </div>
-                      <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: '#8a8a9a', whiteSpace: 'nowrap' }}>
+                      <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: 'var(--color-text-secondary)', whiteSpace: 'nowrap' }}>
                         {era.explored}/{era.total}
                       </span>
                     </div>
@@ -688,7 +688,7 @@ export default function Dashboard() {
                     >
                       {event.title}
                     </span>
-                    <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: '#55556a' }}>
+                    <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: 'var(--color-text-muted)' }}>
                       {formatYear(event.year)}
                     </span>
                     <motion.span
@@ -696,14 +696,14 @@ export default function Dashboard() {
                       style={{
                         width: '36px', height: '36px', flexShrink: 0,
                         background: 'rgba(255,255,255,0.04)',
-                        border: '1px solid rgba(255,255,255,0.08)',
+                        border: '1px solid var(--color-border-subtle)',
                       }}
                       onClick={(e) => { e.stopPropagation(); setCompareEvent(event.id); }}
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
                       title="Compare this event"
                     >
-                      <Scale size={14} style={{ color: '#8a8a9a' }} />
+                      <Scale size={14} style={{ color: 'var(--color-text-secondary)' }} />
                     </motion.span>
                   </button>
                 );
@@ -748,7 +748,7 @@ export default function Dashboard() {
                     style={{
                       fontFamily: "'JetBrains Mono', monospace",
                       fontSize: '10px',
-                      color: unlocked ? '#8a8a9a' : '#55556a',
+                      color: unlocked ? 'var(--color-text-secondary)' : 'var(--color-text-muted)',
                     }}
                   >
                     {ach.title}
@@ -777,7 +777,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
     <h2
       className="uppercase tracking-[0.15em] mb-4"
-      style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '13px', fontWeight: 500, color: '#55556a' }}
+      style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '13px', fontWeight: 500, color: 'var(--color-text-muted)' }}
     >
       {children}
     </h2>
@@ -807,9 +807,9 @@ function ActionButton({
         disabled && 'opacity-40 cursor-not-allowed',
       )}
       style={{
-        background: 'rgba(14, 14, 20, 0.6)',
+        background: 'var(--glass-bg)',
         backdropFilter: 'blur(24px)',
-        border: '1px solid rgba(255, 255, 255, 0.06)',
+        border: '1px solid var(--color-border-subtle)',
       }}
       whileHover={disabled ? undefined : { scale: 1.02, borderColor: 'rgba(196, 154, 68, 0.3)' }}
       whileTap={disabled ? undefined : { scale: 0.97 }}
@@ -824,11 +824,11 @@ function ActionButton({
         <span className="block text-text-primary" style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '15px', fontWeight: 500 }}>
           {label}
         </span>
-        <span className="block" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: '#55556a' }}>
+        <span className="block" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: 'var(--color-text-muted)' }}>
           {desc}
         </span>
       </div>
-      <ArrowRight size={16} className="ml-auto" style={{ color: '#55556a' }} />
+      <ArrowRight size={16} className="ml-auto" style={{ color: 'var(--color-text-muted)' }} />
     </motion.button>
   );
 }

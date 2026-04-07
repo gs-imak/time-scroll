@@ -63,10 +63,10 @@ export function TimelineOrderCard({ question, isAnswered, onSubmit }: Props) {
 
   return (
     <div>
-      <p className="text-[17px] sm:text-[18px] font-medium text-[#e0e0e6] mb-2 leading-relaxed text-center">
+      <p className="text-[17px] sm:text-[18px] font-medium text-text-primary mb-2 leading-relaxed text-center">
         {question.instruction}
       </p>
-      <p className="text-[12px] text-[#55556a] mb-6 text-center">
+      <p className="text-[12px] text-text-muted mb-6 text-center">
         Arrange from earliest to latest
       </p>
 
@@ -123,14 +123,14 @@ export function TimelineOrderCard({ question, isAnswered, onSubmit }: Props) {
                     disabled={pos === 0}
                     className="w-6 h-6 rounded flex items-center justify-center cursor-pointer disabled:opacity-20 disabled:cursor-default hover:bg-white/[0.06] transition-colors"
                   >
-                    <ArrowUp size={12} className="text-[#55556a]" />
+                    <ArrowUp size={12} className="text-text-muted" />
                   </button>
                   <button
                     onClick={() => moveDown(pos)}
                     disabled={pos === order.length - 1}
                     className="w-6 h-6 rounded flex items-center justify-center cursor-pointer disabled:opacity-20 disabled:cursor-default hover:bg-white/[0.06] transition-colors"
                   >
-                    <ArrowDown size={12} className="text-[#55556a]" />
+                    <ArrowDown size={12} className="text-text-muted" />
                   </button>
                 </div>
               )}
@@ -169,7 +169,7 @@ export function TimelineOrderCard({ question, isAnswered, onSubmit }: Props) {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
           >
-            <p className="text-[13px] text-[#8a8a9a] leading-relaxed">
+            <p className="text-[13px] text-text-secondary leading-relaxed">
               <span className="text-[#6d9476] font-semibold">The correct order: </span>
               {correctOrder.map((idx, i) => {
                 const item = question.items[idx];
