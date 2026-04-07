@@ -1,7 +1,8 @@
 import { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import Globe, { type GlobeMethods } from 'react-globe.gl';
 import * as THREE from 'three';
-import { createEventMarker } from '@/features/globe/eventMarkers';
+import { createEventMarker, CATEGORY_COLORS } from '@/features/globe/eventMarkers';
+import { formatYear } from '@/shared/utils/format';
 
 /**
  * Interactive globe for the login page — shows the Earth with a curated
@@ -81,11 +82,32 @@ export function MiniGlobe() {
         up,
       );
       obj.setRotationFromQuaternion(quaternion);
-      obj.scale.setScalar(0.7); // Slightly smaller than main globe
+      obj.scale.setScalar(1.3); // Bigger for visibility on login
     }
   }, []);
 
   const events = useMemo(() => SHOWCASE_EVENTS, []);
+
+  // Load boundary polygons for a visually rich era (year 1200)
+  const [polygons, setPolygons] = useState<object[]>([]);
+  useEffect(() => {
+    fetch('/assets/geo/world_1200.geojson')
+      .then(r => r.json())
+      .then(data => setPolygons(data.features || []))
+      .catch(() => {});
+  }, []);
+
+  // Deterministic color per civilization name
+  const CIV_PALETTE = [
+    '#c49a44', '#b85454', '#5a8fa5', '#6d9476', '#8b80b0',
+    '#b87a60', '#7a9e5a', '#5a7fb5', '#d4a054', '#8b6faa',
+  ];
+  const getCivColor = useCallback((name: string | undefined) => {
+    if (!name || name === '?') return '#555566';
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) hash = ((hash << 5) - hash + name.charCodeAt(i)) | 0;
+    return CIV_PALETTE[Math.abs(hash) % CIV_PALETTE.length]!;
+  }, []);
 
   return (
     <div ref={containerRef} className="absolute inset-0">
@@ -101,9 +123,47 @@ export function MiniGlobe() {
           atmosphereColor="#6db3f2"
           atmosphereAltitude={0.18}
           showAtmosphere={true}
+
+          // Territory borders
+          polygonsData={polygons}
+          polygonGeoJsonGeometry={(d: any) => d.geometry}
+          polygonCapColor={(d: any) => {
+            const name = d.properties?.NAME;
+            if (!name || name === '?') return 'rgba(40, 40, 50, 0.02)';
+            const hex = getCivColor(name);
+            const r = parseInt(hex.slice(1, 3), 16);
+            const g = parseInt(hex.slice(3, 5), 16);
+            const b = parseInt(hex.slice(5, 7), 16);
+            return `rgba(${r}, ${g}, ${b}, 0.2)`;
+          }}
+          polygonSideColor={() => 'rgba(0,0,0,0)'}
+          polygonStrokeColor={(d: any) => {
+            const name = d.properties?.NAME;
+            if (!name || name === '?') return 'rgba(60, 60, 70, 0.1)';
+            const hex = getCivColor(name);
+            const r = Math.min(255, parseInt(hex.slice(1, 3), 16) + 50);
+            const g = Math.min(255, parseInt(hex.slice(3, 5), 16) + 50);
+            const b = Math.min(255, parseInt(hex.slice(5, 7), 16) + 50);
+            return `rgba(${r}, ${g}, ${b}, 0.7)`;
+          }}
+          polygonAltitude={(d: any) => {
+            const name = d.properties?.NAME;
+            return name && name !== '?' ? 0.008 : 0.001;
+          }}
+          polygonLabel={() => ''}
+          polygonsTransitionDuration={0}
+
+          // Event markers
           customLayerData={events}
           customThreeObject={createMarker}
           customThreeObjectUpdate={updateMarkerPosition}
+          customLayerLabel={(d: any) => {
+            const c = CATEGORY_COLORS[d.category] ?? '#8a8a9a';
+            return `<div style="background:rgba(14,14,20,0.9);backdrop-filter:blur(16px);border:1px solid ${c}40;border-radius:8px;padding:8px 12px;font-family:'Space Grotesk',sans-serif;">
+              <div style="font-size:13px;font-weight:600;color:#e0e0e6;">${d.title}</div>
+              <div style="font-size:10px;color:${c};margin-top:2px;">${formatYear(d.year)}</div>
+            </div>`;
+          }}
         />
       )}
     </div>
