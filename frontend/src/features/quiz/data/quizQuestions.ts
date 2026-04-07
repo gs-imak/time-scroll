@@ -450,10 +450,26 @@ const TIMELINE_QUESTIONS: TimelineOrderQuestion[] = [
   },
 ];
 
+// ── Event image lookup — inject supporting images into questions ──
+import { SEED_EVENTS } from '@/shared/utils/constants';
+import { NEW_EVENTS } from '@/shared/data/newEvents';
+
+const EVENT_IMAGES: Record<string, string> = {};
+for (const e of [...SEED_EVENTS, ...NEW_EVENTS]) {
+  if (e.imageUrl) EVENT_IMAGES[e.id] = e.imageUrl;
+}
+
+function injectImages<T extends { eventId: string; imageUrl?: string }>(questions: T[]): T[] {
+  return questions.map(q => {
+    const img = EVENT_IMAGES[q.eventId];
+    return img ? { ...q, imageUrl: img } : q;
+  });
+}
+
 // ── Combine all questions ──
-export const QUIZ_QUESTIONS: QuizQuestion[] = [
+export const QUIZ_QUESTIONS: QuizQuestion[] = injectImages([
   ...transformExistingQuestions(),
   ...TRUE_FALSE_QUESTIONS,
   ...IMAGE_ID_QUESTIONS,
   ...TIMELINE_QUESTIONS,
-];
+]);

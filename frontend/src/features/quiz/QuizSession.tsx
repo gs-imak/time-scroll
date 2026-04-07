@@ -98,6 +98,27 @@ export function QuizSession({ state, onSelectAnswer, onConfirmAnswer, onUseHint,
           <span className="text-[10px] text-[#28282f] ml-auto font-mono">{question.points} pts</span>
         </div>
 
+        {/* Supporting image (when available) */}
+        {question.imageUrl && question.type !== 'image-id' && (
+          <motion.div
+            key={`img-${state.currentIndex}`}
+            className="mb-4 rounded-xl overflow-hidden relative"
+            style={{ maxHeight: 180 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3 }}
+          >
+            <img
+              src={question.imageUrl}
+              alt=""
+              className="w-full h-[180px] object-cover"
+              loading="eager"
+              onError={(e) => { (e.target as HTMLImageElement).parentElement!.style.display = 'none'; }}
+            />
+            <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, var(--glass-strong-bg) 0%, transparent 40%)' }} />
+          </motion.div>
+        )}
+
         {/* Question card */}
         <AnimatePresence mode="wait">
           <motion.div

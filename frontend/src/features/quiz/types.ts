@@ -16,6 +16,8 @@ interface BaseQuestion {
   explanation: string;
   hint?: string;
   points: number; // easy=10, medium=20, hard=30
+  /** Optional supporting image shown alongside the question */
+  imageUrl?: string;
 }
 
 export interface MCQQuestion extends BaseQuestion {
