@@ -1,8 +1,11 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, ChevronUp, Map } from 'lucide-react';
+import { ChevronDown, ChevronUp, Map, ChevronRight, Loader2 } from 'lucide-react';
 import { useTimeStore } from '@/shared/stores/timeStore';
 import { getVisibleCivilizationLabels } from '@/shared/data/civilizationLabels';
+import { useSpotlightStore } from '@/shared/stores/spotlightStore';
+import { findCivIdByName } from '@/shared/data/civAliases';
+import { preloadAllGeoJson, isPreloaded } from '@/shared/data/geoJsonCache';
 
 // Must match the color logic in GlobeView.tsx
 const MAJOR_CIV_COLORS: Record<string, string> = {
@@ -39,17 +42,43 @@ function getCivColor(name: string): string {
 
 export function CivLegend() {
   const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
   const currentYear = useTimeStore(s => s.currentYear);
+  const spotlightActive = useSpotlightStore(s => s.active);
+  const enterSpotlight = useSpotlightStore(s => s.enterSpotlight);
 
   const labels = useMemo(() => getVisibleCivilizationLabels(currentYear), [currentYear]);
 
-  if (labels.length === 0) return null;
+  // Preload GeoJSON when legend opens
+  const handleOpen = useCallback(async () => {
+    setOpen(o => !o);
+    if (!isPreloaded()) {
+      setLoading(true);
+      await preloadAllGeoJson();
+      setLoading(false);
+    }
+  }, []);
+
+  // Click a civilization to enter spotlight mode
+  const handleCivClick = useCallback(async (civName: string) => {
+    const civId = findCivIdByName(civName);
+    if (!civId) return;
+    if (!isPreloaded()) {
+      setLoading(true);
+      await preloadAllGeoJson();
+      setLoading(false);
+    }
+    enterSpotlight(civId);
+    setOpen(false);
+  }, [enterSpotlight]);
+
+  if (labels.length === 0 || spotlightActive) return null;
 
   return (
     <div className="fixed bottom-[180px] lg:bottom-[190px] right-4 lg:right-5 z-30">
       {/* Toggle button */}
       <motion.button
-        onClick={() => setOpen(o => !o)}
+        onClick={handleOpen}
         className="flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer"
         style={{
           background: 'rgba(10, 10, 16, 0.8)',
@@ -85,21 +114,30 @@ export function CivLegend() {
             transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
           >
             <div className="p-3 space-y-1">
+              {loading && (
+                <div className="flex items-center justify-center py-4">
+                  <Loader2 size={14} className="text-[#c49a44] animate-spin" />
+                  <span className="text-[10px] text-[#55556a] ml-2">Loading territories...</span>
+                </div>
+              )}
               {labels.map((civ: any) => {
                 const color = getCivColor(civ.name);
+                const hasCivId = !!findCivIdByName(civ.name);
                 return (
-                  <div
+                  <button
                     key={civ.slug}
-                    className="flex items-center gap-2.5 px-2 py-1.5 rounded-md hover:bg-white/[0.03] transition-colors"
+                    onClick={() => hasCivId && handleCivClick(civ.name)}
+                    className={`flex items-center gap-2.5 px-2 py-1.5 rounded-md transition-colors w-full text-left ${hasCivId ? 'cursor-pointer hover:bg-white/[0.06]' : 'cursor-default opacity-60'}`}
                   >
                     <div
                       className="w-3 h-3 rounded-sm shrink-0"
                       style={{ background: color, boxShadow: `0 0 6px ${color}60` }}
                     />
-                    <span className="text-[11px] font-medium text-[#8a8a9a] truncate">
+                    <span className="text-[11px] font-medium text-[#8a8a9a] truncate flex-1">
                       {civ.name}
                     </span>
-                  </div>
+                    {hasCivId && <ChevronRight size={10} className="text-[#3a3a4a] shrink-0" />}
+                  </button>
                 );
               })}
             </div>

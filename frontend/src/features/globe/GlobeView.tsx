@@ -10,6 +10,8 @@ import { formatYear } from '@/shared/utils/format';
 import { BOUNDARY_YEAR_MAP } from '@/shared/utils/constants';
 import { getVisibleCivilizationLabels } from '@/shared/data/civilizationLabels';
 import { createEventMarker, CATEGORY_COLORS } from './eventMarkers';
+import { useSpotlightStore } from '@/shared/stores/spotlightStore';
+import { getGeoJsonFromCache, cacheGeoJson } from '@/shared/data/geoJsonCache';
 
 // === Globe context for child components (landmarks, etc.) ===
 interface GlobeContextValue {
@@ -92,6 +94,11 @@ export function GlobeView({ children }: GlobeViewProps) {
   const selectEvent = useEventsStore(s => s.selectEvent);
   const journeyArcs = useJourneyArcsStore(s => s.arcs);
   const loadedFileRef = useRef<string | null>(null);
+
+  // Spotlight mode state
+  const spotlightActive = useSpotlightStore(s => s.active);
+  const spotlightAliasSet = useSpotlightStore(s => s.aliasSet);
+  const spotlightColor = useSpotlightStore(s => s.civColor);
 
   const civilizationLabels = useMemo(
     () => getVisibleCivilizationLabels(currentYear),
@@ -202,21 +209,43 @@ export function GlobeView({ children }: GlobeViewProps) {
     );
   }, [ready, selectedEventId, allEvents]);
 
-  // Load boundary GeoJSON when year changes (debounced to prevent rapid flickering)
+  // Camera fly-to when spotlight mode enters
+  const spotlightCivId = useSpotlightStore(s => s.civId);
+  const spotlightCenterLat = useSpotlightStore(s => s.centerLat);
+  const spotlightCenterLng = useSpotlightStore(s => s.centerLng);
+  useEffect(() => {
+    if (!spotlightActive || !globeRef.current || !spotlightCivId) return;
+    globeRef.current.pointOfView(
+      { lat: spotlightCenterLat, lng: spotlightCenterLng, altitude: 1.2 },
+      1500,
+    );
+  }, [spotlightActive, spotlightCivId, spotlightCenterLat, spotlightCenterLng]);
+
+  // Load boundary GeoJSON when year changes — checks cache first, then fetches
   const pendingLoadRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
     const year = closestBoundaryYear(currentYear, SORTED_BOUNDARY_YEARS);
     const fileName = BOUNDARY_YEAR_MAP[year];
     if (!fileName || fileName === loadedFileRef.current) return;
 
-    // Debounce: wait 150ms before loading to avoid rapid-fire during scrubbing
+    // Try cache first (instant for spotlight playback)
+    const cached = getGeoJsonFromCache(fileName);
+    if (cached) {
+      setPolygonsData(cached);
+      loadedFileRef.current = fileName;
+      return;
+    }
+
+    // Debounce fetch for non-cached files
     if (pendingLoadRef.current) clearTimeout(pendingLoadRef.current);
     pendingLoadRef.current = setTimeout(async () => {
       try {
         const res = await fetch(`/assets/geo/${fileName}.geojson`);
         if (!res.ok) return;
         const geojson = await res.json();
-        setPolygonsData(geojson.features || []);
+        const features = geojson.features || [];
+        setPolygonsData(features);
+        cacheGeoJson(fileName, features);
         loadedFileRef.current = fileName;
       } catch {
         // Boundary file not found
@@ -288,29 +317,58 @@ export function GlobeView({ children }: GlobeViewProps) {
             polygonGeoJsonGeometry={(d: any) => d.geometry}
             polygonCapColor={(d: any) => {
               const name = d.properties?.NAME;
+              const isNamed = name && name !== '?';
+
+              if (spotlightActive) {
+                if (spotlightAliasSet.has(name)) {
+                  const hex = spotlightColor || '#c49a44';
+                  const r = parseInt(hex.slice(1, 3), 16);
+                  const g = parseInt(hex.slice(3, 5), 16);
+                  const b = parseInt(hex.slice(5, 7), 16);
+                  return `rgba(${r}, ${g}, ${b}, 0.45)`;
+                }
+                return 'rgba(25, 25, 35, 0.03)';
+              }
+
               const hex = getCivColor(name);
               const r = parseInt(hex.slice(1, 3), 16);
               const g = parseInt(hex.slice(3, 5), 16);
               const b = parseInt(hex.slice(5, 7), 16);
-              // Named civs: strong visible fill; unnamed: barely there
-              const alpha = name && name !== '?' ? 0.25 : 0.02;
-              return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+              return `rgba(${r}, ${g}, ${b}, ${isNamed ? 0.25 : 0.02})`;
             }}
             polygonSideColor={(d: any) => {
               const name = d.properties?.NAME;
+              if (spotlightActive) {
+                if (spotlightAliasSet.has(name)) {
+                  const hex = spotlightColor || '#c49a44';
+                  const r = Math.min(255, parseInt(hex.slice(1, 3), 16) + 60);
+                  const g = Math.min(255, parseInt(hex.slice(3, 5), 16) + 60);
+                  const b = Math.min(255, parseInt(hex.slice(5, 7), 16) + 60);
+                  return `rgba(${r}, ${g}, ${b}, 0.85)`;
+                }
+                return 'rgba(20, 20, 28, 0.01)';
+              }
               if (!name || name === '?') return 'rgba(40, 40, 50, 0.05)';
               const hex = getCivColor(name);
               const r = parseInt(hex.slice(1, 3), 16);
               const g = parseInt(hex.slice(3, 5), 16);
               const b = parseInt(hex.slice(5, 7), 16);
-              // Bright glowing sides — the "Civ VI border glow" effect
               return `rgba(${Math.min(255, r + 40)}, ${Math.min(255, g + 40)}, ${Math.min(255, b + 40)}, 0.6)`;
             }}
             polygonStrokeColor={(d: any) => {
               const name = d.properties?.NAME;
+              if (spotlightActive) {
+                if (spotlightAliasSet.has(name)) {
+                  const hex = spotlightColor || '#c49a44';
+                  const r = Math.min(255, parseInt(hex.slice(1, 3), 16) + 80);
+                  const g = Math.min(255, parseInt(hex.slice(3, 5), 16) + 80);
+                  const b = Math.min(255, parseInt(hex.slice(5, 7), 16) + 80);
+                  return `rgba(${r}, ${g}, ${b}, 1.0)`;
+                }
+                return 'rgba(30, 30, 40, 0.02)';
+              }
               if (!name || name === '?') return 'rgba(60, 60, 70, 0.15)';
               const hex = getCivColor(name);
-              // Brighten the stroke for glow effect
               const r = Math.min(255, parseInt(hex.slice(1, 3), 16) + 50);
               const g = Math.min(255, parseInt(hex.slice(3, 5), 16) + 50);
               const b = Math.min(255, parseInt(hex.slice(5, 7), 16) + 50);
@@ -318,13 +376,16 @@ export function GlobeView({ children }: GlobeViewProps) {
             }}
             polygonAltitude={(d: any) => {
               const name = d.properties?.NAME;
-              // Named civs raised higher — creates visible 3D border walls
+              if (spotlightActive) {
+                return spotlightAliasSet.has(name) ? 0.018 : 0.0003;
+              }
               return name && name !== '?' ? 0.01 : 0.001;
             }}
             polygonLabel={(d: any) => {
               const name = d.properties?.NAME;
               if (!name || name === '?') return '';
-              const color = getCivColor(name);
+              if (spotlightActive && !spotlightAliasSet.has(name)) return '';
+              const color = spotlightActive ? (spotlightColor || '#c49a44') : getCivColor(name);
               return `<div style="
                 background: rgba(10, 10, 16, 0.88);
                 backdrop-filter: blur(20px);
