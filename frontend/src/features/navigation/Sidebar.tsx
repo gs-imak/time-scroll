@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Globe, Scroll, Search, Trophy, Settings, Menu, X, LayoutDashboard, Clock, BookOpen } from 'lucide-react';
+import { Globe, Scroll, Search, Trophy, Settings, Menu, X, LayoutDashboard, Clock, BookOpen, BrainCircuit } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router';
 import { useUIStore } from '@/shared/stores/uiStore';
 import { cn } from '@/shared/utils/cn';
@@ -166,6 +166,10 @@ function DesktopSidebar() {
     navigate('/journeys');
   }, [navigate]);
 
+  const goToQuiz = useCallback(() => {
+    navigate('/quiz');
+  }, [navigate]);
+
   const handleSettings = useCallback(() => {
     console.info('[Time Scroll] Settings coming soon');
   }, []);
@@ -174,6 +178,7 @@ function DesktopSidebar() {
     { icon: LayoutDashboard, label: 'Dashboard', action: goToDashboard, tourId: 'dashboard' },
     { icon: Clock, label: 'Timeline', action: goToTimeline, tourId: 'timeline' },
     { icon: BookOpen, label: 'Journeys', action: goToJourneys, tourId: 'journeys' },
+    { icon: BrainCircuit, label: 'Quiz', action: goToQuiz, tourId: 'quiz' },
     { icon: Globe, label: 'Explore', panel: 'exploration', tourId: 'explore' },
     { icon: Scroll, label: 'Events', panel: 'events', tourId: 'events' },
     { icon: Search, label: 'Search', action: dispatchSearch, tourId: 'search' },
@@ -347,6 +352,10 @@ function MobileDrawer() {
     navigate('/journeys');
   }, [navigate]);
 
+  const goToQuiz = useCallback(() => {
+    navigate('/quiz');
+  }, [navigate]);
+
   const handleSettings = useCallback(() => {
     console.info('[Time Scroll] Settings coming soon');
   }, []);
@@ -355,6 +364,7 @@ function MobileDrawer() {
     { icon: LayoutDashboard, label: 'Dashboard', action: goToDashboard },
     { icon: Clock, label: 'Timeline', action: goToTimeline },
     { icon: BookOpen, label: 'Journeys', action: goToJourneys },
+    { icon: BrainCircuit, label: 'Quiz', action: goToQuiz },
     { icon: Globe, label: 'Explore', panel: 'exploration' },
     { icon: Scroll, label: 'Events', panel: 'events' },
     { icon: Search, label: 'Search', action: dispatchSearch },

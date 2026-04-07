@@ -8,6 +8,7 @@ const GlobeExplorer = lazy(() => import('@/features/globe/GlobeExplorer'));
 const TimelineView = lazy(() => import('@/features/timeline/TimelineView'));
 const JourneyBrowser = lazy(() => import('@/features/journeys/JourneyBrowser'));
 const JourneyPlayer = lazy(() => import('@/features/journeys/JourneyPlayer'));
+const QuizHub = lazy(() => import('@/features/quiz/QuizHub'));
 
 function Loading() {
   return (
@@ -66,6 +67,14 @@ export const router = createBrowserRouter([
         element: (
           <Suspense fallback={<Loading />}>
             <JourneyPlayer />
+          </Suspense>
+        ),
+      },
+      {
+        path: '/quiz',
+        element: (
+          <Suspense fallback={<Loading />}>
+            <QuizHub />
           </Suspense>
         ),
       },
