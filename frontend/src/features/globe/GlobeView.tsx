@@ -764,7 +764,7 @@ export function GlobeView({ children }: GlobeViewProps) {
             return (
               <motion.div
                 key={selectedTerritory}
-                className="fixed top-20 right-4 z-40 lg:right-6"
+                className="fixed top-20 right-4 z-40 lg:right-[80px]"
                 initial={{ opacity: 0, x: 30, scale: 0.95 }}
                 animate={{ opacity: 1, x: 0, scale: 1 }}
                 exit={{ opacity: 0, x: 30, scale: 0.95 }}
