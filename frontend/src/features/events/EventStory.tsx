@@ -921,7 +921,7 @@ export function EventStory() {
                         whileHover={{ scale: 1.008 }} transition={{ type: 'spring', stiffness: 400, damping: 25 }}>
                         <div className="absolute top-0 left-0 w-1 h-full rounded-full" style={{ background: cat.color }} />
                         {/* Illustration accent — faded pack image on the right */}
-                        {galleryImages.length > 0 && (
+                        {galleryImages[0] && (
                           <img
                             src={getIllustrationUrl(galleryImages[0].slug, galleryImages[0].num)}
                             alt=""
