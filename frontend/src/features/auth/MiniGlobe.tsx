@@ -133,7 +133,7 @@ export function MiniGlobe() {
         up,
       );
       obj.setRotationFromQuaternion(quaternion);
-      obj.scale.setScalar(1.8);
+      obj.scale.setScalar(1.5);
 
       // Hide the glow disc (child 0) which causes most flickering
       if (obj.children?.[0]) obj.children[0].visible = false;
