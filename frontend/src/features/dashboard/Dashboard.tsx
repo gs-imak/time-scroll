@@ -912,9 +912,16 @@ function EventsTab({ events, viewedEvents, navigate }: {
                     />
                   )}
                   <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, var(--glass-strong-bg) 0%, transparent 60%)' }} />
-                  <div className="absolute top-3 left-3 flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full" style={{ background: catColor }} />
-                    <span className="text-[10px] font-medium uppercase tracking-wide" style={{ color: catColor }}>{event.category}</span>
+                  <div
+                    className="absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-md"
+                    style={{
+                      background: 'rgba(0, 0, 0, 0.6)',
+                      backdropFilter: 'blur(8px)',
+                      border: `1px solid ${catColor}40`,
+                    }}
+                  >
+                    <span className="w-2 h-2 rounded-full" style={{ background: catColor }} />
+                    <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: catColor }}>{event.category}</span>
                   </div>
                   {viewed && (
                     <div className="absolute top-3 right-3">
