@@ -15,6 +15,7 @@ import { AchievementToast } from '@/shared/components/AchievementToast';
 import { KeyboardHelp } from '@/features/help/KeyboardHelp';
 import { ComparisonTool } from '@/features/comparison/ComparisonTool';
 import { MonumentViewer } from '@/features/monuments/MonumentViewer';
+import { CivLegend } from './CivLegend';
 import { useTimeStore } from '@/shared/stores/timeStore';
 import { useEventsStore } from '@/shared/stores/eventsStore';
 
@@ -94,6 +95,7 @@ export default function GlobeExplorer() {
       <LoadingScreen />
       <OnboardingTour />
       <MonumentViewer />
+      <CivLegend />
     </div>
   );
 }

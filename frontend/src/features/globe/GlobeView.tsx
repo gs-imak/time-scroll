@@ -283,7 +283,7 @@ export function GlobeView({ children }: GlobeViewProps) {
             atmosphereAltitude={0.18}
             showAtmosphere={true}
 
-            // Historical boundaries (polygons) — per-civilization coloring
+            // Historical boundaries — Civ VI inspired: glowing borders, vivid fills
             polygonsData={polygonsData}
             polygonGeoJsonGeometry={(d: any) => d.geometry}
             polygonCapColor={(d: any) => {
@@ -292,45 +292,55 @@ export function GlobeView({ children }: GlobeViewProps) {
               const r = parseInt(hex.slice(1, 3), 16);
               const g = parseInt(hex.slice(3, 5), 16);
               const b = parseInt(hex.slice(5, 7), 16);
-              // Named civilizations get visible fill; unnamed get subtle
-              const alpha = name && name !== '?' ? 0.18 : 0.03;
+              // Named civs: strong visible fill; unnamed: barely there
+              const alpha = name && name !== '?' ? 0.25 : 0.02;
               return `rgba(${r}, ${g}, ${b}, ${alpha})`;
             }}
             polygonSideColor={(d: any) => {
               const name = d.properties?.NAME;
+              if (!name || name === '?') return 'rgba(40, 40, 50, 0.05)';
               const hex = getCivColor(name);
               const r = parseInt(hex.slice(1, 3), 16);
               const g = parseInt(hex.slice(3, 5), 16);
               const b = parseInt(hex.slice(5, 7), 16);
-              return `rgba(${r}, ${g}, ${b}, 0.08)`;
+              // Bright glowing sides — the "Civ VI border glow" effect
+              return `rgba(${Math.min(255, r + 40)}, ${Math.min(255, g + 40)}, ${Math.min(255, b + 40)}, 0.6)`;
             }}
             polygonStrokeColor={(d: any) => {
               const name = d.properties?.NAME;
-              return getCivColor(name);
+              if (!name || name === '?') return 'rgba(60, 60, 70, 0.15)';
+              const hex = getCivColor(name);
+              // Brighten the stroke for glow effect
+              const r = Math.min(255, parseInt(hex.slice(1, 3), 16) + 50);
+              const g = Math.min(255, parseInt(hex.slice(3, 5), 16) + 50);
+              const b = Math.min(255, parseInt(hex.slice(5, 7), 16) + 50);
+              return `rgba(${r}, ${g}, ${b}, 0.9)`;
             }}
             polygonAltitude={(d: any) => {
               const name = d.properties?.NAME;
-              return name && name !== '?' ? 0.006 : 0.002;
+              // Named civs raised higher — creates visible 3D border walls
+              return name && name !== '?' ? 0.01 : 0.001;
             }}
             polygonLabel={(d: any) => {
               const name = d.properties?.NAME;
               if (!name || name === '?') return '';
               const color = getCivColor(name);
               return `<div style="
-                background: rgba(14, 14, 20, 0.92);
-                backdrop-filter: blur(16px);
-                border: 1px solid rgba(255,255,255,0.08);
-                border-left: 3px solid ${color};
-                border-radius: 8px;
-                padding: 8px 12px;
+                background: rgba(10, 10, 16, 0.88);
+                backdrop-filter: blur(20px);
+                border: 1.5px solid ${color}60;
+                border-radius: 10px;
+                padding: 10px 14px;
                 font-family: 'Space Grotesk', system-ui, sans-serif;
-                box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+                box-shadow: 0 0 20px ${color}30, 0 4px 20px rgba(0,0,0,0.5);
+                min-width: 160px;
               ">
-                <div style="font-size: 13px; font-weight: 600; color: ${color};">
-                  ${name}
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                  <div style="width: 10px; height: 10px; border-radius: 3px; background: ${color}; box-shadow: 0 0 8px ${color}80;"></div>
+                  <span style="font-size: 14px; font-weight: 700; color: ${color}; letter-spacing: 0.02em;">${name}</span>
                 </div>
-                <div style="font-size: 10px; color: #55556a; margin-top: 2px;">
-                  ${formatYear(currentYear)} — Territory
+                <div style="font-size: 10px; color: #55556a; padding-left: 18px;">
+                  ${formatYear(currentYear)}
                 </div>
               </div>`;
             }}
@@ -374,16 +384,51 @@ export function GlobeView({ children }: GlobeViewProps) {
               </div>`;
             }}
 
-            // Civilization name labels
-            labelsData={civilizationLabels}
-            labelLat={(d: any) => d.lat}
-            labelLng={(d: any) => d.lng}
-            labelText={(d: any) => d.name}
-            labelSize={() => 0.6}
-            labelColor={() => '#c49a44'}
-            labelResolution={3}
-            labelDotRadius={0}
-            labelAltitude={0.01}
+            // Civilization name banners — HTML elements floating above territories
+            htmlElementsData={civilizationLabels}
+            htmlLat={(d: any) => d.lat}
+            htmlLng={(d: any) => d.lng}
+            htmlAltitude={0.02}
+            htmlElement={(d: any) => {
+              const el = document.createElement('div');
+              const color = getCivColor(d.name);
+              el.style.cssText = `
+                pointer-events: none;
+                transform: translate(-50%, -50%);
+                white-space: nowrap;
+              `;
+              el.innerHTML = `
+                <div style="
+                  display: flex;
+                  align-items: center;
+                  gap: 5px;
+                  padding: 3px 10px 3px 6px;
+                  background: rgba(10, 10, 16, 0.75);
+                  backdrop-filter: blur(8px);
+                  border: 1px solid ${color}40;
+                  border-radius: 6px;
+                  box-shadow: 0 0 12px ${color}25, 0 2px 8px rgba(0,0,0,0.4);
+                  font-family: 'Space Grotesk', system-ui, sans-serif;
+                ">
+                  <div style="
+                    width: 8px; height: 8px;
+                    border-radius: 2px;
+                    background: ${color};
+                    box-shadow: 0 0 6px ${color}90;
+                    flex-shrink: 0;
+                  "></div>
+                  <span style="
+                    font-size: 10px;
+                    font-weight: 700;
+                    color: ${color};
+                    letter-spacing: 0.06em;
+                    text-transform: uppercase;
+                    text-shadow: 0 0 8px ${color}40;
+                  ">${d.name}</span>
+                </div>
+              `;
+              return el;
+            }}
 
             // Journey arcs
             arcsData={journeyArcs}
