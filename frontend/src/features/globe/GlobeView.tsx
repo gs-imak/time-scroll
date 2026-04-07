@@ -759,7 +759,7 @@ export function GlobeView({ children }: GlobeViewProps) {
             const civId = civEntry?.[0];
             const civDesc = civId ? CIV_DESCRIPTIONS[civId] : null;
             const nameDesc = NAME_DESCRIPTIONS[selectedTerritory!];
-            const desc = civDesc || (nameDesc ? { ...nameDesc, imageUrl: '' } : null);
+            const desc = civDesc || (nameDesc ? { ...nameDesc, imageUrl: nameDesc.imageUrl || '' } : null);
 
             return (
               <motion.div
