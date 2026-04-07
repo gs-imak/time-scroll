@@ -85,6 +85,15 @@ html, body, #root {
   50% { transform: translateY(-3px); }
 }
 
+/* === Globe tooltip override — remove library's default background === */
+.float-tooltip-kap {
+  background: transparent !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  font: inherit !important;
+  max-width: none !important;
+}
+
 /* === Mapbox overrides === */
 .mapboxgl-ctrl-attrib,
 .mapboxgl-ctrl-logo {
