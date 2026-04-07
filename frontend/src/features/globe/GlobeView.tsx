@@ -148,6 +148,27 @@ function getCachedSideMaterial(
 // === Sorted boundary years ===
 const SORTED_BOUNDARY_YEARS = Object.keys(BOUNDARY_YEAR_MAP).map(Number).sort((a, b) => a - b);
 
+/**
+ * Assign stable __id to each GeoJSON feature based on civilization NAME.
+ * This enables react-globe.gl's built-in tween transition system —
+ * matched polygons smoothly animate altitude changes, new polygons
+ * rise up from below the surface, and disappearing ones sink down.
+ * Without stable IDs, the library assigns random IDs and every update
+ * destroys/recreates all polygons with no transition.
+ */
+function assignStableIds(features: any[]): any[] {
+  // Track how many times each name appears (for multi-feature civs)
+  const nameCount = new Map<string, number>();
+  return features.map((f: any) => {
+    const name: string = f.properties?.NAME || '?';
+    const idx = nameCount.get(name) || 0;
+    nameCount.set(name, idx + 1);
+    // Stable ID = name + occurrence index
+    f.__id = `${name}_${idx}`;
+    return f;
+  });
+}
+
 interface GlobeViewProps {
   children?: ReactNode;
 }
@@ -325,7 +346,7 @@ export function GlobeView({ children }: GlobeViewProps) {
     // Try cache first (instant for spotlight playback)
     const cached = getGeoJsonFromCache(fileName);
     if (cached) {
-      setPolygonsData(cached);
+      setPolygonsData(assignStableIds(cached));
       loadedFileRef.current = fileName;
       return;
     }
@@ -338,7 +359,7 @@ export function GlobeView({ children }: GlobeViewProps) {
         if (!res.ok) return;
         const geojson = await res.json();
         const features = geojson.features || [];
-        setPolygonsData(features);
+        setPolygonsData(assignStableIds(features));
         cacheGeoJson(fileName, features);
         loadedFileRef.current = fileName;
       } catch {
