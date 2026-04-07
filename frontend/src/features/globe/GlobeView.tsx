@@ -16,6 +16,8 @@ import { getGeoJsonFromCache, cacheGeoJson, preloadAllGeoJson } from '@/shared/d
 import { useVisibilityTier } from './useVisibilityTier';
 import { useEventClustering } from './useEventClustering';
 import { useLabelCollision } from './useLabelCollision';
+import { CIV_ALIASES } from '@/shared/data/civAliases';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // === Globe context for child components (landmarks, etc.) ===
 interface GlobeContextValue {
@@ -187,6 +189,9 @@ export function GlobeView({ children }: GlobeViewProps) {
   const journeyArcs = useJourneyArcsStore(s => s.arcs);
   const loadedFileRef = useRef<string | null>(null);
 
+  // Territory selection — click a territory to isolate and highlight it
+  const [selectedTerritory, setSelectedTerritory] = useState<string | null>(null);
+
   // Spotlight mode state
   const spotlightActive = useSpotlightStore(s => s.active);
   const spotlightAliasSet = useSpotlightStore(s => s.aliasSet);
@@ -336,6 +341,21 @@ export function GlobeView({ children }: GlobeViewProps) {
     );
   }, [spotlightActive, spotlightCivId, spotlightCenterLat, spotlightCenterLng]);
 
+  // Clear territory selection when entering spotlight
+  useEffect(() => {
+    if (spotlightActive) setSelectedTerritory(null);
+  }, [spotlightActive]);
+
+  // Escape to deselect territory
+  useEffect(() => {
+    if (!selectedTerritory) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setSelectedTerritory(null);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [selectedTerritory]);
+
   // Preload all 53 GeoJSON boundary files on globe mount so every
   // boundary switch is instant — no network delays during scrubbing
   useEffect(() => {
@@ -459,6 +479,8 @@ export function GlobeView({ children }: GlobeViewProps) {
             polygonCapMaterial={(d: any) => {
               const name: string | undefined = d.properties?.NAME;
               const isNamed = name && name !== '?';
+              const isSelected = selectedTerritory && name === selectedTerritory;
+              const hasSelection = !!selectedTerritory;
 
               if (spotlightActive) {
                 if (name && spotlightAliasSet.has(name)) {
@@ -468,8 +490,16 @@ export function GlobeView({ children }: GlobeViewProps) {
                 return getCachedCapMaterial('spot-cap-dim', '#191923', 0.03, 2);
               }
 
+              // Territory selection: selected = full opacity, others dim
+              if (hasSelection) {
+                if (isSelected) {
+                  const hex = getCivColor(name);
+                  return getCachedCapMaterial(`sel-cap-${name}`, hex, 0.55, -5);
+                }
+                return getCachedCapMaterial('sel-cap-dim', '#191923', 0.04, 2);
+              }
+
               const hex = getCivColor(name);
-              // Deterministic offset per civ so overlapping territories don't fight
               const offset = isNamed ? -(hashString(name!) % 10) - 1 : 2;
               return getCachedCapMaterial(
                 `cap-${name ?? 'unknown'}`,
@@ -480,6 +510,8 @@ export function GlobeView({ children }: GlobeViewProps) {
             }}
             polygonSideMaterial={(d: any) => {
               const name: string | undefined = d.properties?.NAME;
+              const isSelected = selectedTerritory && name === selectedTerritory;
+              const hasSelection = !!selectedTerritory;
 
               if (spotlightActive) {
                 if (name && spotlightAliasSet.has(name)) {
@@ -487,6 +519,14 @@ export function GlobeView({ children }: GlobeViewProps) {
                   return getCachedSideMaterial(`spot-side-${name}`, hex, 0.85);
                 }
                 return getCachedSideMaterial('spot-side-dim', '#14141c', 0.01);
+              }
+
+              if (hasSelection) {
+                if (isSelected) {
+                  const hex = getCivColor(name);
+                  return getCachedSideMaterial(`sel-side-${name}`, hex, 0.9);
+                }
+                return getCachedSideMaterial('sel-side-dim', '#14141c', 0.02);
               }
 
               if (!name || name === '?') {
@@ -497,6 +537,9 @@ export function GlobeView({ children }: GlobeViewProps) {
             }}
             polygonStrokeColor={(d: any) => {
               const name = d.properties?.NAME;
+              const isSelected = selectedTerritory && name === selectedTerritory;
+              const hasSelection = !!selectedTerritory;
+
               if (spotlightActive) {
                 if (spotlightAliasSet.has(name)) {
                   const hex = spotlightColor || '#c49a44';
@@ -507,6 +550,18 @@ export function GlobeView({ children }: GlobeViewProps) {
                 }
                 return 'rgba(30, 30, 40, 0.02)';
               }
+
+              if (hasSelection) {
+                if (isSelected) {
+                  const hex = getCivColor(name);
+                  const r = Math.min(255, parseInt(hex.slice(1, 3), 16) + 80);
+                  const g = Math.min(255, parseInt(hex.slice(3, 5), 16) + 80);
+                  const b = Math.min(255, parseInt(hex.slice(5, 7), 16) + 80);
+                  return `rgba(${r}, ${g}, ${b}, 1.0)`;
+                }
+                return 'rgba(30, 30, 40, 0.05)';
+              }
+
               if (!name || name === '?') return 'rgba(60, 60, 70, 0.15)';
               const hex = getCivColor(name);
               const r = Math.min(255, parseInt(hex.slice(1, 3), 16) + 50);
@@ -516,12 +571,21 @@ export function GlobeView({ children }: GlobeViewProps) {
             }}
             polygonAltitude={(d: any) => {
               const name = d.properties?.NAME;
+              const isSelected = selectedTerritory && name === selectedTerritory;
+
               if (spotlightActive) {
                 return spotlightAliasSet.has(name) ? 0.018 : 0.0003;
               }
+
+              // Selected territory lifts up prominently
+              if (isSelected) return 0.03;
+
+              if (selectedTerritory) {
+                // Other territories sink when something is selected
+                return name && name !== '?' ? 0.002 : 0.001;
+              }
+
               if (!name || name === '?') return 0.002;
-              // Hash-based altitude: each civ gets a unique height (0.008–0.022)
-              // This prevents same-altitude z-fighting between adjacent territories
               const h = hashString(name) % 100;
               return 0.008 + h * 0.00014;
             }}
@@ -550,6 +614,13 @@ export function GlobeView({ children }: GlobeViewProps) {
               </div>`;
             }}
             polygonsTransitionDuration={2000}
+            onPolygonClick={(d: any) => {
+              const name = d.properties?.NAME;
+              if (!name || name === '?') return;
+              if (spotlightActive) return;
+              // Toggle: click same territory to deselect, different to select
+              setSelectedTerritory(prev => prev === name ? null : name);
+            }}
 
             // Event markers + cluster badges
             customLayerData={clusteredEvents}
@@ -676,6 +747,86 @@ export function GlobeView({ children }: GlobeViewProps) {
           />
         )}
         {ready && children}
+
+        {/* Territory selection overlay — shows civ name + spotlight entry */}
+        <AnimatePresence>
+          {selectedTerritory && !spotlightActive && (
+            <motion.div
+              className="fixed bottom-[200px] left-1/2 -translate-x-1/2 z-40 lg:ml-[32px]"
+              initial={{ opacity: 0, y: 20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 20, scale: 0.95 }}
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <div
+                className="flex items-center gap-4 px-5 py-3 rounded-xl"
+                style={{
+                  background: 'var(--glass-strong-bg)',
+                  backdropFilter: 'blur(20px)',
+                  border: `1.5px solid ${getCivColor(selectedTerritory)}50`,
+                  boxShadow: `0 0 24px ${getCivColor(selectedTerritory)}20, 0 4px 20px var(--glass-shadow)`,
+                }}
+              >
+                <div
+                  className="w-3.5 h-3.5 rounded-sm shrink-0"
+                  style={{
+                    background: getCivColor(selectedTerritory),
+                    boxShadow: `0 0 8px ${getCivColor(selectedTerritory)}90`,
+                  }}
+                />
+                <div>
+                  <h3
+                    className="text-[15px] font-bold"
+                    style={{
+                      color: getCivColor(selectedTerritory),
+                      fontFamily: "'Space Grotesk', sans-serif",
+                    }}
+                  >
+                    {selectedTerritory}
+                  </h3>
+                  <p className="text-[10px] text-text-muted">{formatYear(currentYear)}</p>
+                </div>
+                {/* View Timeline button — enters spotlight mode if civ has aliases */}
+                {(() => {
+                  const civEntry = Object.entries(CIV_ALIASES).find(([, v]) =>
+                    v.aliases.includes(selectedTerritory!),
+                  );
+                  if (!civEntry) return null;
+                  const [civId] = civEntry;
+                  const enterSpotlight = useSpotlightStore.getState().enterSpotlight;
+                  return (
+                    <motion.button
+                      onClick={() => {
+                        setSelectedTerritory(null);
+                        enterSpotlight(civId);
+                      }}
+                      className="ml-2 px-4 py-2 rounded-lg text-[11px] font-semibold cursor-pointer"
+                      style={{
+                        background: `${getCivColor(selectedTerritory)}20`,
+                        border: `1px solid ${getCivColor(selectedTerritory)}40`,
+                        color: getCivColor(selectedTerritory),
+                      }}
+                      whileHover={{ scale: 1.05, background: `${getCivColor(selectedTerritory)}30` }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      View Timeline
+                    </motion.button>
+                  );
+                })()}
+                <motion.button
+                  onClick={() => setSelectedTerritory(null)}
+                  className="ml-1 w-7 h-7 rounded-full flex items-center justify-center cursor-pointer text-text-muted hover:text-text-primary"
+                  style={{ background: 'rgba(255,255,255,0.04)' }}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  aria-label="Deselect territory"
+                >
+                  ✕
+                </motion.button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </GlobeContext.Provider>
   );
