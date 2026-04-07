@@ -17,7 +17,7 @@ import { useVisibilityTier } from './useVisibilityTier';
 import { useEventClustering } from './useEventClustering';
 import { useLabelCollision } from './useLabelCollision';
 import { CIV_ALIASES } from '@/shared/data/civAliases';
-import { CIV_DESCRIPTIONS } from '@/shared/data/civDescriptions';
+import { CIV_DESCRIPTIONS, NAME_DESCRIPTIONS } from '@/shared/data/civDescriptions';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // === Globe context for child components (landmarks, etc.) ===
@@ -757,7 +757,9 @@ export function GlobeView({ children }: GlobeViewProps) {
               v.aliases.includes(selectedTerritory!),
             );
             const civId = civEntry?.[0];
-            const desc = civId ? CIV_DESCRIPTIONS[civId] : null;
+            const civDesc = civId ? CIV_DESCRIPTIONS[civId] : null;
+            const nameDesc = NAME_DESCRIPTIONS[selectedTerritory!];
+            const desc = civDesc || (nameDesc ? { ...nameDesc, imageUrl: '' } : null);
 
             return (
               <motion.div
@@ -840,8 +842,8 @@ export function GlobeView({ children }: GlobeViewProps) {
                         </div>
                       </>
                     ) : (
-                      <p className="text-[12px] text-text-muted mb-4">
-                        A historical territory active during this period.
+                      <p className="text-[12px] text-text-secondary leading-[1.65] mb-4">
+                        {selectedTerritory} — a people or territory present in this region during {formatYear(currentYear)}. Many such groups left lasting cultural, linguistic, or ecological legacies even without written records.
                       </p>
                     )}
 
