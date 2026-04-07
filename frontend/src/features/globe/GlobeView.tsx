@@ -385,10 +385,11 @@ export function GlobeView({ children }: GlobeViewProps) {
   }, []);
 
   // Update marker position using getCoords (works for both events and clusters)
+  // Events use displayLat/displayLng which are spiderfied when close together
   const updateMarkerPosition = useCallback((obj: any, d: any) => {
     if (!globeRef.current) return;
-    const lat = d.type === 'cluster' ? d.lat : d.latitude;
-    const lng = d.type === 'cluster' ? d.lng : d.longitude;
+    const lat = d.type === 'cluster' ? d.lat : (d.displayLat ?? d.latitude);
+    const lng = d.type === 'cluster' ? d.lng : (d.displayLng ?? d.longitude);
     const coords = globeRef.current.getCoords(lat, lng, 0.01);
     if (coords) {
       Object.assign(obj.position, coords);
