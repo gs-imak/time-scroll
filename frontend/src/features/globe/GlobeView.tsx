@@ -377,8 +377,9 @@ export function GlobeView({ children }: GlobeViewProps) {
   );
   const clusteredEvents = useEventClustering(filteredEvents);
 
-  // Label collision avoidance — also avoids event marker positions
-  useLabelCollision(globeRef, civilizationLabels.length > 0, clusteredEvents);
+  // Label collision avoidance — labels are now flat text on the surface,
+  // only need to check label-vs-label overlap (markers are on a different layer)
+  useLabelCollision(globeRef, civilizationLabels.length > 0, []);
 
   // Screen coords helper for child components (landmarks)
   const getScreenCoords = useCallback((lat: number, lng: number) => {
@@ -625,11 +626,11 @@ export function GlobeView({ children }: GlobeViewProps) {
               </div>`;
             }}
 
-            // Civilization name banners — HTML elements floating above territories
+            // Civilization names — flat text on territory surface (no floating badges)
             htmlElementsData={civilizationLabels}
             htmlLat={(d: any) => d.lat}
             htmlLng={(d: any) => d.lng}
-            htmlAltitude={0.02}
+            htmlAltitude={0.012}
             htmlElement={(d: any) => {
               const el = document.createElement('div');
               const color = getCivColor(d.name);
@@ -642,34 +643,19 @@ export function GlobeView({ children }: GlobeViewProps) {
                 transition: opacity 0.3s ease, margin-top 0.2s ease;
               `;
               el.innerHTML = `
-                <div style="
-                  display: flex;
-                  align-items: center;
-                  gap: 5px;
-                  padding: 3px 10px 3px 6px;
-                  background: rgba(10, 10, 16, 0.75);
-                  backdrop-filter: blur(8px);
-                  border: 1px solid ${color}40;
-                  border-radius: 6px;
-                  box-shadow: 0 0 12px ${color}25, 0 2px 8px rgba(0,0,0,0.4);
+                <span style="
+                  font-size: 9px;
+                  font-weight: 800;
+                  color: ${color};
+                  opacity: 0.7;
+                  letter-spacing: 0.14em;
+                  text-transform: uppercase;
                   font-family: 'Space Grotesk', system-ui, sans-serif;
-                ">
-                  <div style="
-                    width: 8px; height: 8px;
-                    border-radius: 2px;
-                    background: ${color};
-                    box-shadow: 0 0 6px ${color}90;
-                    flex-shrink: 0;
-                  "></div>
-                  <span style="
-                    font-size: 10px;
-                    font-weight: 700;
-                    color: ${color};
-                    letter-spacing: 0.06em;
-                    text-transform: uppercase;
-                    text-shadow: 0 0 8px ${color}40;
-                  ">${d.name}</span>
-                </div>
+                  text-shadow:
+                    0 0 6px rgba(0,0,0,0.9),
+                    0 0 12px rgba(0,0,0,0.6),
+                    0 1px 3px rgba(0,0,0,0.8);
+                ">${d.name}</span>
               `;
               return el;
             }}
