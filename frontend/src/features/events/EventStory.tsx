@@ -498,33 +498,6 @@ export function EventStory() {
                 </motion.div>
               )}
 
-              {/* Parallax illustration accents */}
-              {illustrations?.parallaxRight && (
-                <motion.div
-                  className="absolute right-[1%] top-[1400px] z-[1] hidden lg:block"
-                  style={{ y: sideRightY2, opacity: sideOpacity2 }}
-                >
-                  <img
-                    src={getIllustrationUrl(illustrations.parallaxRight.slug, illustrations.parallaxRight.num)}
-                    alt="" className="w-[240px] opacity-[0.3] drop-shadow-xl" loading="lazy"
-                    style={{ filter: 'blur(0.5px)' }}
-                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                  />
-                </motion.div>
-              )}
-              {illustrations?.parallaxLeft && (
-                <motion.div
-                  className="absolute left-[1%] top-[2200px] z-[1] hidden lg:block"
-                  style={{ y: sideLeftY1, opacity: sideOpacity1 }}
-                >
-                  <img
-                    src={getIllustrationUrl(illustrations.parallaxLeft.slug, illustrations.parallaxLeft.num)}
-                    alt="" className="w-[200px] opacity-[0.25] drop-shadow-xl" loading="lazy"
-                    style={{ filter: 'blur(0.5px)' }}
-                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                  />
-                </motion.div>
-              )}
             </div>
 
             {/* ═══ HERO ═══ */}
@@ -583,35 +556,29 @@ export function EventStory() {
                 )}
               </AnimatePresence>
 
-              {/* LARGE hero illustration — the dominant visual identity of this event */}
-              {illustrations?.heroImage && (
+              {/* Hero background photo — Unsplash image with dark gradient overlay */}
+              {event.imageUrl && (
                 <motion.div
-                  className="absolute z-[5] bottom-0 right-0 w-[55%] sm:w-[55%] md:w-[60%] lg:w-[65%] max-w-[720px] pointer-events-none select-none"
-                  initial={{ opacity: 0, x: 40 }}
-                  animate={{ opacity: 0.9, x: 0 }}
-                  transition={{ delay: 0.3, duration: 1, ease: [0.16, 1, 0.3, 1] }}
+                  className="absolute inset-0 z-[1] overflow-hidden pointer-events-none"
+                  initial={{ opacity: 0, scale: 1.05 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
                 >
                   <img
-                    src={getIllustrationUrl(illustrations.heroImage.slug, illustrations.heroImage.num)}
+                    src={event.imageUrl}
                     alt=""
-                    className="w-full h-auto drop-shadow-2xl"
+                    className="absolute inset-0 w-full h-full object-cover"
                     loading="eager"
-                    onError={(e) => { (e.target as HTMLImageElement).parentElement!.style.display = 'none'; }}
-                  />
-                </motion.div>
-              )}
-
-              {/* Background watermark illustration in hero gradient */}
-              {illustrations?.heroBg && (
-                <div className="absolute inset-0 z-[1] flex items-center justify-center pointer-events-none select-none overflow-hidden">
-                  <img
-                    src={getIllustrationUrl(illustrations.heroBg.slug, illustrations.heroBg.num)}
-                    alt=""
-                    className="w-[70%] max-w-[700px] opacity-[0.04]"
-                    loading="lazy"
                     onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                   />
-                </div>
+                  {/* Dark gradient overlay for text legibility */}
+                  <div
+                    className="absolute inset-0"
+                    style={{
+                      background: `linear-gradient(180deg, rgba(8,8,12,0.6) 0%, rgba(8,8,12,0.4) 40%, rgba(8,8,12,0.9) 100%), linear-gradient(90deg, rgba(8,8,12,0.85) 0%, rgba(8,8,12,0.3) 50%, rgba(8,8,12,0.2) 100%)`,
+                    }}
+                  />
+                </motion.div>
               )}
 
               {/* Hero content */}
