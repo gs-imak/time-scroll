@@ -61,6 +61,17 @@ const NAME_OVERRIDES: Record<string, string> = {
   hrh: 'Habsburg Empire',
 };
 
+/** Normalize a key to a URL-safe slug — lowercase, strip diacritics, spaces→hyphens */
+function slugify(raw: string): string {
+  return raw
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // strip diacritic marks
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
 /**
  * Map a year to an era, clamping to the earliest/latest era for
  * out-of-range values (e.g. Jōmon at -14000 clamps to prehistory).
@@ -553,7 +564,7 @@ export default function CivilizationIndex() {
 
     for (const [rawKey, desc] of entries) {
       // Normalize the key for deduplication
-      const normalizedSlug = rawKey.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
+      const normalizedSlug = slugify(rawKey);
       if (seenNormalizedSlugs.has(normalizedSlug)) continue;
       seenNormalizedSlugs.add(normalizedSlug);
 
