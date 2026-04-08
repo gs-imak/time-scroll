@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Globe, Search, Settings, Menu, X, LayoutDashboard, Clock, BookOpen, BrainCircuit, Sun, Moon } from 'lucide-react';
+import { Globe, Search, Settings, Menu, X, LayoutDashboard, Clock, BookOpen, BrainCircuit, Sun, Moon, Landmark } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router';
 import { useUIStore } from '@/shared/stores/uiStore';
 import { useThemeStore } from '@/shared/stores/themeStore';
@@ -211,6 +211,7 @@ function DesktopSidebar() {
   const goToDashboard = useCallback(() => { navigate('/dashboard'); }, [navigate]);
   const goToTimeline = useCallback(() => { navigate('/timeline'); }, [navigate]);
   const goToJourneys = useCallback(() => { navigate('/journeys'); }, [navigate]);
+  const goToCivilizations = useCallback(() => { navigate('/civilizations'); }, [navigate]);
   const goToQuiz = useCallback(() => { navigate('/quiz'); }, [navigate]);
   const goToSettings = useCallback(() => { navigate('/settings'); }, [navigate]);
 
@@ -221,6 +222,7 @@ function DesktopSidebar() {
     { icon: Clock, label: 'Timeline', action: goToTimeline, tourId: 'timeline' },
     { icon: Globe, label: 'Explore', action: goToExplore, tourId: 'explore' },
     { icon: BookOpen, label: 'Journeys', action: goToJourneys, tourId: 'journeys' },
+    { icon: Landmark, label: 'Civilizations', action: goToCivilizations, tourId: 'civilizations' },
     { icon: BrainCircuit, label: 'Quiz', action: goToQuiz, tourId: 'quiz' },
     { icon: Search, label: 'Search', action: dispatchSearch, tourId: 'search' },
   ];
@@ -240,6 +242,7 @@ function DesktopSidebar() {
       const routeMap: Record<string, string> = {
         dashboard: '/dashboard', timeline: '/timeline',
         explore: '/explore', journeys: '/journeys',
+        civilizations: '/civilizations',
         quiz: '/quiz', settings: '/settings',
       };
       const route = routeMap[item.tourId];
@@ -341,6 +344,7 @@ function MobileDrawer() {
   const goToDashboard = useCallback(() => { navigate('/dashboard'); }, [navigate]);
   const goToTimeline = useCallback(() => { navigate('/timeline'); }, [navigate]);
   const goToJourneys = useCallback(() => { navigate('/journeys'); }, [navigate]);
+  const goToCivilizations = useCallback(() => { navigate('/civilizations'); }, [navigate]);
   const goToQuiz = useCallback(() => { navigate('/quiz'); }, [navigate]);
   const goToExplore = useCallback(() => { navigate('/explore'); }, [navigate]);
   const goToSettings = useCallback(() => { navigate('/settings'); }, [navigate]);
@@ -350,6 +354,7 @@ function MobileDrawer() {
     { icon: Clock, label: 'Timeline', action: goToTimeline },
     { icon: Globe, label: 'Explore', action: goToExplore },
     { icon: BookOpen, label: 'Journeys', action: goToJourneys },
+    { icon: Landmark, label: 'Civilizations', action: goToCivilizations },
     { icon: BrainCircuit, label: 'Quiz', action: goToQuiz },
     { icon: Search, label: 'Search', action: dispatchSearch },
   ];

@@ -87,6 +87,8 @@ const GlobeExplorer = lazyRetry(() => import('@/features/globe/GlobeExplorer'), 
 const TimelineView = lazyRetry(() => import('@/features/timeline/TimelineView'), 'timeline');
 const JourneyBrowser = lazyRetry(() => import('@/features/journeys/JourneyBrowser'), 'journeys');
 const JourneyPlayer = lazyRetry(() => import('@/features/journeys/JourneyPlayer'), 'journey-player');
+const CivilizationIndex = lazyRetry(() => import('@/features/civilizations/CivilizationIndex'), 'civilizations');
+const CivilizationGallery = lazyRetry(() => import('@/features/civilizations/CivilizationGallery'), 'civilization-gallery');
 const QuizHub = lazyRetry(() => import('@/features/quiz/QuizHub'), 'quiz');
 const SettingsPage = lazyRetry(() => import('@/features/settings/SettingsPage'), 'settings');
 
@@ -125,6 +127,8 @@ export const router = createBrowserRouter([
       { path: '/explore/:year?/:locationId?', element: withBoundary(<GlobeExplorer />) },
       { path: '/journeys', element: withBoundary(<JourneyBrowser />) },
       { path: '/journeys/:journeyId', element: withBoundary(<JourneyPlayer />) },
+      { path: '/civilizations', element: withBoundary(<CivilizationIndex />) },
+      { path: '/civilizations/:slug', element: withBoundary(<CivilizationGallery />) },
       { path: '/quiz', element: withBoundary(<QuizHub />) },
       { path: '/settings', element: withBoundary(<SettingsPage />) },
     ],
