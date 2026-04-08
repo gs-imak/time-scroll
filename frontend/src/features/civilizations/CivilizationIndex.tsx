@@ -46,6 +46,16 @@ const ERA_HEX: Record<string, string> = {
   modern: '#5a9aaa',
 };
 
+/** Direct image overrides for orphan labels (no description entry).
+ *  Keyed by the label slug from ALL_CIVILIZATION_LABELS. */
+const ORPHAN_LABEL_IMAGES: Record<string, string> = {
+  // "Ancient Arabia" pack is actually centered on Giza (data quirk from civilizationAssets.ts)
+  'ancient-arabia':
+    'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Great_Pyramid_of_Giza_-_Pyramid_of_Khufu.jpg/960px-Great_Pyramid_of_Giza_-_Pyramid_of_Khufu.jpg',
+  'mauryan-empire':
+    'https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/East_Gateway_-_Stupa_1_-_Sanchi_Hill_2013-02-21_4398.JPG/960px-East_Gateway_-_Stupa_1_-_Sanchi_Hill_2013-02-21_4398.JPG',
+};
+
 /* Name overrides for CIV_DESCRIPTIONS keys that don't derive nicely from their slug */
 const NAME_OVERRIDES: Record<string, string> = {
   hre: 'Holy Roman Empire',
@@ -604,14 +614,19 @@ export default function CivilizationIndex() {
 
       const finalYear = earliestYear ?? effectiveYear;
 
-      // Display name — use label name if available, else derive from key
+      // Display name — use label name if available, else derive from key.
+      // If the rawKey already has capital letters (like "Đại Việt" or
+      // "Tuʻi Tonga Empire"), use it as-is. Only derive from slug-style keys.
+      const hasProperCase = /[A-Z]/.test(rawKey) && rawKey.includes(' ');
       const displayName = label
         ? label.name
         : NAME_OVERRIDES[rawKey] ??
-          rawKey
-            .replace(/[_']/g, ' ')
-            .replace(/-/g, ' ')
-            .replace(/\b\w/g, (c) => c.toUpperCase());
+          (hasProperCase
+            ? rawKey
+            : rawKey
+                .replace(/[_']/g, ' ')
+                .replace(/-/g, ' ')
+                .replace(/\b\w/g, (c) => c.toUpperCase()));
 
       // Image: description image only. NO illustration pack fallback.
       const imageUrl: string | null = desc.imageUrl || null;
@@ -655,8 +670,8 @@ export default function CivilizationIndex() {
       }
       const effectiveYear = earliestYear ?? -2000;
       const era = assignEra(effectiveYear);
-      // No illustration pack fallback — only use real photos.
-      const imageUrl: string | null = null;
+      // Real-photo override for orphan labels that have no description entry.
+      const imageUrl: string | null = ORPHAN_LABEL_IMAGES[label.slug] ?? null;
 
       result.push({
         slug: label.slug,
