@@ -158,20 +158,34 @@ export function LoadingScreen() {
           {/* Title block */}
           <div className="relative z-10 flex flex-col items-center">
             <motion.h1
+              className="text-center leading-[1.0]"
               style={{
                 fontFamily: "'Space Grotesk', sans-serif",
-                fontSize: 'clamp(36px, 6vw, 52px)',
-                fontWeight: 300,
-                letterSpacing: '0.3em',
-                color: 'var(--color-text-primary)',
-                lineHeight: 1,
-                textIndent: '0.3em',
+                letterSpacing: '0.08em',
               }}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1, delay: 0.4, ease: EASE }}
             >
-              TIME SCROLL
+              <span
+                className="block font-bold text-text-primary"
+                style={{
+                  fontSize: 'clamp(48px, 8vw, 96px)',
+                  fontWeight: 700,
+                }}
+              >
+                TIME
+              </span>
+              <span
+                className="block font-bold bg-clip-text text-transparent"
+                style={{
+                  fontSize: 'clamp(48px, 8vw, 96px)',
+                  fontWeight: 700,
+                  backgroundImage: 'linear-gradient(135deg, #c49a44 0%, #d4b06a 45%, #a07830 100%)',
+                }}
+              >
+                SCROLL
+              </span>
             </motion.h1>
 
             <motion.p
