@@ -6,7 +6,6 @@ import {
   ChevronRight, X, BookOpen,
 } from 'lucide-react';
 import { ALL_CIVILIZATION_LABELS } from '@/shared/data/civilizationLabels';
-import { EVENT_CIVILIZATION, getCivImageUrl } from '@/shared/data/civilizationAssets';
 import { CIV_DESCRIPTIONS, NAME_DESCRIPTIONS } from '@/shared/data/civDescriptions';
 import type { CivDescription } from '@/shared/data/civDescriptions';
 import { ERAS, SEED_EVENTS } from '@/shared/utils/constants';
@@ -614,12 +613,8 @@ export default function CivilizationIndex() {
             .replace(/-/g, ' ')
             .replace(/\b\w/g, (c) => c.toUpperCase());
 
-      // Image — prefer description image, fall back to pack thumbnail
-      let imageUrl: string | null = desc.imageUrl ?? null;
-      if (!imageUrl && label) {
-        const pack = Object.values(EVENT_CIVILIZATION).find((p) => p.slug === label.slug);
-        if (pack) imageUrl = getCivImageUrl(label.slug, pack.thumbnail);
-      }
+      // Image: description image only. NO illustration pack fallback.
+      const imageUrl: string | null = desc.imageUrl || null;
 
       // Slug for navigation — prefer label slug so the gallery route works
       const navSlug = label?.slug ?? normalizedSlug;
@@ -660,8 +655,8 @@ export default function CivilizationIndex() {
       }
       const effectiveYear = earliestYear ?? -2000;
       const era = assignEra(effectiveYear);
-      const pack = Object.values(EVENT_CIVILIZATION).find((p) => p.slug === label.slug);
-      const imageUrl = pack ? getCivImageUrl(label.slug, pack.thumbnail) : null;
+      // No illustration pack fallback — only use real photos.
+      const imageUrl: string | null = null;
 
       result.push({
         slug: label.slug,
