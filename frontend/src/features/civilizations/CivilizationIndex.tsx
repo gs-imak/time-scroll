@@ -7,7 +7,8 @@ import {
 } from 'lucide-react';
 import { ALL_CIVILIZATION_LABELS } from '@/shared/data/civilizationLabels';
 import { EVENT_CIVILIZATION, getCivImageUrl } from '@/shared/data/civilizationAssets';
-import { CIV_DESCRIPTIONS } from '@/shared/data/civDescriptions';
+import { CIV_DESCRIPTIONS, NAME_DESCRIPTIONS } from '@/shared/data/civDescriptions';
+import type { CivDescription } from '@/shared/data/civDescriptions';
 import { ERAS, SEED_EVENTS } from '@/shared/utils/constants';
 import { formatYear } from '@/shared/utils/format';
 import { useEventsStore } from '@/shared/stores/eventsStore';
@@ -45,6 +46,130 @@ const ERA_HEX: Record<string, string> = {
   industrial: '#7a9e5a',
   modern: '#5a9aaa',
 };
+
+/* Name overrides for CIV_DESCRIPTIONS keys that don't derive nicely from their slug */
+const NAME_OVERRIDES: Record<string, string> = {
+  hre: 'Holy Roman Empire',
+  arab_caliphates: 'Arab Caliphates',
+  abbasid: 'Abbasid Caliphate',
+  umayyad: 'Umayyad Caliphate',
+  usa: 'United States',
+  ussr: 'Soviet Union',
+  ussr_empire: 'Soviet Union',
+  prc: "People's Republic of China",
+  uk: 'United Kingdom',
+  hrh: 'Habsburg Empire',
+};
+
+/**
+ * Map a year to an era, clamping to the earliest/latest era for
+ * out-of-range values (e.g. Jōmon at -14000 clamps to prehistory).
+ */
+function assignEra(year: number): (typeof ERAS)[number] {
+  const first = ERAS[0]!;
+  const last = ERAS[ERAS.length - 1]!;
+  if (year < first.startYear) return first;
+  if (year >= last.endYear) return last;
+  return ERAS.find((e) => year >= e.startYear && year < e.endYear) ?? last;
+}
+
+/**
+ * Parse the earliest year referenced in a block of text. Looks for
+ * patterns like "550 BCE", "1,453 CE", "(330–1453 CE)", etc.
+ * Returns the smallest year found, or null if nothing matched.
+ */
+function parseEarliestYearFromText(text: string): number | null {
+  const years: number[] = [];
+
+  const pushBCE = (raw: string | undefined, minVal: number) => {
+    if (!raw) return;
+    const n = parseInt(raw.replace(/,/g, ''), 10);
+    if (!isNaN(n) && n >= minVal && n < 500000) years.push(-n);
+  };
+  const pushCE = (raw: string | undefined, minVal: number) => {
+    if (!raw) return;
+    const n = parseInt(raw.replace(/,/g, ''), 10);
+    if (!isNaN(n) && n >= minVal && n < 2100) years.push(n);
+  };
+
+  // Range patterns: "312-63 BCE", "3,000-2,000 BCE", "(756-1870 CE)"
+  // Use the FIRST number (the earlier/larger BCE or earlier/smaller CE)
+  const bceRangeRe = /\b(\d{1,4}(?:,\d{3})*)\s*[-–—]\s*\d{1,4}(?:,\d{3})*\s*BCE\b/g;
+  for (const match of text.matchAll(bceRangeRe)) pushBCE(match[1], 30);
+
+  const ceRangeRe = /\b(\d{1,4}(?:,\d{3})*)\s*[-–—]\s*\d{1,4}(?:,\d{3})*\s*CE\b/g;
+  for (const match of text.matchAll(ceRangeRe)) pushCE(match[1], 1);
+
+  // Single BCE: "550 BCE", "3,200 BCE", "12,000 BCE" — min 3 digits to avoid
+  // "1 BCE" false positives from "1st century BCE".
+  const bceRe = /\b(\d{1,2}(?:,\d{3})+|\d{3,6})\s*BCE\b/g;
+  for (const match of text.matchAll(bceRe)) pushBCE(match[1], 100);
+
+  // Single CE: "476 CE", "1,453 CE" — min 2 digits (50 CE) to reject "1 CE".
+  const ceRe = /\b(\d{1,2}(?:,\d{3})+|\d{2,4})\s*CE\b/g;
+  for (const match of text.matchAll(ceRe)) pushCE(match[1], 50);
+
+  // "X years ago" patterns: "400,000 years ago", "40,000 years ago"
+  // Convert to approx year: current ~2025 minus years ago
+  const yearsAgoRe = /\b(\d{1,3}(?:,\d{3})*|\d{3,7})\s*years?\s+ago\b/gi;
+  for (const match of text.matchAll(yearsAgoRe)) {
+    const raw = match[1];
+    if (!raw) continue;
+    const n = parseInt(raw.replace(/,/g, ''), 10);
+    if (!isNaN(n) && n >= 500 && n < 5000000) years.push(2025 - n);
+  }
+
+  // Millennia: "5th millennium BCE" -> -4500 (middle of that millennium)
+  const millenniumRe = /\b(\d{1,2})(?:st|nd|rd|th)?\s+millennium\s+BCE\b/gi;
+  for (const match of text.matchAll(millenniumRe)) {
+    const raw = match[1];
+    if (!raw) continue;
+    const n = parseInt(raw, 10);
+    if (!isNaN(n) && n > 0 && n < 50) years.push(-(n * 1000 - 500));
+  }
+
+  // Century patterns: "6th century BCE" -> -550, "3rd century CE" -> 250
+  const centuryBceRe = /\b(\d{1,2})(?:st|nd|rd|th)?\s+century\s+BCE\b/gi;
+  for (const match of text.matchAll(centuryBceRe)) {
+    const raw = match[1];
+    if (!raw) continue;
+    const n = parseInt(raw, 10);
+    if (!isNaN(n) && n > 0 && n < 40) years.push(-(n * 100 - 50));
+  }
+
+  const centuryCeRe = /\b(\d{1,2})(?:st|nd|rd|th)?\s+century\s+CE\b/gi;
+  for (const match of text.matchAll(centuryCeRe)) {
+    const raw = match[1];
+    if (!raw) continue;
+    const n = parseInt(raw, 10);
+    if (!isNaN(n) && n > 0 && n < 25) years.push(n * 100 - 50);
+  }
+
+  // Bare year with preposition context: "in 1492", "by 1500"
+  // Require 4 digits to avoid matching "by 600 million", "in 300 km", etc.
+  // This does miss pre-1000 CE bare years without suffix but those are rare
+  // because authors usually say "9th century" or "628 CE" for older dates.
+  // Also require the year NOT be followed by a unit word.
+  const bareYearRe = /\b(?:in|by|around|since|from|after|before|during|established|founded|ended|rose|fell|built|completed|until|reached|invaded|conquered|crowned|began)\s+(\d{4})\b(?!\s*(?:million|billion|thousand|years?|people|km|mi|miles?|inhabitants|BCE|CE))/gi;
+  for (const match of text.matchAll(bareYearRe)) {
+    const raw = match[1];
+    if (!raw) continue;
+    const n = parseInt(raw, 10);
+    if (!isNaN(n) && n >= 1000 && n <= 2024) years.push(n);
+  }
+
+  // Parenthesized years: "(1776)", "(1969)" — common pattern
+  const parenYearRe = /\((\d{4})\)/g;
+  for (const match of text.matchAll(parenYearRe)) {
+    const raw = match[1];
+    if (!raw) continue;
+    const n = parseInt(raw, 10);
+    if (!isNaN(n) && n >= 1000 && n <= 2024) years.push(n);
+  }
+
+  if (years.length === 0) return null;
+  return Math.min(...years);
+}
 
 /* ══════════════════════════════════════════
    SUB-COMPONENTS
@@ -390,63 +515,158 @@ export default function CivilizationIndex() {
   const [selectedEras, setSelectedEras] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
 
-  /* ── Build enriched civ list with era assignment ── */
+  /* ── Build enriched civ list from CIV_DESCRIPTIONS (primary) + events (augment) ── */
 
   const enrichedCivs: Civ[] = useMemo(() => {
-    return ALL_CIVILIZATION_LABELS.map((label) => {
-      // Find earliest event for this civ to determine primary era
-      let earliestYear = Infinity;
-      let earliestEraId = 'modern';
+    // Step 1: Build lookup from label slug (e.g. "ancient-rome") to label
+    const labelByDescriptionKey = new Map<string, (typeof ALL_CIVILIZATION_LABELS)[number]>();
+    for (const label of ALL_CIVILIZATION_LABELS) {
+      // Register under normalized keys that match CIV_DESCRIPTIONS keys
+      const normalized = label.slug
+        .replace(/^ancient-/, '')
+        .replace(/^kingdom-of-/, '')
+        .replace(/-empire$/, '');
+      labelByDescriptionKey.set(normalized, label);
+      labelByDescriptionKey.set(label.slug, label);
+    }
+
+    // Step 2: Walk both CIV_DESCRIPTIONS (26) + NAME_DESCRIPTIONS (137)
+    const result: Civ[] = [];
+    const seenNormalizedSlugs = new Set<string>();
+
+    // Build a unified entry list from both description sources
+    type EntryTuple = [string, CivDescription];
+    const civEntries: EntryTuple[] = Object.entries(CIV_DESCRIPTIONS) as EntryTuple[];
+    const nameEntries: EntryTuple[] = Object.entries(NAME_DESCRIPTIONS).map(
+      ([name, desc]) => [
+        name,
+        {
+          summary: desc.summary,
+          detail: desc.detail,
+          knownFor: desc.knownFor,
+          keyFacts: desc.keyFacts,
+          imageUrl: desc.imageUrl ?? '',
+        },
+      ],
+    );
+    const entries: EntryTuple[] = [...civEntries, ...nameEntries];
+
+    for (const [rawKey, desc] of entries) {
+      // Normalize the key for deduplication
+      const normalizedSlug = rawKey.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
+      if (seenNormalizedSlugs.has(normalizedSlug)) continue;
+      seenNormalizedSlugs.add(normalizedSlug);
+
+      // Try to match to a label for event-based era/count
+      const label = labelByDescriptionKey.get(rawKey) ?? labelByDescriptionKey.get(normalizedSlug);
+
+      // Determine earliest year
+      let earliestYear: number | null = null;
+
+      if (label && label.eventIds.length > 0) {
+        // Use earliest event year
+        for (const eventId of label.eventIds) {
+          const evt =
+            events.find((e) => e.id === eventId) ??
+            SEED_EVENTS.find((e) => e.id === eventId);
+          if (!evt) continue;
+          if (earliestYear === null || evt.year < earliestYear) {
+            earliestYear = evt.year;
+          }
+        }
+      }
+
+      if (earliestYear === null) {
+        // Parse earliest year from description/keyFacts text
+        const combined = [
+          desc.summary,
+          desc.detail ?? '',
+          ...(desc.keyFacts ?? []),
+        ].join(' ');
+        earliestYear = parseEarliestYearFromText(combined);
+      }
+
+      // Assign to era. If no year found, bucket as "ancient" by default
+      // (more accurate than "modern" for undated historical civilizations).
+      const effectiveYear = earliestYear ?? -2000;
+      const era = assignEra(effectiveYear);
+      const eraColor = ERA_HEX[era.id] ?? '#8a8a9a';
+
+      const finalYear = earliestYear ?? effectiveYear;
+
+      // Display name — use label name if available, else derive from key
+      const displayName = label
+        ? label.name
+        : NAME_OVERRIDES[rawKey] ??
+          rawKey
+            .replace(/[_']/g, ' ')
+            .replace(/-/g, ' ')
+            .replace(/\b\w/g, (c) => c.toUpperCase());
+
+      // Image — prefer description image, fall back to pack thumbnail
+      let imageUrl: string | null = desc.imageUrl ?? null;
+      if (!imageUrl && label) {
+        const pack = Object.values(EVENT_CIVILIZATION).find((p) => p.slug === label.slug);
+        if (pack) imageUrl = getCivImageUrl(label.slug, pack.thumbnail);
+      }
+
+      // Slug for navigation — prefer label slug so the gallery route works
+      const navSlug = label?.slug ?? normalizedSlug;
+
+      result.push({
+        slug: navSlug,
+        name: displayName,
+        eventCount: label?.eventIds.length ?? 0,
+        eraId: era.id,
+        eraName: era.name,
+        eraColor,
+        earliestYear: finalYear,
+        imageUrl,
+        summary: desc.summary,
+        knownFor: desc.knownFor,
+      });
+    }
+
+    // Also include any labels without a description (rare edge case)
+    for (const label of ALL_CIVILIZATION_LABELS) {
+      const normalized = label.slug
+        .replace(/^ancient-/, '')
+        .replace(/^kingdom-of-/, '')
+        .replace(/-empire$/, '');
+      if (seenNormalizedSlugs.has(normalized)) continue;
+      if (seenNormalizedSlugs.has(label.slug)) continue;
+      seenNormalizedSlugs.add(label.slug);
+
+      let earliestYear: number | null = null;
       for (const eventId of label.eventIds) {
         const evt =
           events.find((e) => e.id === eventId) ??
           SEED_EVENTS.find((e) => e.id === eventId);
         if (!evt) continue;
-        if (evt.year < earliestYear) {
+        if (earliestYear === null || evt.year < earliestYear) {
           earliestYear = evt.year;
-          earliestEraId = evt.eraId;
         }
       }
-      const era = ERAS.find((e) => e.id === earliestEraId) ?? ERAS[ERAS.length - 1]!;
-      const eraColor = ERA_HEX[era.id] ?? '#8a8a9a';
+      const effectiveYear = earliestYear ?? -2000;
+      const era = assignEra(effectiveYear);
+      const pack = Object.values(EVENT_CIVILIZATION).find((p) => p.slug === label.slug);
+      const imageUrl = pack ? getCivImageUrl(label.slug, pack.thumbnail) : null;
 
-      // Get description — try multiple slug variants
-      // ALL_CIVILIZATION_LABELS uses "ancient-rome", "ancient-greece"
-      // CIV_DESCRIPTIONS uses "rome", "greece", etc.
-      const slugVariants = [
-        label.slug,
-        label.slug.replace(/^ancient-/, ''),
-        label.slug.replace(/^kingdom-of-/, ''),
-        label.slug.replace(/-empire$/, ''),
-      ];
-      let desc: (typeof CIV_DESCRIPTIONS)[string] | undefined;
-      for (const s of slugVariants) {
-        if (CIV_DESCRIPTIONS[s]) {
-          desc = CIV_DESCRIPTIONS[s];
-          break;
-        }
-      }
-
-      // Fallback to pack thumbnail if no description image
-      let imageUrl: string | null = desc?.imageUrl ?? null;
-      if (!imageUrl) {
-        const pack = Object.values(EVENT_CIVILIZATION).find((p) => p.slug === label.slug);
-        if (pack) imageUrl = getCivImageUrl(label.slug, pack.thumbnail);
-      }
-
-      return {
+      result.push({
         slug: label.slug,
         name: label.name,
         eventCount: label.eventIds.length,
         eraId: era.id,
         eraName: era.name,
-        eraColor,
-        earliestYear: earliestYear === Infinity ? 0 : earliestYear,
+        eraColor: ERA_HEX[era.id] ?? '#8a8a9a',
+        earliestYear: earliestYear ?? effectiveYear,
         imageUrl,
-        summary: desc?.summary ?? null,
-        knownFor: desc?.knownFor ?? null,
-      };
-    }).sort((a, b) => a.earliestYear - b.earliestYear);
+        summary: null,
+        knownFor: null,
+      });
+    }
+
+    return result.sort((a, b) => a.earliestYear - b.earliestYear);
   }, [events]);
 
   /* ── Filter + search ── */

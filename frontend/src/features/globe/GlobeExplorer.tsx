@@ -8,11 +8,9 @@ import { LandmarkOverlay } from '@/features/landmarks/LandmarkOverlay';
 import { ExplorationPanel } from '@/features/exploration/ExplorationPanel';
 import { ProgressPanel } from '@/features/exploration/ProgressPanel';
 import { CategoryFilters } from '@/features/exploration/CategoryFilters';
-import { SearchOverlay } from '@/features/search/SearchOverlay';
 import { LoadingScreen } from '@/features/onboarding/LoadingScreen';
 import { OnboardingTour } from '@/features/onboarding/OnboardingTour';
 import { AchievementToast } from '@/shared/components/AchievementToast';
-import { KeyboardHelp } from '@/features/help/KeyboardHelp';
 import { ComparisonTool } from '@/features/comparison/ComparisonTool';
 import { MonumentViewer } from '@/features/monuments/MonumentViewer';
 import { CivLegend } from './CivLegend';
@@ -89,9 +87,8 @@ export default function GlobeExplorer() {
       <ProgressPanel />
       <EventStory />
       <AchievementToast />
-      <SearchOverlay />
+      {/* SearchOverlay and KeyboardHelp are mounted in AppLayout — global */}
       <TimelineScrubber />
-      <KeyboardHelp />
       <ComparisonTool />
       <LoadingScreen />
       <OnboardingTour />

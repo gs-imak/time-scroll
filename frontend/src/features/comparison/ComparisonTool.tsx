@@ -1,34 +1,36 @@
 import { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Trash2, MapPin, Calendar, Tag, Layers } from 'lucide-react';
+import { X, Trash2, MapPin, Calendar, Tag, Layers, GitCompareArrows } from 'lucide-react';
 import { useProgressStore } from '@/shared/stores/progressStore';
 import { useEventsStore } from '@/shared/stores/eventsStore';
 import { ERAS } from '@/shared/utils/constants';
+import { formatYear } from '@/shared/utils/format';
 
-const CATEGORY_COLORS: Record<string, string> = {
-  war: '#b85454', discovery: '#5a8fa5', cultural: '#c49a44',
-  political: '#8b80b0', construction: '#6d9476', natural: '#b87a60',
+/* ── Color maps (for dynamic alpha concatenation) ── */
+
+const CATEGORY_HEX: Record<string, string> = {
+  war: '#b85454',
+  discovery: '#5a8fa5',
+  cultural: '#c49a44',
+  political: '#8b80b0',
+  construction: '#6d9476',
+  natural: '#b87a60',
 };
 
-const ERA_COLORS: Record<string, string> = {
-  prehistory: '#8d7b68', ancient: '#c49a44', classical: '#b85454',
-  medieval: '#8b6faa', renaissance: '#5a7fb5', industrial: '#7a9e5a', modern: '#5a9aaa',
+const ERA_HEX: Record<string, string> = {
+  prehistory: '#8d7b68',
+  ancient: '#c49a44',
+  classical: '#b85454',
+  medieval: '#8b6faa',
+  renaissance: '#5a7fb5',
+  industrial: '#7a9e5a',
+  modern: '#5a9aaa',
 };
-
-function formatYear(y: number) {
-  return y < 0 ? `${Math.abs(y)} BCE` : `${y} CE`;
-}
 
 function formatYearGap(a: number, b: number): string {
   const gap = Math.abs(a - b);
   if (gap === 0) return 'Same year';
   if (gap === 1) return '1 year apart';
-  if (gap >= 1000) {
-    const thousands = Math.floor(gap / 1000);
-    const hundreds = gap % 1000;
-    if (hundreds === 0) return `${thousands},000 years apart`;
-    return `${thousands},${String(hundreds).padStart(3, '0')} years apart`;
-  }
   return `${gap.toLocaleString()} years apart`;
 }
 
@@ -103,18 +105,36 @@ export function ComparisonTool() {
             transition={{ duration: 0.4, ease: EASE }}
           >
             {/* Header */}
-            <div className="text-center mb-8">
+            <div className="flex flex-col items-center text-center mb-8">
+              <div
+                className="w-12 h-12 rounded-xl flex items-center justify-center mb-3"
+                style={{
+                  background: 'rgba(196,154,68,0.1)',
+                  border: '1px solid rgba(196,154,68,0.2)',
+                }}
+              >
+                <GitCompareArrows size={24} style={{ color: 'var(--color-accent-gold)' }} />
+              </div>
               <h2
                 style={{
                   fontFamily: "'Space Grotesk', sans-serif",
-                  fontSize: 'clamp(20px, 3vw, 28px)',
+                  fontSize: 'clamp(22px, 3vw, 30px)',
                   fontWeight: 700,
                   color: 'var(--color-text-primary)',
+                  lineHeight: 1.1,
                 }}
               >
                 Event Comparison
               </h2>
-              <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '13px', color: 'var(--color-text-muted)', marginTop: '4px' }}>
+              <p
+                style={{
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontSize: '12px',
+                  color: 'var(--color-text-muted)',
+                  marginTop: '6px',
+                  letterSpacing: '0.06em',
+                }}
+              >
                 Side-by-side historical analysis
               </p>
             </div>
@@ -176,8 +196,8 @@ export function ComparisonTool() {
                     <div
                       className="w-3.5 h-3.5 rounded-full -ml-[7px]"
                       style={{
-                        background: ERA_COLORS[eventA.eraId] ?? '#c49a44',
-                        boxShadow: `0 0 10px ${ERA_COLORS[eventA.eraId] ?? '#c49a44'}60`,
+                        background: ERA_HEX[eventA.eraId] ?? '#c49a44',
+                        boxShadow: `0 0 10px ${ERA_HEX[eventA.eraId] ?? '#c49a44'}60`,
                       }}
                     />
                   </motion.div>
@@ -193,8 +213,8 @@ export function ComparisonTool() {
                     <div
                       className="w-3.5 h-3.5 rounded-full -ml-[7px]"
                       style={{
-                        background: ERA_COLORS[eventB.eraId] ?? '#c49a44',
-                        boxShadow: `0 0 10px ${ERA_COLORS[eventB.eraId] ?? '#c49a44'}60`,
+                        background: ERA_HEX[eventB.eraId] ?? '#c49a44',
+                        boxShadow: `0 0 10px ${ERA_HEX[eventB.eraId] ?? '#c49a44'}60`,
                       }}
                     />
                   </motion.div>
@@ -266,8 +286,8 @@ interface ComparisonCardProps {
 }
 
 function ComparisonCard({ event, era, delay }: ComparisonCardProps) {
-  const catColor = CATEGORY_COLORS[event.category] ?? '#8a8a9a';
-  const eraColor = ERA_COLORS[event.eraId] ?? '#5a9aaa';
+  const catColor = CATEGORY_HEX[event.category] ?? '#8a8a9a';
+  const eraColor = ERA_HEX[event.eraId] ?? '#5a9aaa';
   const snippet = event.description.length > 200
     ? event.description.slice(0, 200).replace(/\s+\S*$/, '') + '...'
     : event.description;
