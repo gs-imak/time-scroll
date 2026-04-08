@@ -207,113 +207,173 @@ function FilterPill({
 function EventCard({
   event,
   viewed,
+  side,
   index,
+  eraColor,
   onOpen,
 }: {
   event: HistoricalEvent;
   viewed: boolean;
+  side: 'left' | 'right';
   index: number;
+  eraColor: string;
   onOpen: (id: string) => void;
 }) {
   const color = CATEGORY_HEX[event.category] ?? '#8a8a9a';
   const icon = EVENT_ICONS[event.id] ?? '●';
   const hasImage = Boolean(event.imageUrl);
 
+  /* Each row hosts:
+     - The card (takes exactly 50% width on desktop)
+     - The axis (centered) with its own dot
+     - The connector line between them
+     On mobile: everything collapses — card flows full-width to the right of the left axis. */
+
   return (
-    <motion.button
-      type="button"
-      onClick={() => onOpen(event.id)}
-      className="
-        group relative flex items-stretch gap-4 w-full
-        rounded-xl text-left cursor-pointer overflow-hidden
-        focus-visible:outline-none focus-visible:ring-2
-      "
-      style={{
-        background: 'var(--glass-bg)',
-        backdropFilter: 'blur(24px)',
-        border: '1px solid var(--color-border-subtle)',
-        boxShadow: 'inset 0 1px 0 var(--glass-inset)',
-        opacity: viewed ? 1 : 0.75,
-      }}
-      initial={{ opacity: 0, y: 12 }}
-      whileInView={{ opacity: viewed ? 1 : 0.75, y: 0 }}
+    <motion.div
+      className={`
+        relative flex w-full items-center
+        pl-10 md:pl-0
+        ${side === 'left' ? 'md:justify-start md:pr-[calc(50%+18px)]' : 'md:justify-end md:pl-[calc(50%+18px)]'}
+      `}
+      initial={{ opacity: 0, x: side === 'left' ? -16 : 16 }}
+      whileInView={{ opacity: 1, x: 0 }}
       viewport={{ once: true, margin: '-40px' }}
-      transition={{ duration: 0.45, delay: (index % 6) * 0.04, ease: EASE }}
-      whileHover={{
-        scale: 1.008,
-        y: -2,
-        borderColor: `${color}55`,
-        boxShadow: `0 8px 24px ${color}20, inset 0 1px 0 var(--glass-inset)`,
-      }}
-      whileTap={{ scale: 0.995 }}
+      transition={{ duration: 0.5, delay: (index % 6) * 0.05, ease: EASE }}
     >
-      {/* Thumbnail or emoji fallback — full-height stripe */}
-      {hasImage ? (
-        <div
-          className="relative w-[88px] sm:w-[128px] md:w-[160px] shrink-0 self-stretch"
-          style={{
-            backgroundImage: `url(${event.imageUrl})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            minHeight: '104px',
-          }}
-          aria-hidden="true"
-        >
-          {/* Right-fade for seamless blend into card background */}
+      {/* ── Desktop connector line (card edge to axis) ── */}
+      <div
+        className="hidden md:block absolute top-1/2 h-px z-0"
+        style={{
+          width: '18px',
+          background: `linear-gradient(${side === 'left' ? '90deg' : '270deg'}, ${eraColor}70, ${eraColor}20)`,
+          left: side === 'left' ? 'calc(50% - 18px)' : 'auto',
+          right: side === 'right' ? 'calc(50% - 18px)' : 'auto',
+        }}
+        aria-hidden="true"
+      />
+
+      {/* ── Mobile connector line (axis at left-4 to card) ── */}
+      <div
+        className="md:hidden absolute top-1/2 h-px z-0"
+        style={{
+          width: '20px',
+          background: `linear-gradient(90deg, ${eraColor}70, ${eraColor}20)`,
+          left: '16px',
+        }}
+        aria-hidden="true"
+      />
+
+      {/* ── Mobile axis dot (on left spine) ── */}
+      <div
+        className="md:hidden absolute top-1/2 -translate-y-1/2 z-10 rounded-full"
+        style={{
+          left: '11px',
+          width: '11px',
+          height: '11px',
+          background: 'var(--color-void)',
+          border: `2px solid ${eraColor}`,
+          boxShadow: `0 0 0 3px ${eraColor}20, 0 0 12px ${eraColor}80`,
+        }}
+        aria-hidden="true"
+      />
+
+      {/* ── Desktop axis dot (centered on spine) ── */}
+      <div
+        className="hidden md:block absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 rounded-full"
+        style={{
+          width: '12px',
+          height: '12px',
+          background: 'var(--color-void)',
+          border: `2px solid ${eraColor}`,
+          boxShadow: `0 0 0 3px ${eraColor}22, 0 0 14px ${eraColor}80`,
+        }}
+        aria-hidden="true"
+      />
+
+      {/* ── Card ── */}
+      <motion.button
+        type="button"
+        onClick={() => onOpen(event.id)}
+        className="
+          group relative flex items-stretch gap-3 w-full
+          rounded-xl text-left cursor-pointer overflow-hidden
+          focus-visible:outline-none focus-visible:ring-2
+        "
+        style={{
+          background: 'var(--glass-bg)',
+          backdropFilter: 'blur(24px)',
+          border: '1px solid var(--color-border-subtle)',
+          boxShadow: 'inset 0 1px 0 var(--glass-inset)',
+          opacity: viewed ? 1 : 0.78,
+          minHeight: '92px',
+        }}
+        whileHover={{
+          scale: 1.015,
+          y: -2,
+          borderColor: `${color}60`,
+          boxShadow: `0 10px 28px ${color}25, inset 0 1px 0 var(--glass-inset)`,
+        }}
+        whileTap={{ scale: 0.99 }}
+        transition={{ duration: 0.2, ease: EASE }}
+      >
+        {/* Thumbnail or emoji fallback */}
+        {hasImage ? (
           <div
-            className="absolute inset-0"
+            className="relative w-[92px] shrink-0 self-stretch"
             style={{
-              background:
-                'linear-gradient(90deg, transparent 55%, var(--glass-bg) 100%)',
+              backgroundImage: `url(${event.imageUrl})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
             }}
-          />
-          {/* Category tag in corner */}
-          <div
-            className="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-full"
-            style={{
-              background: `${color}30`,
-              border: `1px solid ${color}60`,
-              backdropFilter: 'blur(8px)',
-            }}
+            aria-hidden="true"
           >
             <div
-              className="w-1.5 h-1.5 rounded-full"
-              style={{ background: color, boxShadow: `0 0 6px ${color}` }}
+              className="absolute inset-0"
+              style={{
+                background:
+                  'linear-gradient(90deg, transparent 45%, var(--glass-bg) 100%)',
+              }}
             />
-            <span
-              className="text-[9px] font-semibold uppercase tracking-wider"
-              style={{ color: '#fff', fontFamily: "'Space Grotesk', sans-serif" }}
-            >
-              {event.category}
-            </span>
           </div>
-        </div>
-      ) : (
-        <div
-          className="flex items-center justify-center w-[88px] sm:w-[128px] md:w-[160px] shrink-0 self-stretch"
-          style={{
-            background: `${color}12`,
-            borderRight: `1px solid ${color}25`,
-            fontSize: '38px',
-            minHeight: '104px',
-          }}
-          aria-hidden="true"
-        >
-          {icon}
-        </div>
-      )}
+        ) : (
+          <div
+            className="flex items-center justify-center w-[92px] shrink-0 self-stretch"
+            style={{
+              background: `${color}14`,
+              borderRight: `1px solid ${color}22`,
+              fontSize: '32px',
+            }}
+            aria-hidden="true"
+          >
+            {icon}
+          </div>
+        )}
 
-      {/* Text block */}
-      <div className="flex-1 min-w-0 flex flex-col justify-center py-4 pr-4 md:pr-5">
-        <div className="flex items-baseline justify-between gap-3 mb-1.5">
+        {/* Text block — compact: year + title + category only */}
+        <div className="flex-1 min-w-0 flex flex-col justify-center py-3 pr-3.5">
+          {/* Year on top */}
+          <span
+            className="mb-0.5"
+            style={{
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: '11px',
+              fontWeight: 600,
+              color,
+              letterSpacing: '0.03em',
+            }}
+          >
+            {formatYear(event.year)}
+          </span>
+
+          {/* Title */}
           <h3
-            className="min-w-0 flex-1"
             style={{
               fontFamily: "'Space Grotesk', sans-serif",
-              fontSize: 'clamp(15px, 1.4vw, 17px)',
+              fontSize: '14px',
               fontWeight: 700,
               color: 'var(--color-text-primary)',
-              lineHeight: 1.25,
+              lineHeight: 1.3,
               display: '-webkit-box',
               WebkitLineClamp: 2,
               WebkitBoxOrient: 'vertical',
@@ -322,84 +382,34 @@ function EventCard({
           >
             {event.title}
           </h3>
-          <span
-            className="shrink-0 px-2 py-0.5 rounded-md"
-            style={{
-              fontFamily: "'JetBrains Mono', monospace",
-              fontSize: '11px',
-              fontWeight: 600,
-              color,
-              background: `${color}14`,
-              border: `1px solid ${color}25`,
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {formatYear(event.year)}
-          </span>
-        </div>
 
-        {event.description && (
-          <p
-            style={{
-              fontSize: '12.5px',
-              color: 'var(--color-text-secondary)',
-              lineHeight: 1.55,
-              display: '-webkit-box',
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: 'vertical',
-              overflow: 'hidden',
-            }}
-          >
-            {event.description}
-          </p>
-        )}
-
-        <div className="flex items-center justify-between gap-3 mt-2">
-          {event.locationName ? (
-            <span
-              className="truncate"
-              style={{
-                fontFamily: "'JetBrains Mono', monospace",
-                fontSize: '11px',
-                color: 'var(--color-text-muted)',
-              }}
-            >
-              {event.locationName}
-            </span>
-          ) : (
-            <span />
-          )}
-
-          <div className="flex items-center gap-1.5 shrink-0">
+          {/* Footer: category + viewed state */}
+          <div className="flex items-center justify-between gap-2 mt-1.5">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <div
+                className="w-1.5 h-1.5 rounded-full shrink-0"
+                style={{ background: color, boxShadow: `0 0 4px ${color}` }}
+              />
+              <span
+                className="text-[10px] font-semibold uppercase tracking-wider truncate"
+                style={{ color: 'var(--color-text-muted)' }}
+              >
+                {event.category}
+              </span>
+            </div>
             {viewed ? (
-              <>
-                <CheckCircle2 size={13} style={{ color: '#6d9476' }} />
-                <span
-                  className="text-[10px] font-semibold uppercase tracking-wider"
-                  style={{ color: '#6d9476' }}
-                >
-                  Explored
-                </span>
-              </>
+              <CheckCircle2 size={12} style={{ color: '#6d9476' }} />
             ) : (
-              <>
-                <span
-                  className="text-[10px] font-semibold uppercase tracking-wider"
-                  style={{ color: 'var(--color-text-muted)' }}
-                >
-                  Read
-                </span>
-                <ChevronRight
-                  size={13}
-                  className="group-hover:translate-x-0.5 transition-transform duration-200"
-                  style={{ color: 'var(--color-text-muted)' }}
-                />
-              </>
+              <ChevronRight
+                size={12}
+                className="group-hover:translate-x-0.5 transition-transform duration-200"
+                style={{ color: 'var(--color-text-muted)' }}
+              />
             )}
           </div>
         </div>
-      </div>
-    </motion.button>
+      </motion.button>
+    </motion.div>
   );
 }
 
@@ -500,17 +510,40 @@ function EraChapter({
           </div>
         </div>
 
-        {/* Event list — full-width stacked cards */}
-        <div className="flex flex-col gap-3">
-          {events.map((event, i) => (
-            <EventCard
-              key={event.id}
-              event={event}
-              viewed={viewedEvents.includes(event.id)}
-              index={i}
-              onOpen={onOpenEvent}
-            />
-          ))}
+        {/* Event list — zigzag timeline with center spine */}
+        <div className="relative">
+          {/* Desktop center spine */}
+          <div
+            className="hidden md:block absolute left-1/2 top-0 bottom-0 w-[2px] -translate-x-1/2"
+            style={{
+              background: `linear-gradient(180deg, transparent 0%, ${eraColor}55 8%, ${eraColor}55 92%, transparent 100%)`,
+            }}
+            aria-hidden="true"
+          />
+
+          {/* Mobile left spine */}
+          <div
+            className="md:hidden absolute top-0 bottom-0 w-[2px]"
+            style={{
+              left: '15px',
+              background: `linear-gradient(180deg, transparent 0%, ${eraColor}55 6%, ${eraColor}55 94%, transparent 100%)`,
+            }}
+            aria-hidden="true"
+          />
+
+          <div className="flex flex-col gap-5 md:gap-6 py-2">
+            {events.map((event, i) => (
+              <EventCard
+                key={event.id}
+                event={event}
+                viewed={viewedEvents.includes(event.id)}
+                side={i % 2 === 0 ? 'left' : 'right'}
+                index={i}
+                eraColor={eraColor}
+                onOpen={onOpenEvent}
+              />
+            ))}
+          </div>
         </div>
       </div>
     </motion.section>
