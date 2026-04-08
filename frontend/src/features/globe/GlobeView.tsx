@@ -778,7 +778,7 @@ export function GlobeView({ children }: GlobeViewProps) {
                     border: `1.5px solid ${civColor}35`,
                     boxShadow: `0 0 30px ${civColor}15, 0 8px 32px var(--glass-shadow-strong)`,
                     width: 340,
-                    maxHeight: 'calc(100vh - 120px)',
+                    maxHeight: 'calc(100vh - 280px)',
                     overflowY: 'auto',
                   }}
                 >
