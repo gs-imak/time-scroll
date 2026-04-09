@@ -260,7 +260,7 @@ function WordmarkLogo({
         letterSpacing="0.08em"
       >
         <tspan fontWeight={400} opacity={0.75}>TIME </tspan>
-        <tspan fontWeight={700}>SCROLL</tspan>
+        <tspan fontWeight={700}>MACHINE</tspan>
       </text>
     </svg>
   );
@@ -321,7 +321,7 @@ function FullLogo({
         letterSpacing="0.1em"
       >
         <tspan fontWeight={400} opacity={0.75}>TIME </tspan>
-        <tspan fontWeight={700}>SCROLL</tspan>
+        <tspan fontWeight={700}>MACHINE</tspan>
       </text>
 
       {/* Tagline */}
@@ -402,7 +402,7 @@ function HorizontalLogo({
         letterSpacing="0.08em"
       >
         <tspan fontWeight={400} opacity={0.75}>TIME </tspan>
-        <tspan fontWeight={700}>SCROLL</tspan>
+        <tspan fontWeight={700}>MACHINE</tspan>
       </text>
     </svg>
   );
@@ -454,7 +454,7 @@ function CompactLogo({
         letterSpacing="0.08em"
       >
         <tspan fontWeight={400} opacity={0.75}>TIME </tspan>
-        <tspan fontWeight={700}>SCROLL</tspan>
+        <tspan fontWeight={700}>MACHINE</tspan>
       </text>
     </svg>
   );

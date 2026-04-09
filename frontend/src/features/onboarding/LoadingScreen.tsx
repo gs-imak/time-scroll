@@ -184,7 +184,7 @@ export function LoadingScreen() {
                   backgroundImage: 'linear-gradient(135deg, #c49a44 0%, #d4b06a 45%, #a07830 100%)',
                 }}
               >
-                SCROLL
+                MACHINE
               </span>
             </motion.h1>
 
