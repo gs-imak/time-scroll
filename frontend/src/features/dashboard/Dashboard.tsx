@@ -11,6 +11,7 @@ import { useEventsStore } from '@/shared/stores/eventsStore';
 import { ERAS } from '@/shared/utils/constants';
 import { EVENT_QUIZZES } from '@/shared/data/eventQuizzes';
 import { JOURNEYS } from '@/shared/data/journeys';
+import { WarEntryButtons } from '@/features/events/WarEntryButtons';
 
 import { cn } from '@/shared/utils/cn';
 
@@ -365,6 +366,11 @@ export default function Dashboard() {
             </GlassCard>
           </motion.section>
         )}
+
+        {/* ── Focused Experiences (War Mode entry) ── */}
+        <motion.div {...section(0.18)}>
+          <WarEntryButtons />
+        </motion.div>
 
         {/* ── Progress Overview ── */}
         <motion.section className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-12" {...section(0.2)}>

@@ -11,7 +11,16 @@ import { formatYear } from '@/shared/utils/format';
 import { BOUNDARY_YEAR_MAP } from '@/shared/utils/constants';
 import { getVisibleCivilizationLabels } from '@/shared/data/civilizationLabels';
 import { createEventMarker, createClusterMarker, CATEGORY_COLORS } from './eventMarkers';
+import {
+  createTetheredMarker,
+  createConflictPulse,
+  createDiffOverlayDisc,
+  updateConflictPulse,
+  updateDiffOverlayDisc,
+} from './warMarkers';
 import { useSpotlightStore } from '@/shared/stores/spotlightStore';
+import { useWarStore } from '@/shared/stores/warStore';
+import { WAR_EVENTS } from '@/shared/data/warEvents';
 import { getGeoJsonFromCache, cacheGeoJson, preloadAllGeoJson } from '@/shared/data/geoJsonCache';
 import { useVisibilityTier } from './useVisibilityTier';
 import { useEventClustering } from './useEventClustering';
@@ -198,6 +207,12 @@ export function GlobeView({ children }: GlobeViewProps) {
   const spotlightAliasSet = useSpotlightStore(s => s.aliasSet);
   const spotlightColor = useSpotlightStore(s => s.civColor);
 
+  // War mode state
+  const warActive = useWarStore(s => s.active);
+  const warActiveWar = useWarStore(s => s.activeWar);
+  const warDiffOverlays = useWarStore(s => s.diffOverlays);
+  const warPulses = useWarStore(s => s.pulses);
+
   const allCivilizationLabels = useMemo(
     () => getVisibleCivilizationLabels(currentYear),
     [currentYear],
@@ -324,6 +339,8 @@ export function GlobeView({ children }: GlobeViewProps) {
     const target = allEvents.find(e => e.id === selectedEventId);
     if (!target) return;
     lastFlyToRef.current = selectedEventId;
+    // In war mode, the cinematic camera stays put — don't zoom in on marker clicks
+    if (useWarStore.getState().active) return;
     globeRef.current.pointOfView(
       { lat: target.latitude, lng: target.longitude, altitude: 0.4 },
       1200,
@@ -341,6 +358,26 @@ export function GlobeView({ children }: GlobeViewProps) {
       1500,
     );
   }, [spotlightActive, spotlightCivId, spotlightCenterLat, spotlightCenterLng]);
+
+  // Camera fly-to when war mode enters or when switching wars.
+  // WWI camera centers slightly south to capture all of Europe + Mediterranean (Gallipoli),
+  // WWII centers a bit further north for Eastern Front coverage.
+  useEffect(() => {
+    if (!warActive || !globeRef.current || !warActiveWar) return;
+    const target = warActiveWar === 'wwi'
+      ? { lat: 48, lng: 12, altitude: 0.95 }
+      : { lat: 50, lng: 18, altitude: 0.95 };
+    globeRef.current.pointOfView(target, 1600);
+  }, [warActive, warActiveWar]);
+
+  // Restore default camera on war exit
+  const wasWarActiveRef = useRef(false);
+  useEffect(() => {
+    if (wasWarActiveRef.current && !warActive && globeRef.current) {
+      globeRef.current.pointOfView({ lat: 30, lng: 0, altitude: 2.5 }, 1400);
+    }
+    wasWarActiveRef.current = warActive;
+  }, [warActive]);
 
   // Clear territory selection when entering spotlight
   useEffect(() => {
@@ -392,11 +429,48 @@ export function GlobeView({ children }: GlobeViewProps) {
 
   // Get visible events, then filter by zoom tier, then cluster nearby ones
   const allVisibleEvents = getVisibleEvents(currentYear);
-  const { filteredLabels: civilizationLabels, filteredEvents } = useVisibilityTier(
+  const { filteredLabels: civilizationLabelsRaw, filteredEvents } = useVisibilityTier(
     allCivilizationLabels,
     allVisibleEvents,
   );
-  const clusteredEvents = useEventClustering(filteredEvents);
+  const clusteredEventsNormal = useEventClustering(filteredEvents);
+
+  // In war mode, replace civ labels with empty (cleaner stage) and replace
+  // clustered events with tethered war markers + diff overlays + pulses.
+  const civilizationLabels = warActive ? [] : civilizationLabelsRaw;
+
+  const customLayerData = useMemo(() => {
+    if (!warActive || !warActiveWar) return clusteredEventsNormal;
+
+    const warMarkers = WAR_EVENTS
+      .filter((e) => e.war === warActiveWar && e.year <= currentYear)
+      .map((e) => ({
+        type: 'war-marker' as const,
+        id: e.id,
+        title: e.title,
+        latitude: e.latitude,
+        longitude: e.longitude,
+      }));
+
+    const diffs = warDiffOverlays.map((d) => ({
+      type: 'war-diff' as const,
+      id: d.id,
+      kind: d.kind,
+      lat: d.lat,
+      lng: d.lng,
+      bornAt: d.bornAt,
+    }));
+
+    const pulses = warPulses.map((p) => ({
+      type: 'war-pulse' as const,
+      id: p.id,
+      lat: p.lat,
+      lng: p.lng,
+      bornAt: p.bornAt,
+    }));
+
+    return [...diffs, ...pulses, ...warMarkers];
+  }, [warActive, warActiveWar, clusteredEventsNormal, currentYear, warDiffOverlays, warPulses]);
 
   // Label collision avoidance — labels are now flat text on the surface,
   // only need to check label-vs-label overlap (markers are on a different layer)
@@ -410,13 +484,22 @@ export function GlobeView({ children }: GlobeViewProps) {
     return { x: coords.x, y: coords.y };
   }, []);
 
-  // Create marker — dispatches to event or cluster renderer
+  // Create marker — dispatches to event, cluster, or war renderer
   const createCustomMarker = useCallback((d: any) => {
     if (d.type === 'cluster') {
       return createClusterMarker({
         count: d.count,
         dominantCategory: d.dominantCategory,
       });
+    }
+    if (d.type === 'war-marker') {
+      return createTetheredMarker({ id: d.id, title: d.title });
+    }
+    if (d.type === 'war-pulse') {
+      return createConflictPulse(d.bornAt);
+    }
+    if (d.type === 'war-diff') {
+      return createDiffOverlayDisc(d.kind, d.bornAt);
     }
     return createEventMarker({
       id: d.id,
@@ -429,8 +512,16 @@ export function GlobeView({ children }: GlobeViewProps) {
   // Update marker position + scale based on density and zoom
   const updateMarkerPosition = useCallback((obj: any, d: any) => {
     if (!globeRef.current) return;
-    const lat = d.type === 'cluster' ? d.lat : (d.displayLat ?? d.latitude);
-    const lng = d.type === 'cluster' ? d.lng : (d.displayLng ?? d.longitude);
+    let lat: number;
+    let lng: number;
+    if (d.type === 'cluster') { lat = d.lat; lng = d.lng; }
+    else if (d.type === 'war-marker' || d.type === 'war-diff' || d.type === 'war-pulse') {
+      lat = d.lat ?? d.latitude;
+      lng = d.lng ?? d.longitude;
+    } else {
+      lat = d.displayLat ?? d.latitude;
+      lng = d.displayLng ?? d.longitude;
+    }
     const coords = globeRef.current.getCoords(lat, lng, 0.01);
     if (coords) {
       Object.assign(obj.position, coords);
@@ -444,13 +535,15 @@ export function GlobeView({ children }: GlobeViewProps) {
       );
       obj.setRotationFromQuaternion(quaternion);
 
-      // Scale markers down when they're in dense groups
-      // Solo markers (groupSize 1) = full size, dense groups scale down
-      if (d.type === 'event' && d.groupSize > 1) {
-        // Scale: 2 markers = 0.7, 3 = 0.58, 5 = 0.45, 8+ = 0.35
+      // War-mode FX self-animate based on bornAt timestamp
+      if (d.type === 'war-pulse') {
+        updateConflictPulse(obj as THREE.Mesh, performance.now());
+      } else if (d.type === 'war-diff') {
+        updateDiffOverlayDisc(obj as THREE.Mesh, performance.now());
+      } else if (d.type === 'event' && d.groupSize > 1) {
         const densityScale = Math.max(0.35, 1 / (1 + d.groupSize * 0.25));
         obj.scale.setScalar(densityScale);
-      } else if (d.type !== 'cluster') {
+      } else if (d.type !== 'cluster' && d.type !== 'war-marker' && d.type !== 'war-diff' && d.type !== 'war-pulse') {
         obj.scale.setScalar(1);
       }
     }
@@ -483,6 +576,11 @@ export function GlobeView({ children }: GlobeViewProps) {
               const isSelected = selectedTerritory && name === selectedTerritory;
               const hasSelection = !!selectedTerritory;
 
+              if (warActive) {
+                // Desaturated base in war mode so amber/blue glows read clearly
+                return getCachedCapMaterial(`war-cap-${name ?? 'unknown'}`, '#3a3a48', 0.32, -2);
+              }
+
               if (spotlightActive) {
                 if (name && spotlightAliasSet.has(name)) {
                   const hex = spotlightColor || '#c49a44';
@@ -514,6 +612,10 @@ export function GlobeView({ children }: GlobeViewProps) {
               const isSelected = selectedTerritory && name === selectedTerritory;
               const hasSelection = !!selectedTerritory;
 
+              if (warActive) {
+                return getCachedSideMaterial(`war-side-${name ?? 'unknown'}`, '#22222c', 0.35);
+              }
+
               if (spotlightActive) {
                 if (name && spotlightAliasSet.has(name)) {
                   const hex = spotlightColor || '#c49a44';
@@ -540,6 +642,10 @@ export function GlobeView({ children }: GlobeViewProps) {
               const name = d.properties?.NAME;
               const isSelected = selectedTerritory && name === selectedTerritory;
               const hasSelection = !!selectedTerritory;
+
+              if (warActive) {
+                return 'rgba(212, 165, 116, 0.35)';
+              }
 
               if (spotlightActive) {
                 if (spotlightAliasSet.has(name)) {
@@ -574,6 +680,10 @@ export function GlobeView({ children }: GlobeViewProps) {
               const name = d.properties?.NAME;
               const isSelected = selectedTerritory && name === selectedTerritory;
 
+              if (warActive) {
+                return 0.005;
+              }
+
               if (spotlightActive) {
                 return spotlightAliasSet.has(name) ? 0.018 : 0.0003;
               }
@@ -593,6 +703,7 @@ export function GlobeView({ children }: GlobeViewProps) {
             polygonLabel={(d: any) => {
               const name = d.properties?.NAME;
               if (!name || name === '?') return '';
+              if (warActive) return '';
               if (spotlightActive && !spotlightAliasSet.has(name)) return '';
               const color = spotlightActive ? (spotlightColor || '#c49a44') : getCivColor(name);
               return `<div style="
@@ -618,24 +729,29 @@ export function GlobeView({ children }: GlobeViewProps) {
             onPolygonClick={(d: any) => {
               const name = d.properties?.NAME;
               if (!name || name === '?') return;
-              if (spotlightActive) return;
+              if (spotlightActive || warActive) return;
               // Toggle: click same territory to deselect, different to select
               setSelectedTerritory(prev => prev === name ? null : name);
             }}
 
-            // Event markers + cluster badges
-            customLayerData={clusteredEvents}
+            // Event markers + cluster badges (war markers + diff overlays + pulses in war mode)
+            customLayerData={customLayerData}
             customThreeObject={createCustomMarker}
             customThreeObjectUpdate={updateMarkerPosition}
             onCustomLayerClick={(obj: any) => {
               if (obj.type === 'cluster') {
-                // Zoom into cluster to expand it
                 if (globeRef.current) {
                   globeRef.current.pointOfView(
                     { lat: obj.lat, lng: obj.lng, altitude: 0.4 },
                     1200,
                   );
                 }
+              } else if (obj.type === 'war-marker') {
+                // Open the existing EventDetailSheet — no camera move (would
+                // disorient the cinematic view)
+                selectEvent(obj.id);
+              } else if (obj.type === 'war-diff' || obj.type === 'war-pulse') {
+                // Non-interactive FX
               } else {
                 selectEvent(obj.id);
                 if (globeRef.current) {
@@ -647,6 +763,8 @@ export function GlobeView({ children }: GlobeViewProps) {
               }
             }}
             customLayerLabel={(d: any) => {
+              // War-mode FX have no tooltip; the marker badge IS the label
+              if (d.type === 'war-marker' || d.type === 'war-diff' || d.type === 'war-pulse') return '';
               if (d.type === 'cluster') {
                 const c = CATEGORY_COLORS[d.dominantCategory] ?? '#8a8a9a';
                 const titles = d.events

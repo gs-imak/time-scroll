@@ -2,11 +2,15 @@ import { create } from 'zustand';
 import type { HistoricalEvent, EventCategory } from '@/shared/types/events';
 import { SEED_EVENTS, ERAS } from '@/shared/utils/constants';
 import { NEW_EVENTS } from '@/shared/data/newEvents';
+import { WAR_EVENTS } from '@/shared/data/warEvents';
 
-// Merge seed events + new events, deduplicate by id
+// Merge seed events + new events + war events, deduplicate by id
 const ALL_EVENTS: HistoricalEvent[] = [
   ...SEED_EVENTS,
   ...NEW_EVENTS.filter(ne => !SEED_EVENTS.some(se => se.id === ne.id)),
+  ...WAR_EVENTS.filter(
+    we => !SEED_EVENTS.some(se => se.id === we.id) && !NEW_EVENTS.some(ne => ne.id === we.id),
+  ),
 ];
 
 interface EventFilters {

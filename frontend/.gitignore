@@ -1,0 +1,4 @@
+.vercel
+
+# CShapes 2.0 source GeoJSON — heavy, regeneration via scripts/extract-cshapes-snapshots.mjs
+scripts/_cshapes-source/

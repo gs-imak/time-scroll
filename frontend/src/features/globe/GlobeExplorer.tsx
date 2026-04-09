@@ -15,8 +15,11 @@ import { ComparisonTool } from '@/features/comparison/ComparisonTool';
 import { MonumentViewer } from '@/features/monuments/MonumentViewer';
 import { CivLegend } from './CivLegend';
 import { SpotlightOverlay } from './SpotlightOverlay';
+import { WarOverlay } from './WarOverlay';
+import { WarFxLayer } from './WarFxLayer';
 import { useTimeStore } from '@/shared/stores/timeStore';
 import { useEventsStore } from '@/shared/stores/eventsStore';
+import { useWarStore } from '@/shared/stores/warStore';
 
 /** Reads ?event= search param on mount and opens that event.
  *  Lives outside GlobeView so it isn't gated by globe readiness.
@@ -46,6 +49,7 @@ function EventUrlHandler() {
 export default function GlobeExplorer() {
   const { year } = useParams();
   const setYear = useTimeStore(s => s.setYear);
+  const warActive = useWarStore(s => s.active);
 
   useEffect(() => {
     if (year) setYear(parseInt(year, 10));
@@ -80,21 +84,23 @@ export default function GlobeExplorer() {
         aria-hidden="true"
       />
 
-      {/* UI Overlays */}
-      <EraIndicator />
-      <CategoryFilters />
-      <ExplorationPanel />
-      <ProgressPanel />
+      {/* UI Overlays — most hide while War Mode is active so the cinematic experience stays clean */}
+      {!warActive && <EraIndicator />}
+      {!warActive && <CategoryFilters />}
+      {!warActive && <ExplorationPanel />}
+      {!warActive && <ProgressPanel />}
       <EventStory />
       <AchievementToast />
       {/* SearchOverlay and KeyboardHelp are mounted in AppLayout — global */}
-      <TimelineScrubber />
-      <ComparisonTool />
+      {!warActive && <TimelineScrubber />}
+      {!warActive && <ComparisonTool />}
       <LoadingScreen />
       <OnboardingTour />
       <MonumentViewer />
-      <CivLegend />
+      {!warActive && <CivLegend />}
       <SpotlightOverlay />
+      <WarOverlay />
+      <WarFxLayer />
     </div>
   );
 }

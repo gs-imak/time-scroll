@@ -26,3 +26,41 @@ export function closestBoundaryYear(year: number, boundaryYears: number[]): numb
   }
   return closest;
 }
+
+/**
+ * Bounding-box centroid + approximate area for a single GeoJSON feature.
+ * Cheap (no real geodesy), good enough for placing markers and detecting
+ * "this country grew/shrank" between two snapshots.
+ */
+export function computeFeatureBounds(feature: any): {
+  lat: number;
+  lng: number;
+  area: number;
+} | null {
+  const geom = feature?.geometry;
+  if (!geom) return null;
+
+  const coordSets =
+    geom.type === 'MultiPolygon'
+      ? geom.coordinates.flat(2)
+      : geom.type === 'Polygon'
+        ? geom.coordinates.flat(1)
+        : null;
+  if (!coordSets || coordSets.length === 0) return null;
+
+  let minLat = 90, maxLat = -90, minLng = 180, maxLng = -180;
+  for (const coord of coordSets) {
+    const lng = coord[0];
+    const lat = coord[1];
+    if (lat < minLat) minLat = lat;
+    if (lat > maxLat) maxLat = lat;
+    if (lng < minLng) minLng = lng;
+    if (lng > maxLng) maxLng = lng;
+  }
+
+  return {
+    lat: (minLat + maxLat) / 2,
+    lng: (minLng + maxLng) / 2,
+    area: (maxLat - minLat) * (maxLng - minLng),
+  };
+}
