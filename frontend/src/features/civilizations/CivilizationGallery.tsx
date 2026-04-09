@@ -396,7 +396,7 @@ export default function CivilizationGallery() {
             style={{
               backgroundImage: `url(${civData.imageUrl})`,
               backgroundSize: 'cover',
-              backgroundPosition: 'center',
+              backgroundPosition: 'center 25%',
               opacity: 0.35,
               filter: 'blur(1px)',
             }}

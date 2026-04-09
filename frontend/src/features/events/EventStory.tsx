@@ -568,6 +568,7 @@ export function EventStory() {
                     src={event.imageUrl}
                     alt=""
                     className="absolute inset-0 w-full h-full object-cover"
+                    style={{ objectPosition: 'center 25%' }}
                     loading="eager"
                     onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                   />

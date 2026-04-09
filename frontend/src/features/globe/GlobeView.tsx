@@ -789,6 +789,7 @@ export function GlobeView({ children }: GlobeViewProps) {
                         src={desc.imageUrl}
                         alt=""
                         className="absolute inset-0 w-full h-full object-cover"
+                        style={{ objectPosition: 'center 25%' }}
                         loading="lazy"
                         onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                       />

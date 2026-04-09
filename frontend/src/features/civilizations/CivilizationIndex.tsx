@@ -383,7 +383,7 @@ function CivCard({
             style={{
               backgroundImage: `url(${civ.imageUrl})`,
               backgroundSize: 'cover',
-              backgroundPosition: 'center',
+              backgroundPosition: 'center 25%',
             }}
             aria-hidden="true"
           />
