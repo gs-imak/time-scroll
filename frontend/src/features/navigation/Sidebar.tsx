@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Globe, Search, Settings, Menu, X, LayoutDashboard, Clock, BookOpen, BrainCircuit, Sun, Moon, Landmark } from 'lucide-react';
+import { Globe, Search, Settings, Menu, X, LayoutDashboard, Clock, BookOpen, BrainCircuit, Sun, Moon, Landmark, CircleUser } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router';
 import { useUIStore } from '@/shared/stores/uiStore';
 import { useThemeStore } from '@/shared/stores/themeStore';
@@ -216,6 +216,7 @@ function DesktopSidebar() {
   const goToSettings = useCallback(() => { navigate('/settings'); }, [navigate]);
 
   const goToExplore = useCallback(() => { navigate('/explore'); }, [navigate]);
+  const goToProfile = useCallback(() => { navigate('/profile'); }, [navigate]);
 
   const navItems: NavItemConfig[] = [
     { icon: LayoutDashboard, label: 'Dashboard', action: goToDashboard, tourId: 'dashboard' },
@@ -229,6 +230,7 @@ function DesktopSidebar() {
 
   const bottomItems: NavItemConfig[] = [
     { icon: Settings, label: 'Settings', action: goToSettings, tourId: 'settings' },
+    { icon: CircleUser, label: 'Profile', action: goToProfile, tourId: 'profile' },
   ];
 
   function handleClick(item: NavItemConfig) {
@@ -243,7 +245,7 @@ function DesktopSidebar() {
         dashboard: '/dashboard', timeline: '/timeline',
         explore: '/explore', journeys: '/journeys',
         civilizations: '/civilizations',
-        quiz: '/quiz', settings: '/settings',
+        quiz: '/quiz', settings: '/settings', profile: '/profile',
       };
       const route = routeMap[item.tourId];
       if (route) return location.pathname.startsWith(route);
@@ -348,6 +350,7 @@ function MobileDrawer() {
   const goToQuiz = useCallback(() => { navigate('/quiz'); }, [navigate]);
   const goToExplore = useCallback(() => { navigate('/explore'); }, [navigate]);
   const goToSettings = useCallback(() => { navigate('/settings'); }, [navigate]);
+  const goToProfile = useCallback(() => { navigate('/profile'); }, [navigate]);
 
   const navItems: NavItemConfig[] = [
     { icon: LayoutDashboard, label: 'Dashboard', action: goToDashboard },
@@ -361,6 +364,7 @@ function MobileDrawer() {
 
   const bottomItems: NavItemConfig[] = [
     { icon: Settings, label: 'Settings', action: goToSettings, tourId: 'settings' },
+    { icon: CircleUser, label: 'Profile', action: goToProfile, tourId: 'profile' },
   ];
 
   function handleClick(item: NavItemConfig) {
@@ -374,7 +378,7 @@ function MobileDrawer() {
     const routeMap: Record<string, string> = {
       Dashboard: '/dashboard', Timeline: '/timeline',
       Explore: '/explore', Journeys: '/journeys',
-      Quiz: '/quiz', Settings: '/settings',
+      Quiz: '/quiz', Settings: '/settings', Profile: '/profile',
     };
     const route = routeMap[item.label];
     if (route) return location.pathname.startsWith(route);

@@ -1,6 +1,18 @@
-import { createBrowserRouter } from 'react-router';
+import { createBrowserRouter, Navigate } from 'react-router';
 import { lazy, Suspense, Component, type ReactNode } from 'react';
 import { AppLayout } from './AppLayout';
+
+/**
+ * First-visit gate: new users (no ts-has-signed-in flag) land on the login
+ * page. Returning users see the landing page. The flag is set when they
+ * click "Sign in" on the login form.
+ */
+function FirstVisitGate({ children }: { children: ReactNode }) {
+  if (typeof window !== 'undefined' && localStorage.getItem('ts-has-signed-in') !== 'true') {
+    return <Navigate to="/login" replace />;
+  }
+  return <>{children}</>;
+}
 
 /**
  * Lazy import with auto-retry on chunk load failure.
@@ -91,6 +103,7 @@ const CivilizationIndex = lazyRetry(() => import('@/features/civilizations/Civil
 const CivilizationGallery = lazyRetry(() => import('@/features/civilizations/CivilizationGallery'), 'civilization-gallery');
 const QuizHub = lazyRetry(() => import('@/features/quiz/QuizHub'), 'quiz');
 const SettingsPage = lazyRetry(() => import('@/features/settings/SettingsPage'), 'settings');
+const ProfilePage = lazyRetry(() => import('@/features/profile/ProfilePage'), 'profile');
 
 function Loading() {
   return (
@@ -113,7 +126,7 @@ function withBoundary(element: ReactNode) {
 export const router = createBrowserRouter([
   {
     path: '/',
-    element: withBoundary(<LandingPage />),
+    element: <FirstVisitGate>{withBoundary(<LandingPage />)}</FirstVisitGate>,
   },
   {
     path: '/login',
@@ -130,6 +143,7 @@ export const router = createBrowserRouter([
       { path: '/civilizations', element: withBoundary(<CivilizationIndex />) },
       { path: '/civilizations/:slug', element: withBoundary(<CivilizationGallery />) },
       { path: '/quiz', element: withBoundary(<QuizHub />) },
+      { path: '/profile', element: withBoundary(<ProfilePage />) },
       { path: '/settings', element: withBoundary(<SettingsPage />) },
     ],
   },

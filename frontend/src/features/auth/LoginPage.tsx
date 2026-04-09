@@ -23,7 +23,9 @@ export default function LoginPage() {
 
   const handleSignIn = (e: React.FormEvent) => {
     e.preventDefault();
-    // No auth yet — go straight to dashboard
+    // No real auth yet — mark the user as "signed in" so the first-visit
+    // gate in routes.tsx stops sending them back here on subsequent loads.
+    localStorage.setItem('ts-has-signed-in', 'true');
     navigate('/dashboard');
   };
 
@@ -180,7 +182,10 @@ export default function LoginPage() {
 
             {/* Continue as guest */}
             <motion.button
-              onClick={() => navigate('/dashboard')}
+              onClick={() => {
+                localStorage.setItem('ts-has-signed-in', 'true');
+                navigate('/dashboard');
+              }}
               className="w-full h-[46px] rounded-xl font-medium cursor-pointer flex items-center justify-center gap-2 text-text-secondary hover:text-text-primary transition-colors"
               style={{
                 fontSize: '14px',
