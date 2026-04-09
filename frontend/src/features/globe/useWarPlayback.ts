@@ -7,8 +7,11 @@ import { WAR_EVENTS } from '@/shared/data/warEvents';
 /**
  * Drives War Mode auto-playback. Modeled after `useSpotlightPlayback`.
  *
- * Beat = 4500 ms at 1× — gives the 2 s polygon tween, the 2.5 s diff fade,
- * and read time for the marker labels. At 2× = 2250 ms, at 3× = 1500 ms.
+ * Beat = 5500 ms at 1× — gives the 2.8 s polygon crossfade, the 2.5 s diff
+ * overlay fade, and read time for the marker labels. At 2× = 2750 ms,
+ * at 3× = 1833 ms. The crossfade is driven by react-globe.gl's altitude
+ * tween when a country's SHAPE_HASH changes year-to-year; unchanged
+ * countries have zero visible transition.
  */
 export function useWarPlayback() {
   const active = useWarStore((s) => s.active);
@@ -23,7 +26,7 @@ export function useWarPlayback() {
   // Auto-advance loop
   useEffect(() => {
     if (!active || !isPlaying || snapshotYears.length === 0) return;
-    const interval = 4500 / playSpeed;
+    const interval = 5500 / playSpeed;
     const timer = setInterval(() => {
       const state = useWarStore.getState();
       const next = state.currentIndex + 1;
