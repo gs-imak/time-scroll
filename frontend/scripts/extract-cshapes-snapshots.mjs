@@ -53,6 +53,128 @@ const TARGET_YEARS = [
   1938, 1939, 1940, 1941, 1942, 1943, 1944, 1945,
 ];
 
+// War Mode focuses strictly on WWI and WWII belligerents plus the territories
+// that actually saw fighting / territorial change. Everything else is dropped
+// from the extracted GeoJSON entirely so the globe shows a clean, focused
+// view instead of the whole world. Names match the NORMALIZED output of
+// `normalizeName` below.
+const WAR_BELLIGERENTS = new Set([
+  // ── Central Powers / Axis (WWI + WWII) ────────────────────
+  'Germany',
+  'Austria-Hungary',
+  'Austria',
+  'Hungary',
+  'Ottoman Empire',
+  'Turkey',
+  'Bulgaria',
+  'Italy',
+  'Japan',
+  'Finland',        // co-belligerent with Axis vs USSR
+  'Romania',
+  'Rumania',
+  'Thailand',       // Japanese-aligned
+  // Brief WWII puppet states
+  'Slovakia',
+  'Croatia',
+  'Danzig',
+
+  // ── Allies (WWI + WWII) ───────────────────────────────────
+  'France',
+  'United Kingdom',
+  'United Kingdom of Great Britain and Northern Ireland',
+  'United Kingdom of Great Britain and Ireland',
+  'Ireland',
+  'Russia',
+  'Soviet Union',
+  'United States',
+  'United States of America',
+  'Belgium',
+  'Serbia',
+  'Montenegro',
+  'Greece',
+  'Portugal',
+  'Netherlands',
+  'Luxembourg',
+  'Norway',
+  'Denmark',
+  'Iceland',
+  'Sweden',         // neutral but in the theater
+  'Switzerland',    // neutral but surrounded
+  'Spain',          // Civil War + neutral WWII
+  'Albania',
+  'Poland',
+  'Czechoslovakia',
+  'Yugoslavia',
+  'Estonia',
+  'Latvia',
+  'Lithuania',
+  'Malta',
+  'Cyprus',
+  'Newfoundland',
+
+  // Post-WWII successor states (1945)
+  'German Democratic Republic',
+  'German Federal Republic',
+
+  // ── Commonwealth belligerents ─────────────────────────────
+  'Canada',
+  'Australia',
+  'New Zealand',
+  'South Africa',
+  'India',
+
+  // ── Middle East (WWI Ottoman theater + WWII) ──────────────
+  'Iran',
+  'Persia',
+  'Iraq',
+  'Syria',
+  'Lebanon',
+  'Palestine',
+  'Jordan',
+  'Saudi Arabia',
+  'Yemen',
+  'Aden',
+  'East Aden Protectorate',
+
+  // ── North Africa / Horn (WWI + WWII theaters) ─────────────
+  'Egypt',
+  'Libya',
+  'Algeria',
+  'Morocco',
+  'Tunisia',
+  'Spanish Morocco',
+  'Sudan',
+  'Ethiopia',
+  'Eritrea',
+  'Italian Somaliland',
+  'British Somaliland',
+  'Djibouti',
+  'German Togoland',
+  'British Togoland',
+  'Kamerun',
+  'British Cameroons',
+  'Cameroon',
+
+  // ── East Asia / Pacific (WWII primarily) ──────────────────
+  'China',
+  'Korea',
+  'Taiwan',
+  'Mongolia',
+  'Philippines',
+  'Indonesia',
+  'Myanmar',
+  'Vietnam',
+  'Laos',
+  'Cambodia',
+  'New Guinea (German New Guinea)',
+  'Papua',
+  'Solomon Islands',
+  'Southern Sakhalin Island',
+  'Federated Malay States',
+  'Unfederated Malay States',
+  'Straits Settlements',
+]);
+
 // Mapshaper tolerance: 15% retention preserves topology well at globe scale
 // while still giving a meaningful size reduction. `keep-shapes` prevents tiny
 // countries from being deleted entirely.
@@ -200,11 +322,14 @@ for (const year of TARGET_YEARS) {
     ({ start, end }) => start <= pickDate && pickDate <= end,
   );
 
-  // Deduplicate by normalized name
+  // Deduplicate by normalized name AND drop anything not in the belligerent
+  // allowlist. War Mode is strictly focused on WWI/WWII participants and
+  // their theaters of operation — the rest of the globe is excluded entirely.
   const byName = new Map();
   for (const { f } of matches) {
     const name = normalizeName(f.properties.cntry_name);
     if (EXCLUDE_NAMES.has(name)) continue;
+    if (!WAR_BELLIGERENTS.has(name)) continue;
     byName.set(name, f);
   }
 
