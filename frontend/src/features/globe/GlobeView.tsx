@@ -91,65 +91,6 @@ function getCivColor(name: string | undefined): string {
   return CIV_PALETTE[Math.abs(hash) % CIV_PALETTE.length]!;
 }
 
-// === War Mode faction colors — Civ-style saturated palette =======
-// Hand-picked colors for the major WWI/WWII belligerents so the user can
-// see at a glance whose territory is whose, and watch shifts year by year.
-const WAR_FACTION_COLORS: Record<string, string> = {
-  // Central Powers / Axis — warm reds, purples, oranges
-  'Germany': '#b33939',
-  'Austria-Hungary': '#d4a54a',
-  'Austria': '#d4a54a',
-  'Hungary': '#c08030',
-  'Ottoman Empire': '#8a3a3a',
-  'Turkey': '#8a3a3a',
-  'Bulgaria': '#8b5a3c',
-  'Italy': '#5a7a3a',
-  'Japan': '#7a1c1c',
-  // Allies — cool blues, greens
-  'France': '#2957a4',
-  'United Kingdom': '#4a6d8c',
-  'United Kingdom of Great Britain and Northern Ireland': '#4a6d8c',
-  'United Kingdom of Great Britain and Ireland': '#4a6d8c',
-  'Russia': '#5b7d3a',
-  'Soviet Union': '#6b8e2f',
-  'United States': '#3a6a8a',
-  'United States of America': '#3a6a8a',
-  'Belgium': '#c68a2e',
-  'Serbia': '#556b83',
-  'Romania': '#6a4e8c',
-  'Greece': '#3a7a9b',
-  // Neutrals / successor states
-  'Switzerland': '#7a7a8a',
-  'Spain': '#b5803a',
-  'Portugal': '#6a5a8a',
-  'Netherlands': '#c57a28',
-  'Sweden': '#3a6090',
-  'Norway': '#4c7ba0',
-  'Denmark': '#9a4040',
-  'Finland': '#4a7090',
-  'Poland': '#a73a3a',
-  'Czechoslovakia': '#4a8c6a',
-  'Yugoslavia': '#6b5b96',
-  'Albania': '#8a5a4a',
-  'Ireland': '#3a7a4a',
-};
-
-const WAR_PALETTE = [
-  '#b33939', '#2957a4', '#5b7d3a', '#d4a54a', '#6b4e8c',
-  '#8a3a3a', '#3a7a9b', '#7a1c1c', '#6b8e2f', '#c68a2e',
-  '#556b83', '#8c4a7a', '#3a8a7a', '#9a6030', '#5a6a8a',
-  '#8b5a3c', '#3a6a8a', '#b5803a', '#4a7090', '#7a5a3a',
-];
-
-function getWarColor(name: string | undefined): string {
-  if (!name || name === '?') return '#1a1a22';
-  const hit = WAR_FACTION_COLORS[name];
-  if (hit) return hit;
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) hash = ((hash << 5) - hash + name.charCodeAt(i)) | 0;
-  return WAR_PALETTE[Math.abs(hash) % WAR_PALETTE.length]!;
-}
-
 // Deterministic hash for per-civ altitude stratification
 function hashString(s: string): number {
   let h = 0;
@@ -160,49 +101,6 @@ function hashString(s: string): number {
 // === Material cache — avoids allocating new materials every render ===
 const capMaterialCache = new Map<string, THREE.MeshBasicMaterial>();
 const sideMaterialCache = new Map<string, THREE.MeshBasicMaterial>();
-
-// War-mode cap materials are OPAQUE so they don't compete with clouds /
-// atmosphere / other transparent layers in the depth buffer. This gives
-// crisp, clearly visible faction colors you can see from any angle.
-const warCapMaterialCache = new Map<string, THREE.MeshBasicMaterial>();
-
-function getWarCapMaterial(name: string | undefined): THREE.MeshBasicMaterial {
-  const key = name || 'unknown';
-  let mat = warCapMaterialCache.get(key);
-  const color = getWarColor(name);
-  if (mat) {
-    mat.color.set(color);
-    return mat;
-  }
-  mat = new THREE.MeshBasicMaterial({
-    color,
-    transparent: false,
-    opacity: 1,
-    depthWrite: true,
-    depthTest: true,
-    side: THREE.DoubleSide,
-  });
-  warCapMaterialCache.set(key, mat);
-  return mat;
-}
-
-// Side walls are invisible in war mode — we want a flat political-map look,
-// not a stepped-extrusion 3D look. The cap material alone provides all the
-// color, and transparent walls prevent adjacent polygons from occluding
-// each other at oblique camera angles.
-let warSideMaterialSingleton: THREE.MeshBasicMaterial | null = null;
-function getWarSideMaterial(): THREE.MeshBasicMaterial {
-  if (warSideMaterialSingleton) return warSideMaterialSingleton;
-  warSideMaterialSingleton = new THREE.MeshBasicMaterial({
-    color: 0x000000,
-    transparent: true,
-    opacity: 0,
-    depthWrite: false,
-    depthTest: false,
-    side: THREE.DoubleSide,
-  });
-  return warSideMaterialSingleton;
-}
 
 function getCachedCapMaterial(
   key: string,
@@ -279,17 +177,18 @@ const SORTED_BOUNDARY_YEARS = Object.keys(BOUNDARY_YEAR_MAP).map(Number).sort((a
  * changed — giving the smooth Civ-style year-by-year transition.
  */
 function assignStableIds(features: any[]): any[] {
-  const nameCount = new Map<string, number>();
+  // Track occurrence per (name, hash) pair so split MultiPolygon pieces all
+  // get unique ids. Without this, the 4 sub-polygons of "Italy/Sardinia"
+  // would all collapse onto the same __id and react-globe.gl would only
+  // render one of them.
+  const counts = new Map<string, number>();
   return features.map((f: any) => {
     const name: string = f.properties?.NAME || '?';
     const hash: string | undefined = f.properties?.SHAPE_HASH;
-    if (hash) {
-      f.__id = `${name}_${hash}`;
-    } else {
-      const idx = nameCount.get(name) || 0;
-      nameCount.set(name, idx + 1);
-      f.__id = `${name}_${idx}`;
-    }
+    const base = hash ? `${name}_${hash}` : name;
+    const idx = counts.get(base) || 0;
+    counts.set(base, idx + 1);
+    f.__id = `${base}_${idx}`;
     return f;
   });
 }
@@ -492,15 +391,6 @@ export function GlobeView({ children }: GlobeViewProps) {
     wasWarActiveRef.current = warActive;
   }, [warActive]);
 
-  // Hide the decorative cloud layer during War Mode so it doesn't occlude
-  // the political map and so we can use low polygon altitudes.
-  useEffect(() => {
-    if (!globeRef.current) return;
-    const scene = globeRef.current.scene();
-    if (!scene) return;
-    const clouds = scene.getObjectByName('cloudLayer') as THREE.Mesh | undefined;
-    if (clouds) clouds.visible = !warActive;
-  }, [warActive, ready]);
 
   // Clear territory selection when entering spotlight
   useEffect(() => {
@@ -734,13 +624,6 @@ export function GlobeView({ children }: GlobeViewProps) {
               const isSelected = selectedTerritory && name === selectedTerritory;
               const hasSelection = !!selectedTerritory;
 
-              if (warActive) {
-                // Opaque faction-colored cap. Clouds and atmosphere have their
-                // own sphere meshes — we stay fully opaque so we never lose the
-                // color to transparent-layer blending.
-                return getWarCapMaterial(name);
-              }
-
               if (spotlightActive) {
                 if (name && spotlightAliasSet.has(name)) {
                   const hex = spotlightColor || '#c49a44';
@@ -772,10 +655,6 @@ export function GlobeView({ children }: GlobeViewProps) {
               const isSelected = selectedTerritory && name === selectedTerritory;
               const hasSelection = !!selectedTerritory;
 
-              if (warActive) {
-                return getWarSideMaterial();
-              }
-
               if (spotlightActive) {
                 if (name && spotlightAliasSet.has(name)) {
                   const hex = spotlightColor || '#c49a44';
@@ -802,10 +681,6 @@ export function GlobeView({ children }: GlobeViewProps) {
               const name = d.properties?.NAME;
               const isSelected = selectedTerritory && name === selectedTerritory;
               const hasSelection = !!selectedTerritory;
-
-              if (warActive) {
-                return 'rgba(248, 220, 170, 0.85)';
-              }
 
               if (spotlightActive) {
                 if (spotlightAliasSet.has(name)) {
@@ -840,14 +715,6 @@ export function GlobeView({ children }: GlobeViewProps) {
               const name = d.properties?.NAME;
               const isSelected = selectedTerritory && name === selectedTerritory;
 
-              if (warActive) {
-                // Very low altitude so the map looks completely flat, not
-                // stacked. Clouds are hidden in war mode so we don't need
-                // to rise above them. Altitude is still what react-globe.gl
-                // tweens on polygon add/remove to drive the crossfade.
-                return name && name !== '?' ? 0.004 : 0.0005;
-              }
-
               if (spotlightActive) {
                 return spotlightAliasSet.has(name) ? 0.018 : 0.0003;
               }
@@ -867,7 +734,6 @@ export function GlobeView({ children }: GlobeViewProps) {
             polygonLabel={(d: any) => {
               const name = d.properties?.NAME;
               if (!name || name === '?') return '';
-              if (warActive) return '';
               if (spotlightActive && !spotlightAliasSet.has(name)) return '';
               const color = spotlightActive ? (spotlightColor || '#c49a44') : getCivColor(name);
               return `<div style="
@@ -889,7 +755,7 @@ export function GlobeView({ children }: GlobeViewProps) {
                 </div>
               </div>`;
             }}
-            polygonsTransitionDuration={warActive ? 2800 : 2000}
+            polygonsTransitionDuration={2000}
             onPolygonClick={(d: any) => {
               const name = d.properties?.NAME;
               if (!name || name === '?') return;
