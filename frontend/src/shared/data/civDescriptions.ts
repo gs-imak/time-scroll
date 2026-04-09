@@ -729,4 +729,230 @@ export const NAME_DESCRIPTIONS: Record<string, { summary: string; detail?: strin
     knownFor: 'Manioc cultivation, maritime migration, pottery traditions, and the linguistic legacy that stretched across two continents.',
     imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/25/Arowak_woman_by_John_Gabriel_Stedman.jpg/960px-Arowak_woman_by_John_Gabriel_Stedman.jpg',
   },
+
+  // ═══ ARCHAEOLOGICAL CULTURES — regional and prehistoric traditions from the GeoJSON territories ═══
+
+  'Late Jomon culture': {
+    summary: 'The later phase of Japan\'s Jōmon period (c. 2000-1000 BCE), marked by elaborate stone circles, the goggle-eyed shakōki-dogū figurines, and the first signs of rice cultivation filtering in from the Asian continent.',
+    detail: 'The Late Jōmon represents the final flourishing of Japan\'s 10,000-year hunter-gatherer tradition. As the climate cooled, populations declined and many communities moved inland or southward. Huge stone circles like Ōyu in Akita Prefecture (c. 2000 BCE) served as communal ritual sites, some containing over 150 standing stones aligned to the solstices. Dogū figurines reached their most elaborate form in this period, including the famous shakōki-dogū with slit "goggle" eyes whose function is still debated. Toward the end of the period, rice agriculture began arriving from the Korean peninsula, setting the stage for the Yayoi transition and the end of Japan\'s long pre-agricultural era.',
+    keyFacts: ['Ōyu stone circles in Akita (~2000 BCE)', 'Goggle-eyed shakōki-dogū clay figurines', 'Climate cooling roughly halved populations', 'First rice agriculture arrived from Korea ~1000 BCE'],
+    knownFor: 'Stone circles, goggle-eyed dogū figurines, population collapse and recovery, and the first contact with incoming rice agriculture.',
+  },
+
+  'Yamnaya culture': {
+    summary: 'The Bronze Age pastoralists of the Pontic-Caspian steppe (c. 3300-2600 BCE) whose mass migrations reshaped the genetics and languages of Europe and Asia, and who are the leading candidate for the speakers of Proto-Indo-European.',
+    detail: 'The Yamnaya, named for their pit-grave burials (yamnaya = "pit" in Russian), domesticated the horse and built wheeled wagons that let them herd cattle across the open steppe. Around 3000 BCE they expanded westward into Europe and eastward into Central Asia in a sudden demographic surge. Ancient DNA studies published in 2015 showed that most modern Europeans derive roughly a third of their ancestry from Yamnaya migrants — one of the largest population movements ever detected in the genome record. Their language is the leading candidate for Proto-Indo-European, the ancestor of languages from English and Russian to Persian and Hindi. The Yamnaya buried their dead under earthen kurgans that still dot the steppe landscape today.',
+    keyFacts: ['Likely speakers of Proto-Indo-European', '~30% of modern European ancestry', 'Invented wagon-based pastoral nomadism', 'Built tens of thousands of kurgan burial mounds'],
+    knownFor: 'Spreading Indo-European languages across Eurasia, inventing wheeled wagon transport, horse pastoralism, and kurgan burial mounds.',
+  },
+
+  'La Tène culture': {
+    summary: 'The classical phase of Iron Age Celtic civilization (c. 450 BCE-1st century BCE), renowned for its curvilinear art style and the warrior societies that sacked Rome, raided Delphi, and ranged from Ireland to Anatolia.',
+    detail: 'Named after the Swiss site of La Tène on Lake Neuchâtel — where thousands of iron weapons and ornaments were pulled from the lake in the 19th century — this culture represents the flowering of Celtic art and society. La Tène Celts swept south across the Alps to sack Rome in 387 BCE, pushed east to raid the Greek sanctuary at Delphi in 279 BCE, and established kingdoms in central Anatolia (Galatia). Their distinctive art combined Mediterranean motifs with swirling vegetal curves and stylized animal heads — a style whose influence survived into the illuminated manuscripts of early medieval Ireland. The Romans called them Gauls; Julius Caesar\'s conquest of Gaul (58-50 BCE) brought the continental La Tène world to an end.',
+    keyFacts: ['Sacked Rome in 387 BCE', 'Raided Delphi in 279 BCE', 'Established Galatia in Anatolia', 'Ended by Caesar\'s conquest of Gaul (58-50 BCE)'],
+    knownFor: 'The curvilinear "Celtic" art style, iron sword metallurgy, raids on Rome and Delphi, and the Gaulish tribes conquered by Caesar.',
+  },
+
+  'Celltic Hallsatt culture': {
+    summary: 'The Early Iron Age Celtic culture of central Europe (c. 1200-500 BCE), named for the Austrian salt-mining town of Hallstatt where princely burials revealed a wealthy aristocratic society.',
+    detail: 'The Hallstatt culture is named after a small Austrian village where a vast Iron Age cemetery was discovered — over 1,000 graves filled with weapons, bronze ornaments, and Mediterranean imports. The wealth came from salt: Hallstatt\'s underground mines supplied Europe with the essential mineral, and the airless depths preserved leather clothing, wooden tools, and even the corpses of ancient miners. Hallstatt princes were buried in wooden chambers beneath earthen mounds, accompanied by four-wheeled wagons, elaborate drinking vessels, and luxury goods traded through Greek colonies. The culture gradually transformed into the more iconic La Tène tradition around 450 BCE.',
+    keyFacts: ['Salt mining preserved clothing, tools, and miners\' bodies', 'Princely tombs contained four-wheeled wagons', 'Evolved into the La Tène culture c. 450 BCE', 'Imported Mediterranean goods via Greek colonies'],
+    knownFor: 'Salt-mining wealth, princely wagon burials, and the earliest phase of Iron Age Celtic civilization in central Europe.',
+  },
+
+  'Chinchorro culture': {
+    summary: 'The fishing villages of the Atacama coast (c. 7000-1500 BCE) who produced the oldest artificially mummified bodies in human history — two thousand years older than Egypt\'s first mummies.',
+    detail: 'The Chinchorro lived in some of the driest environments on Earth — the Atacama Desert coastline of northern Chile and southern Peru. Around 5000 BCE, two thousand years before the first Egyptian mummies, Chinchorro morticians began systematically mummifying their dead: removing organs, reassembling the body around wooden sticks, coating it in ash paste, and painting the result black or red. Children and infants were mummified with especially elaborate care, suggesting the practice may have begun as a response to high infant mortality from arsenic-poisoned groundwater. Over 300 Chinchorro mummies have been excavated, and in 2021 the sites joined UNESCO\'s World Heritage list.',
+    keyFacts: ['Oldest artificial mummies in the world (~5000 BCE)', '2,000 years older than Egyptian mummification', 'UNESCO World Heritage Site (2021)', 'Lived in Earth\'s driest coastal desert'],
+    knownFor: 'The oldest artificial mummies in the world and intricate fishing technology adapted to the Atacama coast.',
+  },
+
+  'Catacomb culture': {
+    summary: 'A Bronze Age steppe culture (c. 2800-2200 BCE) that succeeded the Yamnaya and buried its dead in underground chambered tombs — a practice that gave the culture its name.',
+    detail: 'The Catacomb culture emerged from the Yamnaya tradition on the Pontic-Caspian steppe, continuing the pastoralist lifestyle but adopting a distinctive burial practice: side chambers (catacombs) cut into the walls of shaft graves, where the deceased was placed along with pottery, bronze weapons, and occasionally dismantled wagons. They produced elaborate polished stone "sceptres" whose function remains debated — possibly ceremonial maces or symbols of office. The Catacomb people participated in the wide Bronze Age trade networks linking the steppe to Mesopotamia and the Caucasus.',
+    keyFacts: ['Successors of the Yamnaya on the Pontic steppe', 'Named for underground chamber tombs', 'Produced mysterious polished stone "sceptres"', 'Part of the Bronze Age Caucasus trade network'],
+    knownFor: 'Underground chambered tombs, polished stone sceptres of debated function, and continuation of the Yamnaya pastoral tradition.',
+  },
+
+  'Dapenkeng culture': {
+    summary: 'The earliest Neolithic culture of Taiwan (c. 4000-3000 BCE), whose cord-marked pottery marks the ancestral homeland of the Austronesian peoples — the seafarers who would later colonize the Pacific from Madagascar to Easter Island.',
+    detail: 'The Dapenkeng sites along the Taiwan coast contain the oldest signs of settled agricultural life on the island. Linguists and archaeologists identify the Dapenkeng people as the ancestral Austronesian population whose descendants would spread across nearly half the planet — to the Philippines by 2000 BCE, Indonesia by 1500 BCE, the remote Pacific by 1000 BCE, Madagascar by 500 CE, and finally Hawaii and New Zealand. The distinctive cord-marked pottery of Dapenkeng sites resembles contemporary pottery from coastal South China, suggesting Taiwan was settled from the mainland. From this small island came the seafarers who made Austronesian the most geographically widespread language family before European colonialism.',
+    keyFacts: ['Ancestral homeland of all Austronesian peoples', 'Descendants reached Madagascar, Hawaii, and New Zealand', 'Cord-marked pottery c. 4000-3000 BCE', 'Probably settled from coastal South China'],
+    knownFor: 'The Austronesian homeland, cord-marked pottery traditions, and the seafaring ancestors of peoples from Hawaii to Madagascar.',
+  },
+
+  'Bell-shaped burials culture': {
+    summary: 'A late Neolithic and Early Bronze Age culture spread across western Europe (c. 2800-1800 BCE), identified by its distinctive bell-shaped drinking vessels found in burials from Iberia to central Europe.',
+    detail: 'Commonly known in English as the Bell Beaker culture, this tradition takes its name from the inverted-bell shape of its fine pottery drinking cups. Bell Beaker graves contained a remarkably consistent "package" of grave goods across thousands of kilometers: the beaker itself, a copper dagger, a stone wrist-guard for archery, and small stone arrowheads. Ancient DNA studies revealed that the spread of Bell Beaker material culture into Britain around 2400 BCE coincided with a near-complete genetic replacement of the British Neolithic population — one of the most dramatic demographic shifts ever detected in the ancient genome record. The culture marks the transition from stone to metal tools across much of Western Europe.',
+    keyFacts: ['Named for inverted bell-shaped drinking cups', 'Standardized archer\'s burial kit across Europe', '~90% genetic replacement of Neolithic Britons', 'Spread from Iberia across Western Europe'],
+    knownFor: 'The distinctive bell-shaped drinking cup, a standardized archer\'s burial kit, and the near-total genetic replacement of Neolithic Britain.',
+  },
+
+  'Poverty point culture': {
+    summary: 'A Late Archaic culture of the Lower Mississippi Valley (c. 1700-1100 BCE) whose massive ceremonial earthworks in Louisiana — predating the pyramids of Egypt by centuries — are the oldest monumental architecture in North America.',
+    detail: 'At the Poverty Point site in northeastern Louisiana, Late Archaic hunter-gatherers built six concentric C-shaped earthen ridges enclosing over 200 acres, plus a bird-shaped mound 22 meters tall. Radiocarbon dating places the construction between 1700 and 1100 BCE — roughly contemporary with the New Kingdom in Egypt. Remarkably, the builders were not farmers: Poverty Point was raised by a non-agricultural hunter-gatherer-fisher society that nonetheless organized labor on a monumental scale. Stone tool materials found at the site come from as far as 1,000 miles away, showing sophisticated long-distance trade networks. UNESCO added Poverty Point to its World Heritage list in 2014.',
+    keyFacts: ['Six concentric C-shaped earthen ridges enclosing 200 acres', 'Bird-shaped Mound A stands 22m tall', 'Built by hunter-gatherers, not farmers', 'UNESCO World Heritage Site (2014)'],
+    knownFor: 'Monumental earthworks built by hunter-gatherers, the oldest large-scale architecture in North America, and long-distance stone tool trade.',
+  },
+
+  'Gandhara grave culture': {
+    summary: 'A late Bronze and Iron Age culture of the Swat and Peshawar valleys (c. 1600-500 BCE), whose distinctive cemeteries mark the arrival of Indo-Aryan-speaking peoples in the northern Indian subcontinent.',
+    detail: 'The Gandhara grave culture, named for the ancient region of Gandhara in modern Pakistan and eastern Afghanistan, is associated by most scholars with the Indo-Aryan migrations described in the Rigveda. Burials include horse-riding equipment, iron weapons, and distinctive pottery — all markers of the steppe-derived pastoralist lifestyle brought by the Indo-Aryans. The culture spans the period of Vedic hymn composition and runs into the early historic period of Gandhara, which later became a crossroads of Persian, Greek, and Buddhist influences and the birthplace of the renowned Gandhara school of Buddhist art.',
+    keyFacts: ['Linked to the Indo-Aryan migrations', 'Period overlaps with the Vedic hymns', 'Horse equipment and iron weapons in graves', 'Ancient Gandhara later famous for Buddhist art'],
+    knownFor: 'Evidence of Indo-Aryan arrival in the subcontinent, horse equipment and iron weapons, and the homeland of later Gandhara Buddhist art.',
+  },
+
+  'Karasuk culture': {
+    summary: 'A Late Bronze Age culture of South Siberia (c. 1500-800 BCE), known for its distinctive curved bronze knives and an extensive metallurgical tradition that influenced later Scythian cultures.',
+    detail: 'The Karasuk culture occupied the grassy forests of the Minusinsk Basin in what is now southern Siberia, developing one of the most sophisticated bronze-working traditions in inner Eurasia. Their single-edged curved knives, spears, and horse gear have been found from the Altai Mountains to the Ordos region of northern China. Genetic and archaeological evidence suggests Karasuk populations included both European-related pastoralists and East Asian groups, making the culture a crucial contact zone between the populations of Europe and East Asia at the end of the Bronze Age. Many Karasuk technologies passed to the emerging Scythian peoples who followed them.',
+    keyFacts: ['Located in the Minusinsk Basin, South Siberia', 'Influenced later Scythian metallurgy', 'Mixed European and East Asian ancestry', 'Distinctive single-edged curved knives'],
+    knownFor: 'Distinctive curved bronze knives, a meeting zone of European and East Asian populations, and foundational influence on later Scythian cultures.',
+  },
+
+  'Okhotsk culture': {
+    summary: 'A maritime hunter-gatherer culture of the northern Sea of Okhotsk (c. 500-1000 CE), whose people hunted bowhead whales, seals, and brown bears along the shores of Hokkaido, Sakhalin, and the Kuril Islands.',
+    detail: 'The Okhotsk culture thrived on the cold coasts of northern Japan and eastern Russia during the same centuries as the Viking Age in Europe. Okhotsk hunters pursued whales and walrus from boats with bone and iron-tipped harpoons, and built large pit-houses that could shelter extended families through Siberian winters. Brown bears held special ritual importance — many Okhotsk sites contain bear skulls carefully arranged in sanctuaries. Genetic studies show that Okhotsk people contributed substantial ancestry to the modern Ainu, the Indigenous people of Hokkaido, and influenced the Ainu bear-cult traditions that survived into the 20th century.',
+    keyFacts: ['Hunted bowhead whales with bone-tipped harpoons', 'Kept brown bear skulls in ritual sanctuaries', 'Ancestors of the modern Ainu people', 'Flourished during Europe\'s Viking Age'],
+    knownFor: 'Maritime bear-hunting society, bowhead whale hunting, and genetic ancestors of the modern Ainu people of Hokkaido.',
+  },
+
+  'Lusatian culture': {
+    summary: 'A widespread Late Bronze and Early Iron Age urnfield culture of central Europe (c. 1300-500 BCE), whose fortified settlements and cremation cemeteries stretched from the Elbe to the upper Dnieper.',
+    detail: 'The Lusatian culture is the largest member of the Urnfield tradition of central Europe, named for its practice of cremating the dead and placing their ashes in pottery urns buried in communal cemeteries — some of which contain tens of thousands of burials. Lusatian people built fortified hilltop settlements and fortress-towns such as Biskupin in Poland, where a Late Bronze Age town with log walls and planked streets was preserved in a marsh and re-excavated in the 20th century. Their ethnic identity remains debated among scholars — proposals include proto-Slavic, proto-Baltic, and proto-Illyrian ancestries.',
+    keyFacts: ['Biskupin: Bronze Age town preserved in a Polish marsh', 'Cemeteries with tens of thousands of urn burials', 'Spread from the Elbe to the upper Dnieper', 'Disputed ancestral link to Slavs, Balts, or Illyrians'],
+    knownFor: 'Vast urnfield cemeteries, the fortified lake settlement of Biskupin, and disputed connections to later Slavic, Baltic, and Illyrian peoples.',
+  },
+
+  'Pomeranian culture ': {
+    summary: 'An Iron Age culture of the southern Baltic coast (c. 650-150 BCE) famous for its "face urns" — cremation vessels modeled with human features that preserved the identity of the deceased.',
+    detail: 'The Pomeranian culture developed along the Baltic coast of modern Poland, succeeding the earlier Lusatian tradition. Its most famous feature is the face urn: large ceramic burial vessels shaped and decorated to represent the deceased, with modeled ears, eyes, and mouths — sometimes adorned with earrings or with scenes of hunting, warfare, and wagon processions scratched into the clay. Pomeranian burials often used stone cist graves, grouping several face urns together, perhaps representing members of the same family. The culture eventually gave way to the Przeworsk and later Germanic groups of the early historical period.',
+    keyFacts: ['Face urns modeled with eyes, ears, and mouths', 'Hunting and wagon scenes scratched into urns', 'Stone cist graves grouping family burials', 'Southern Baltic coast, c. 650-150 BCE'],
+    knownFor: 'Face urn burials — cremation vessels modeled with human features — and stone cist cemeteries of the southern Baltic.',
+  },
+
+  'Proto-Scythian culture': {
+    summary: 'The Late Bronze and Early Iron Age cultures of the Pontic-Caspian steppe (c. 1200-700 BCE) that gave rise to the historical Scythians — horse-riding pastoralists whose successors would dominate the steppe for centuries.',
+    detail: 'Before the Scythians emerged into the historical record with Herodotus in the 5th century BCE, their ancestors occupied the same steppe corridor between the Danube and the Altai. These proto-Scythian groups — including what some archaeologists call the Cimmerian phase — developed mounted horse archery, the composite recurve bow, and the distinctive "animal style" art featuring stylized deer, wildcats, and birds of prey. By the 7th century BCE these innovations had merged into the full Scythian package, launching raids deep into Assyria, Anatolia, and eventually threatening Greek colonies on the Black Sea.',
+    keyFacts: ['Predecessors of the historical Scythians', 'Developed mounted horse archery', 'Originated the steppe "animal style" art', 'Linked to the Cimmerian phase of the steppe'],
+    knownFor: 'Origins of mounted horse archery and the steppe "animal style" art tradition, directly ancestral to the historical Scythians.',
+  },
+
+  'Kelteminar culture': {
+    summary: 'Neolithic hunter-fisher-gatherers of the Oxus River delta in modern Uzbekistan and Turkmenistan (c. 5500-3500 BCE), whose distinctive pottery and wetland camps mark one of Central Asia\'s earliest post-Ice Age cultures.',
+    detail: 'The Kelteminar people lived along the ancient channels of the Amu Darya (Oxus) in the lakes and marshes of what is now the Kyzylkum Desert. They never fully adopted farming, instead continuing to hunt onagers and fish the rich wetlands while trading with the early agricultural communities of Iran and Mesopotamia. Their distinctive pottery — thin-walled and incised with geometric patterns — is found across a vast region of Central Asia. The Kelteminar culture eventually gave way to more settled Bronze Age cultures as the regional climate dried out and wetlands shrank.',
+    keyFacts: ['Lived in the lakes and marshes of the Oxus delta', 'Hunted onagers and fished the wetlands', 'Spread across modern Uzbekistan and Turkmenistan', 'Flourished c. 5500-3500 BCE'],
+    knownFor: 'Wetland hunter-fisher lifestyle, incised geometric pottery, and one of Central Asia\'s earliest post-Ice Age cultures.',
+  },
+
+  'Stentinello culture': {
+    summary: 'One of the earliest Neolithic cultures of Sicily and Malta (c. 6000-5000 BCE), known for its distinctive impressed pottery and the spread of farming across the central Mediterranean.',
+    detail: 'Named for the site of Stentinello near Syracuse in Sicily, this Early Neolithic culture brought agriculture, domesticated animals, and pottery to the central Mediterranean from the Aegean. Stentinello ware is decorated with patterns impressed by shells, fingernails, or combs pressed into the wet clay — a distinctive tradition shared with related cultures along the Mediterranean coast. The Stentinello people built ditch-enclosed villages and contributed to the demographic replacement of the last Mesolithic hunter-gatherers of the Italian islands.',
+    keyFacts: ['Earliest Neolithic culture of Sicily and Malta', 'Impressed pottery decorated with shells and combs', 'Built ditch-enclosed villages', 'Flourished c. 6000-5000 BCE'],
+    knownFor: 'Impressed-ware pottery, early farming villages in Sicily and Malta, and the spread of Neolithic agriculture into the central Mediterranean.',
+  },
+
+  'La Almagra culture': {
+    summary: 'An Early Neolithic culture of southern Spain (c. 5500-4500 BCE), known for its distinctive red-slipped "La Almagra" pottery and the earliest farming communities of Andalusia.',
+    detail: 'The La Almagra culture is named for its characteristic pottery — vessels coated in a polished red slip of ochre that gave them a warm, burnished finish. These communities practiced early forms of agriculture and herding in the caves and open-air sites of southern Spain, part of the broader Cardial/Impressed Ware horizon that introduced the Neolithic package to the western Mediterranean. The La Almagra tradition marks one of the earliest steps in the long prehistoric transformation of Andalusia from hunter-gatherer territory to the densely farmed landscape it would become.',
+    keyFacts: ['Red-slipped polished "Almagra" pottery', 'Earliest Neolithic farmers of Andalusia', 'Part of the Cardial/Impressed Ware horizon', 'Flourished c. 5500-4500 BCE'],
+    knownFor: 'Distinctive red-slipped pottery and the earliest introduction of farming to southern Spain.',
+  },
+
+  'Marksville Culture': {
+    summary: 'The Lower Mississippi Valley branch of the Hopewell tradition (c. 100 BCE-400 CE), whose conical burial mounds and elaborate grave goods show participation in the continent-spanning Hopewell Interaction Sphere.',
+    detail: 'The Marksville culture, named for the site in Louisiana where its distinctive pottery was first identified, represents the southern reach of the Hopewell trade and burial network. Marksville people built conical burial mounds for high-status individuals, furnishing them with copper panpipes traded from the Great Lakes and mica cutouts from the Appalachians. Their pottery featured cross-hatched stamped designs and bird motifs closely resembling those of Ohio Hopewell, indicating direct contact across more than a thousand miles of river and trail.',
+    keyFacts: ['Lower Mississippi branch of the Hopewell tradition', 'Traded copper panpipes from the Great Lakes', 'Bird-motif and cross-hatched pottery', 'Flourished c. 100 BCE-400 CE'],
+    knownFor: 'Southern Hopewell tradition, conical burial mounds, and long-distance trade for copper and mica.',
+  },
+
+  'Swift Creek Culture': {
+    summary: 'A Woodland period culture of Georgia, Florida, and Alabama (c. 100-800 CE) famous for its complicated stamped pottery, decorated by pressing carved wooden paddles into wet clay to leave intricate swirling designs.',
+    detail: 'The Swift Creek people inhabited the river valleys of the Deep South during the Middle Woodland period. They are best known for their complicated stamped pottery — vessels decorated by pressing carved wooden paddles against the wet clay, leaving repeating patterns of spirals, nested concentric circles, and cross-motifs. Over 2,000 distinct paddle designs have been identified, suggesting that each household or clan may have used its own signature pattern. Swift Creek earthen mounds often contain multiple layers of burials accompanied by copper ornaments and exotic stones.',
+    keyFacts: ['Over 2,000 distinct paddle designs recorded', 'Complicated stamped pottery tradition', 'Spanned Georgia, Florida, and Alabama', 'Flourished c. 100-800 CE'],
+    knownFor: 'Elaborately stamped pottery, carved wooden paddle designs, and Middle Woodland burial mounds of the Deep South.',
+  },
+
+  'Mill Creek Culture': {
+    summary: 'A Late Prehistoric farming culture of the upper Missouri Valley (c. 900-1300 CE), whose fortified villages along the Big Sioux and Little Sioux rivers grew maize and hunted bison on the edge of the Great Plains.',
+    detail: 'The Mill Creek people built compact villages of earth-covered lodges protected by palisades, cultivating maize, beans, and squash in the river bottomlands of northwestern Iowa. They participated in the wider Middle Missouri tradition and traded pottery, shells, and other goods with Cahokia, the great Mississippian metropolis to the south. Drought and increased raiding from Plains neighbors forced many villages to be abandoned by 1300 CE, and Mill Creek descendants likely contributed to the historic tribes of the northern Plains.',
+    keyFacts: ['Earth-covered lodges protected by palisades', 'Traded with Cahokia to the south', 'Grew maize, beans, and squash on the Plains edge', 'Abandoned c. 1300 CE due to drought'],
+    knownFor: 'Fortified farming villages of earth-covered lodges, trade with Cahokia, and ancestral links to historic northern Plains tribes.',
+  },
+
+  'Fourche Maline Culture': {
+    summary: 'A Woodland period culture of the Arkansas and Red River valleys (c. 300 BCE-800 CE), whose shell-midden villages and conical burial mounds represent one of the earliest settled traditions in the southern plains.',
+    detail: 'Named for Fourche Maline Creek in southeastern Oklahoma, this Woodland culture combined intensive gathering of nuts and freshwater mussels with small-scale cultivation of sunflower, chenopodium, and eventually maize. Fourche Maline sites are recognizable by their thick shell middens and conical burial mounds containing pottery, beads, and occasional exotic trade goods. The culture is considered directly ancestral to the later Caddoan-speaking peoples of the region, whose descendants remain in Oklahoma today.',
+    keyFacts: ['Named for Fourche Maline Creek, Oklahoma', 'Gathered nuts and freshwater mussels intensively', 'Ancestors of the Caddoan-speaking peoples', 'Flourished c. 300 BCE-800 CE'],
+    knownFor: 'Shell-midden villages, conical burial mounds, and direct ancestors of the Caddoan-speaking peoples.',
+  },
+
+  'Glades Culture': {
+    summary: 'The pre-Columbian peoples of the Everglades and south Florida coast (c. 500 BCE-1700 CE), whose fishing-based society flourished without agriculture for over two millennia — ancestors of the historic Calusa and Tequesta.',
+    detail: 'The Glades tradition developed in south Florida\'s river and swamp ecosystems, where abundant fish and shellfish supported permanent villages without the need for farming. Shell middens from Glades sites sometimes reach many meters high, representing centuries of discarded oysters and conch shells. Glades peoples carved shell and wood into intricate ritual objects, including the famous Key Marco Cat — a six-inch wooden feline carving preserved in mangrove mud, one of the finest works of pre-Columbian art from eastern North America. Their historic descendants, the Calusa and Tequesta, built canals and controlled southern Florida until Spanish contact.',
+    keyFacts: ['Key Marco Cat: rare preserved pre-Columbian wood carving', 'Complex society based on fishing, not farming', 'Shell middens reach many meters high', 'Ancestors of the Calusa and Tequesta peoples'],
+    knownFor: 'Complex fishing society without agriculture, the Key Marco Cat wood carving, and ancestors of the historic Calusa and Tequesta.',
+  },
+
+  'Caloosahatchee culture': {
+    summary: 'The pre-Columbian fishing society of southwest Florida\'s Caloosahatchee River watershed (c. 500-1500 CE), direct ancestors of the historic Calusa who ruled the region when the Spanish arrived.',
+    detail: 'The Caloosahatchee culture centered on the river and estuary system flowing into the Gulf of Mexico near modern Fort Myers. Like their Glades neighbors, the Caloosahatchee people never adopted farming — the rich shell, fish, and manatee harvests of the mangrove coast could feed thousands without it. They built enormous shell mounds, engineered canals linking villages, and created elaborate wooden ceremonial masks. Their direct descendants, the Calusa, built a centralized kingdom that dominated southern Florida for centuries and fought off Spanish attempts at conquest before disease and warfare broke their power in the 1700s.',
+    keyFacts: ['Direct ancestors of the Calusa people', 'Non-agricultural complex society', 'Built engineered shell-mound capitals and canals', 'Dominated southwest Florida until the 1700s'],
+    knownFor: 'Complex non-agricultural fishing society, engineered shell-mound capitals, and direct ancestors of the Calusa kingdom.',
+  },
+
+  'Milograd culture': {
+    summary: 'An Iron Age forest-zone culture of what is now Belarus and northern Ukraine (c. 700 BCE-100 CE), whose settlements mark the forested hinterland of the Scythian world.',
+    detail: 'The Milograd culture occupied the mixed forest zone between the Pripet marshes and the upper Dnieper during the Iron Age. Its people lived in small fortified settlements, practiced mixed farming and forest hunting, and produced distinctive pottery and bronze ornaments. Scholars have linked the Milograd culture variously to early Baltic, proto-Slavic, or "forest Scythian" populations mentioned by Herodotus — its exact ethnic affiliation remains unresolved. The culture eventually merged with neighboring Zarubintsy and Poienești-Lukaševka traditions.',
+    keyFacts: ['Iron Age forest zone of Belarus and northern Ukraine', 'Linked to "forest Scythians" mentioned by Herodotus', 'Disputed Baltic, Slavic, or Scythian affinities', 'Flourished c. 700 BCE-100 CE'],
+    knownFor: 'Forest-zone Iron Age life on the northern edge of the Scythian world, with disputed Baltic or proto-Slavic affiliations.',
+  },
+
+  'Chernoles culture': {
+    summary: 'An Early Iron Age culture of the forest-steppe zone in modern central Ukraine (c. 1100-700 BCE), often interpreted as a possible early Slavic or proto-Slavic population.',
+    detail: 'The Chernoles (Chornyj Lis, or "Black Forest") culture occupied the wooded river valleys of central Ukraine during the transition from the Late Bronze to the Early Iron Age. Its settlements were fortified with earthen ramparts, and its pottery shows continuity with later cultures of the region. Scholars such as Boris Rybakov famously argued that the Chernoles were among the earliest identifiable ancestors of the Slavic peoples, though this identification is contested by other archaeologists who emphasize multi-ethnic interactions across the forest-steppe border.',
+    keyFacts: ['Located in the forest-steppe of central Ukraine', 'Fortified settlements with earthen ramparts', 'Proposed as a possible proto-Slavic population', 'Flourished c. 1100-700 BCE'],
+    knownFor: 'Fortified forest-steppe settlements and contested status as a possible proto-Slavic ancestor population.',
+  },
+
+  'Eastern Masurian culture': {
+    summary: 'An Iron Age regional culture of the Masurian Lake District in northeastern Poland (c. 600 BCE-400 CE), part of the broader West Baltic cultural circle that laid the foundations of the Baltic-speaking peoples.',
+    detail: 'The Masurian cultures occupied the rolling glacial landscape of lakes and forests in what is now northeastern Poland and the adjacent Kaliningrad enclave. Eastern and Western Masurian groups shared pottery styles, barrow burial practices, and fortified hilltop settlements, but differed in regional variations of ornament and metalwork. They belonged to the West Baltic cultural circle — the archaeological ancestors of the later Old Prussians, Sudovians, and related Baltic peoples whose languages survived until the early modern period.',
+    keyFacts: ['Northeast Poland\'s Masurian Lake District', 'Part of the West Baltic cultural circle', 'Ancestors of the Old Prussians and Sudovians', 'Iron Age, c. 600 BCE-400 CE'],
+    knownFor: 'Iron Age lake-district communities and connections to the later Old Prussian and Baltic-speaking peoples.',
+  },
+
+  'Western Masurian culture': {
+    summary: 'An Iron Age regional culture of the western Masurian lakes in northeastern Poland (c. 600 BCE-400 CE), closely related to its eastern counterpart and part of the broader West Baltic cultural circle.',
+    detail: 'The Western Masurian culture shared most features with its Eastern Masurian neighbor: fortified hilltop settlements, barrow burial fields, and distinctive bronze and iron ornaments. The distinction between east and west reflects subtle regional variations in pottery styles and metalwork that archaeologists use to trace communities across the Masurian Lake District. Together, these groups form part of the West Baltic cultural circle — the archaeological ancestors of the Old Prussians and other Baltic peoples whose languages were spoken in the region into the 17th century.',
+    keyFacts: ['Western Masurian Lake District of Poland', 'Closely related to Eastern Masurian groups', 'Part of the West Baltic cultural circle', 'Ancestors of the Old Prussians'],
+    knownFor: 'Iron Age Baltic communities of the western Masurian lakes, closely tied to the ancestral West Baltic cultural world.',
+  },
+
+  'Sambian-Nothangian culture': {
+    summary: 'An Iron Age Baltic culture of the Sambian Peninsula and Natangian region in the southeastern Baltic (c. 1st-5th centuries CE), notable for amber working and rich barrow burials.',
+    detail: 'The Sambian-Nothangian (or Sambian-Natangian) culture flourished in the Sambian Peninsula and surrounding coastal region of what is now the Kaliningrad enclave and northeastern Poland. It sits at the southeastern corner of the Baltic Sea — the world\'s richest source of amber — and Sambian communities grew wealthy from trading amber to the Roman world along the Amber Road. Barrow cemeteries contain Roman coins, glass beads, and imported bronzes alongside distinctive local ornaments. The culture is considered ancestral to the historic Old Prussians, whose Baltic language survived in the region until the 17th century.',
+    keyFacts: ['Sambian Peninsula in the southeastern Baltic', 'Key node on the Roman-era Amber Road', 'Roman coins and glass in barrow burials', 'Ancestors of the Old Prussians'],
+    knownFor: 'Amber trade with the Roman world and a key role as ancestors of the historic Old Prussian Baltic speakers.',
+  },
+
+  'Brushed Pottery culture': {
+    summary: 'A regional Late Bronze and Early Iron Age tradition of Northeast Asia (approximately 1000-400 BCE), identified by pottery whose surfaces were textured with coarse brushing before firing.',
+    detail: 'The Brushed Pottery tradition is found across parts of the Korean peninsula, northeastern China, and adjacent regions during the transition from the Late Bronze Age into the Iron Age. Potters texturized the surface of their vessels by dragging a bundle of grasses or coarse fibers across the wet clay, leaving characteristic striations that helped with grip and possibly strengthened the vessel walls. Sites yielding brushed pottery often include bronze daggers, semilunar stone harvesting knives, and dolmen burials — typical features of a regional Bronze Age world in contact with both the Central Plains of China and the steppe world to the north.',
+    keyFacts: ['Surface brushed with coarse fibers before firing', 'Found across the Korean peninsula and NE China', 'Associated with bronze daggers and dolmens', 'Flourished c. 1000-400 BCE'],
+    knownFor: 'Brushed-surface pottery and participation in the Late Bronze Age world of Northeast Asia.',
+  },
+
+  'Plain-Pottery culture': {
+    summary: 'An early Bronze Age tradition of the Korean peninsula (c. 1500-300 BCE) identified by its characteristic undecorated coarse pottery, associated with the spread of rice agriculture and the first megalithic dolmen burials of Korea.',
+    detail: 'The Plain or Mumun Pottery period marks a major transformation in Korean prehistory. Earlier Jeulmun (comb-patterned) pottery gave way to plain, undecorated wares as communities moved inland, intensified rice agriculture, and adopted a more settled village life. Plain Pottery communities built some of the tens of thousands of dolmen burials that still dot the Korean countryside — Korea contains more dolmens than any other country in the world. This period laid the foundations of the later Korean Iron Age and the historic kingdoms that would follow.',
+    keyFacts: ['Undecorated coarse pottery replaced earlier patterned wares', 'Associated with the spread of rice agriculture', 'Built thousands of dolmen burials', 'Flourished c. 1500-300 BCE'],
+    knownFor: 'Plain undecorated pottery, the spread of rice farming in Korea, and the construction of the world\'s densest concentration of dolmens.',
+  },
+
+  'Dakapeng culture': {
+    summary: 'An early Neolithic culture of coastal Taiwan and the nearby island of Penghu (approximately 5000-3000 BCE), associated with the first farming communities in the region and the broader Austronesian homeland tradition.',
+    detail: 'The Dakapeng (Ta-ka-peng) culture represents one of the earliest farming traditions along the Taiwan coast, closely related to the better-known Dapenkeng horizon. Its people built coastal villages, made cord-marked pottery, and gathered marine resources from the Taiwan Strait. Like their Dapenkeng neighbors, the Dakapeng communities belong to the broader cultural world from which the Austronesian language family would later spread across the Pacific and Indian Oceans. Taiwan remains the genetic and linguistic cradle of the Austronesian expansion.',
+    keyFacts: ['Early Neolithic farming on coastal Taiwan', 'Related to the Dapenkeng cultural horizon', 'Part of the Austronesian homeland region', 'Flourished c. 5000-3000 BCE'],
+    knownFor: 'Early farming in coastal Taiwan and its place within the ancestral homeland of the Austronesian language family.',
+  },
 };
