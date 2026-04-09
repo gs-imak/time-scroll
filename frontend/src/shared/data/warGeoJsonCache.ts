@@ -57,7 +57,7 @@ export function preloadWarGeoJson(): Promise<void> {
  * WAR_YEARS is a fixed sorted array of 15 entries so this is O(n).
  */
 export function closestWarYear(year: number): number {
-  let closest = WAR_YEARS[0]!;
+  let closest: number = WAR_YEARS[0];
   for (const y of WAR_YEARS) {
     if (y <= year) closest = y;
     else break;
