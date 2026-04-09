@@ -271,7 +271,7 @@ function DesktopSidebar() {
       onMouseLeave={() => setExpanded(false)}
       aria-label="Main navigation"
     >
-      <div className="flex flex-col flex-1 pt-4 pb-[140px] px-2 gap-1">
+      <div className="flex flex-col flex-1 pt-4 pb-4 px-2 gap-1">
         {/* Logo */}
         <div className="flex items-center justify-center h-11 mb-2 shrink-0" aria-hidden="true">
           <motion.div
