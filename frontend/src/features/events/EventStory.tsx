@@ -278,7 +278,7 @@ export function EventStory() {
   const onShare = useCallback(async () => {
     if (!event) return;
     const url = `${window.location.origin}/explore?event=${event.id}`;
-    const text = `${event.title} (${formatYear(event.year)}) — Time Scroll`;
+    const text = `${event.title} (${formatYear(event.year)}) — Time Machine`;
     if (navigator.share) {
       await navigator.share({ title: event.title, text, url });
     } else {

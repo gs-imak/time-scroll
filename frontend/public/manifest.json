@@ -1,6 +1,6 @@
 {
-  "name": "Time Scroll",
-  "short_name": "TimeScroll",
+  "name": "Time Machine",
+  "short_name": "TimeMachine",
   "description": "Journey through 12,000 years of world history",
   "start_url": "/explore",
   "display": "standalone",

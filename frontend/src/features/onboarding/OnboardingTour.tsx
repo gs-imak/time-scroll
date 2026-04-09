@@ -16,7 +16,7 @@ interface TourStep {
 
 const STEPS: TourStep[] = [
   {
-    title: 'Welcome to Time Scroll',
+    title: 'Welcome to Time Machine',
     message:
       'Explore 12,000 years of human civilization on an interactive 3D globe. Let us show you around.',
     getTarget: () => null,

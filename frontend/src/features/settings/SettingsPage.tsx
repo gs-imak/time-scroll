@@ -109,7 +109,7 @@ export default function SettingsPage() {
               Settings
             </h1>
           </div>
-          <p className="text-text-secondary text-[14px]">Customize your Time Scroll experience</p>
+          <p className="text-text-secondary text-[14px]">Customize your Time Machine experience</p>
         </motion.header>
 
         {/* Appearance */}
@@ -229,7 +229,7 @@ export default function SettingsPage() {
             style={{ background: 'var(--glass-bg)', border: '1px solid var(--color-border-subtle)' }}
           >
             <p className="text-[14px] font-semibold text-text-primary mb-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-              Time Scroll
+              Time Machine
             </p>
             <p className="text-[12px] text-text-secondary leading-relaxed mb-3">
               An interactive journey through 12,000 years of human civilization. Explore historical events on a 3D globe, watch civilizations rise and fall, and test your knowledge with quizzes.

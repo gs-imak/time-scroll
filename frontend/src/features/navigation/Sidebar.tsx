@@ -291,7 +291,7 @@ function DesktopSidebar() {
                 transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
                 className="overflow-hidden whitespace-nowrap text-[14px] font-semibold ml-3 text-text-primary"
               >
-                Time Scroll
+                Time Machine
               </motion.span>
             )}
           </AnimatePresence>
@@ -443,7 +443,7 @@ function MobileDrawer() {
                   >
                     <span className="text-[14px] font-bold text-accent-gold">T</span>
                   </div>
-                  <span className="text-[14px] font-semibold text-text-primary">Time Scroll</span>
+                  <span className="text-[14px] font-semibold text-text-primary">Time Machine</span>
                 </div>
                 <button
                   onClick={() => setOpen(false)}

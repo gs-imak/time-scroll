@@ -149,7 +149,7 @@ export function KeyboardHelp() {
                       color: 'var(--color-text-muted)',
                     }}
                   >
-                    Navigate Time Scroll at the speed of thought
+                    Navigate Time Machine at the speed of thought
                   </p>
                 </div>
               </div>
@@ -316,7 +316,7 @@ export function KeyboardHelp() {
                     letterSpacing: '0.04em',
                   }}
                 >
-                  Time Scroll
+                  Time Machine
                 </span>
               </div>
             </div>

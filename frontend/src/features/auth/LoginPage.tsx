@@ -64,7 +64,7 @@ export default function LoginPage() {
               className="text-[18px] font-semibold text-text-primary"
               style={{ fontFamily: "'Space Grotesk', sans-serif" }}
             >
-              Time Scroll
+              Time Machine
             </span>
           </motion.div>
 
@@ -101,7 +101,7 @@ export default function LoginPage() {
                     type="email"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
-                    placeholder="explorer@timescroll.com"
+                    placeholder="explorer@timemachine.com"
                     className="w-full h-[48px] pl-11 pr-4 rounded-xl text-[14px] text-text-primary placeholder:text-text-muted outline-none transition-all duration-200 focus:ring-2 focus:ring-accent-gold/30"
                     style={{
                       background: 'var(--glass-bg)',
