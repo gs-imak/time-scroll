@@ -8,7 +8,7 @@ import { useGlobeCamera } from '@/features/globe/useGlobeCamera';
 import { LOCATIONS, ERAS } from '@/shared/utils/constants';
 import { formatYear } from '@/shared/utils/format';
 import { ALL_CIVILIZATION_LABELS } from '@/shared/data/civilizationLabels';
-import { CIV_DESCRIPTIONS } from '@/shared/data/civDescriptions';
+import type { CivDescription } from '@/shared/data/civDescriptions';
 import type { EventCategory } from '@/shared/types/events';
 
 /* ── Constants ── */
@@ -76,6 +76,9 @@ type SearchResult = EventResult | LocationResult | CivResult;
 export function SearchOverlay() {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
+  // Loaded lazily on first open so the 243KB civilization-descriptions module
+  // stays out of the entry/first-paint chunk (this overlay is always mounted).
+  const [civDescriptions, setCivDescriptions] = useState<Record<string, CivDescription> | null>(null);
   const [query, setQuery] = useState('');
   const [activeIndex, setActiveIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -93,6 +96,10 @@ export function SearchOverlay() {
     setIsOpen(true);
     setQuery('');
     setActiveIndex(0);
+    // Defer the heavy civ-descriptions dataset until search is actually used.
+    import('@/shared/data/civDescriptions').then((m) =>
+      setCivDescriptions((prev) => prev ?? m.CIV_DESCRIPTIONS),
+    );
   }, []);
 
   const close = useCallback(() => {
@@ -124,6 +131,7 @@ export function SearchOverlay() {
   const civSearchIndex = useMemo(() => {
     const all: CivResult[] = [];
     const seen = new Set<string>();
+    const CIV_DESCRIPTIONS = civDescriptions ?? {};
 
     // From ALL_CIVILIZATION_LABELS (those with events)
     for (const label of ALL_CIVILIZATION_LABELS) {
@@ -163,7 +171,7 @@ export function SearchOverlay() {
     }
 
     return all;
-  }, []);
+  }, [civDescriptions]);
 
   /* ── Filter results ── */
 
@@ -355,7 +363,7 @@ export function SearchOverlay() {
                 <button
                   type="button"
                   onClick={() => setQuery('')}
-                  className="w-6 h-6 rounded-full flex items-center justify-center cursor-pointer"
+                  className="w-11 h-11 rounded-full flex items-center justify-center cursor-pointer"
                   style={{
                     background: 'var(--glass-bg)',
                     border: '1px solid var(--color-border-subtle)',

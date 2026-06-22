@@ -90,6 +90,15 @@ function hashString(s: string): number {
   return Math.abs(h);
 }
 
+// Escape interpolated values before injecting them into globe label/tooltip
+// HTML. Data is trusted today, but this keeps these innerHTML sinks safe if a
+// title/description/name ever carries user or remote text.
+function escapeHtml(s: string): string {
+  return s.replace(/[&<>"']/g, (c) =>
+    c === '&' ? '&amp;' : c === '<' ? '&lt;' : c === '>' ? '&gt;' : c === '"' ? '&quot;' : '&#39;',
+  );
+}
+
 // === Material cache — avoids allocating new materials every render ===
 const capMaterialCache = new Map<string, THREE.MeshBasicMaterial>();
 const sideMaterialCache = new Map<string, THREE.MeshBasicMaterial>();
@@ -881,7 +890,7 @@ export function GlobeView({ children }: GlobeViewProps) {
               ">
                 <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
                   <div style="width: 10px; height: 10px; border-radius: 3px; background: ${color}; box-shadow: 0 0 8px ${color}80;"></div>
-                  <span style="font-size: 14px; font-weight: 700; color: ${color}; letter-spacing: 0.02em;">${name}</span>
+                  <span style="font-size: 14px; font-weight: 700; color: ${color}; letter-spacing: 0.02em;">${escapeHtml(name)}</span>
                 </div>
                 <div style="font-size: 10px; color: #55556a; padding-left: 18px;">
                   ${formatYear(currentYear)}
@@ -932,7 +941,7 @@ export function GlobeView({ children }: GlobeViewProps) {
                 const c = CATEGORY_COLORS[d.dominantCategory] ?? '#8a8a9a';
                 const titles = d.events
                   .slice(0, 5)
-                  .map((e: any) => `<div style="font-size: 11px; color: #b0b0bc; padding: 2px 0;">· ${e.title}</div>`)
+                  .map((e: any) => `<div style="font-size: 11px; color: #b0b0bc; padding: 2px 0;">· ${escapeHtml(e.title)}</div>`)
                   .join('');
                 const more = d.events.length > 5
                   ? `<div style="font-size: 10px; color: #55556a; padding-top: 4px;">+${d.events.length - 5} more</div>`
@@ -968,13 +977,13 @@ export function GlobeView({ children }: GlobeViewProps) {
                 box-shadow: 0 4px 24px rgba(0,0,0,0.6);
               ">
                 <div style="font-size: 13px; font-weight: 600; color: #e0e0e6; margin-bottom: 2px;">
-                  ${d.title}
+                  ${escapeHtml(d.title)}
                 </div>
                 <div style="font-size: 10px; font-weight: 500; color: ${c}; margin-bottom: 6px;">
                   ${formatYear(d.year)} · ${d.category}
                 </div>
                 <div style="font-size: 11px; color: #8a8a9a; line-height: 1.45;">
-                  ${d.description?.slice(0, 140)}${d.description?.length > 140 ? '…' : ''}
+                  ${escapeHtml(d.description?.slice(0, 140) ?? '')}${d.description?.length > 140 ? '…' : ''}
                 </div>
               </div>`;
             }}
@@ -1008,7 +1017,7 @@ export function GlobeView({ children }: GlobeViewProps) {
                     0 0 6px rgba(0,0,0,0.9),
                     0 0 12px rgba(0,0,0,0.6),
                     0 1px 3px rgba(0,0,0,0.8);
-                ">${d.name}</span>
+                ">${escapeHtml(d.name ?? '')}</span>
               `;
               return el;
             }}
