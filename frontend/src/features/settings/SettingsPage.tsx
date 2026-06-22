@@ -30,7 +30,7 @@ function SettingRow({ icon: Icon, label, description, children }: {
           <Icon size={16} style={{ color: 'var(--color-accent-gold)' }} />
         </div>
         <div className="min-w-0">
-          <p className="text-[14px] font-medium text-text-primary" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+          <p className="text-[14px] font-medium text-text-primary" style={{ fontFamily: 'var(--font-display)' }}>
             {label}
           </p>
           <p className="text-[11px] text-text-muted">{description}</p>
@@ -104,7 +104,7 @@ export default function SettingsPage() {
             </div>
             <h1
               className="text-text-primary"
-              style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '28px', fontWeight: 700 }}
+              style={{ fontFamily: 'var(--font-display)', fontSize: '28px', fontWeight: 700 }}
             >
               Settings
             </h1>
@@ -228,7 +228,7 @@ export default function SettingsPage() {
             className="px-5 py-4 rounded-xl"
             style={{ background: 'var(--glass-bg)', border: '1px solid var(--color-border-subtle)' }}
           >
-            <p className="text-[14px] font-semibold text-text-primary mb-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+            <p className="text-[14px] font-semibold text-text-primary mb-1" style={{ fontFamily: 'var(--font-display)' }}>
               Time Machine
             </p>
             <p className="text-[12px] text-text-secondary leading-relaxed mb-3">

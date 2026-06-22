@@ -369,7 +369,7 @@ function EventCard({
           {/* Title */}
           <h3
             style={{
-              fontFamily: "'Space Grotesk', sans-serif",
+              fontFamily: 'var(--font-display)',
               fontSize: '14px',
               fontWeight: 700,
               color: 'var(--color-text-primary)',
@@ -459,7 +459,7 @@ function EraChapter({
             <h2
               className="mb-1"
               style={{
-                fontFamily: "'Space Grotesk', sans-serif",
+                fontFamily: 'var(--font-display)',
                 fontSize: 'clamp(20px, 3vw, 26px)',
                 fontWeight: 700,
                 color: eraColor,
@@ -691,7 +691,7 @@ export default function TimelineView() {
             <h1
               className="text-[30px] sm:text-[38px] font-bold truncate"
               style={{
-                fontFamily: "'Space Grotesk', sans-serif",
+                fontFamily: 'var(--font-display)',
                 color: 'var(--color-text-primary)',
                 lineHeight: 1.1,
               }}
@@ -879,7 +879,7 @@ export default function TimelineView() {
                   background: `${eraColor}12`,
                   border: `1px solid ${eraColor}28`,
                   color: eraColor,
-                  fontFamily: "'Space Grotesk', sans-serif",
+                  fontFamily: 'var(--font-display)',
                   opacity: disabled ? 0.35 : 1,
                   cursor: disabled ? 'not-allowed' : 'pointer',
                 }}
@@ -915,7 +915,7 @@ export default function TimelineView() {
                 background: 'rgba(196,154,68,0.12)',
                 border: '1px solid rgba(196,154,68,0.25)',
                 color: 'var(--color-accent-gold)',
-                fontFamily: "'Space Grotesk', sans-serif",
+                fontFamily: 'var(--font-display)',
                 fontSize: '12px',
                 fontWeight: 600,
               }}
@@ -963,7 +963,7 @@ export default function TimelineView() {
             <span
               className="text-[10px] font-semibold"
               style={{
-                fontFamily: "'Space Grotesk', sans-serif",
+                fontFamily: 'var(--font-display)',
                 letterSpacing: '0.2em',
                 color: 'var(--color-text-muted)',
                 textTransform: 'uppercase',

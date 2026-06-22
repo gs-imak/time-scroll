@@ -86,7 +86,7 @@ export function QuizResults({ result, onRetry, onBackToHub }: Props) {
           >
             {emoji}
           </motion.div>
-          <h2 className="text-[24px] font-bold text-text-primary mb-2" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+          <h2 className="text-[24px] font-bold text-text-primary mb-2" style={{ fontFamily: 'var(--font-display)' }}>
             {message}
           </h2>
           <p className="text-[14px] text-text-muted mb-8">

@@ -41,7 +41,7 @@ function NavItem({
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         className={cn(
-          'relative flex items-center w-full h-11 rounded-[10px]',
+          'relative flex items-center w-full h-11 rounded-xl',
           'transition-all duration-200 cursor-pointer',
           'active:scale-[0.97]',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-void',
@@ -159,7 +159,7 @@ function ThemeToggle({ expanded, mobile }: { expanded: boolean; mobile?: boolean
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         className={cn(
-          'relative flex items-center w-full h-11 rounded-[10px]',
+          'relative flex items-center w-full h-11 rounded-xl',
           'transition-all duration-200 cursor-pointer',
           'text-text-secondary hover:text-text-primary',
           'active:scale-[0.97]',
@@ -447,7 +447,7 @@ function MobileDrawer() {
                 </div>
                 <button
                   onClick={() => setOpen(false)}
-                  className="flex items-center justify-center w-9 h-9 rounded-[8px] cursor-pointer transition-colors duration-200 hover:bg-border-subtle text-text-secondary"
+                  className="flex items-center justify-center w-11 h-11 rounded-[10px] cursor-pointer transition-colors duration-200 hover:bg-border-subtle text-text-secondary"
                   aria-label="Close navigation menu"
                 >
                   <X size={18} />

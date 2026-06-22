@@ -99,6 +99,16 @@
 | Landing subtitle | 18px   | 300    | 1.7         | normal         |
 | Landing label    | 13px   | 500    | 1.0         | 0.15em         |
 
+### Font Families
+
+| Token            | Family         | Use for                                   |
+|------------------|----------------|-------------------------------------------|
+| `--font-sans`    | Inter          | Body text, UI labels                      |
+| `--font-display` | Space Grotesk  | Headings, titles, year display, nav, CTAs |
+| `--font-mono`    | JetBrains Mono | Years, coordinates, counts                |
+
+Use the token (`var(--font-display)` or the `font-display` utility) — never a hardcoded `'Space Grotesk', sans-serif` string in component code.
+
 ---
 
 ## Responsive Breakpoints
@@ -117,8 +127,10 @@
 | Variant        | Background opacity | Blur  | Border              |
 |----------------|-------------------|-------|---------------------|
 | `glass`        | 0.65              | 24px  | border-subtle       |
-| `glass-strong` | 0.88              | 40px  | border-active       |
-| `glass-light`  | 0.40              | 12px  | white 0.06          |
+| `glass-strong` | 0.90              | 40px  | border-active       |
+| `glass-light`  | 0.50              | 16px  | border-subtle       |
+
+**Always use the `.glass` / `.glass-strong` / `.glass-light` classes** — never re-implement glass inline with `backdropFilter: blur(...)` + a glass-bg var. Inline copies drift from these values (e.g. `glass-strong-bg` paired with a 24px blur reads as weak frost).
 
 ---
 

@@ -202,7 +202,7 @@ export default function LandingPage() {
             <motion.h1
               className="text-center leading-[1.0]"
               style={{
-                fontFamily: "'Space Grotesk', sans-serif",
+                fontFamily: 'var(--font-display)',
                 letterSpacing: '0.08em',
               }}
               variants={stagger.item}
@@ -234,7 +234,7 @@ export default function LandingPage() {
               style={{
                 fontSize: '16px',
                 color: 'var(--color-text-secondary)',
-                fontFamily: "'Space Grotesk', sans-serif",
+                fontFamily: 'var(--font-display)',
                 fontWeight: 300,
                 lineHeight: 1.7,
               }}
@@ -278,7 +278,7 @@ export default function LandingPage() {
                       style={{
                         fontSize: '14px',
                         fontWeight: 500,
-                        fontFamily: "'Space Grotesk', sans-serif",
+                        fontFamily: 'var(--font-display)',
                       }}
                     >
                       {f.label}
@@ -369,7 +369,7 @@ export default function LandingPage() {
                         style={{
                           fontSize: '13px',
                           fontWeight: 500,
-                          fontFamily: "'Space Grotesk', sans-serif",
+                          fontFamily: 'var(--font-display)',
                           ...(isSelected ? { color } : {}),
                         }}
                       >
@@ -440,7 +440,7 @@ export default function LandingPage() {
                   )}
                   style={{
                     fontSize: '15px',
-                    fontFamily: "'Space Grotesk', sans-serif",
+                    fontFamily: 'var(--font-display)',
                     background: 'linear-gradient(135deg, #c49a44 0%, #a07830 100%)',
                     color: '#08080c',
                     fontWeight: 600,

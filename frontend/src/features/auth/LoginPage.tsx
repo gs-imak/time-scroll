@@ -62,7 +62,7 @@ export default function LoginPage() {
             </div>
             <span
               className="text-[18px] font-semibold text-text-primary"
-              style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+              style={{ fontFamily: 'var(--font-display)' }}
             >
               Time Machine
             </span>
@@ -72,7 +72,7 @@ export default function LoginPage() {
           <motion.div variants={stagger.container} initial="initial" animate="animate">
             <motion.h1
               className="text-text-primary mb-2"
-              style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '32px', fontWeight: 700 }}
+              style={{ fontFamily: 'var(--font-display)', fontSize: '32px', fontWeight: 700 }}
               variants={stagger.item}
             >
               Welcome back
@@ -158,7 +158,7 @@ export default function LoginPage() {
                 className="w-full h-[50px] rounded-xl font-semibold cursor-pointer flex items-center justify-center gap-2"
                 style={{
                   fontSize: '15px',
-                  fontFamily: "'Space Grotesk', sans-serif",
+                  fontFamily: 'var(--font-display)',
                   background: 'linear-gradient(135deg, #c49a44 0%, #a07830 100%)',
                   color: '#08080c',
                   fontWeight: 600,
@@ -189,7 +189,7 @@ export default function LoginPage() {
               className="w-full h-[46px] rounded-xl font-medium cursor-pointer flex items-center justify-center gap-2 text-text-secondary hover:text-text-primary transition-colors"
               style={{
                 fontSize: '14px',
-                fontFamily: "'Space Grotesk', sans-serif",
+                fontFamily: 'var(--font-display)',
                 background: 'var(--glass-bg)',
                 border: '1px solid var(--color-border-subtle)',
               }}

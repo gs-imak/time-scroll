@@ -322,7 +322,7 @@ function FilterPill({
         border: `1px solid ${active ? `${color}50` : 'var(--color-border-subtle)'}`,
         color: active ? color : 'var(--color-text-muted)',
         backdropFilter: 'blur(12px)',
-        fontFamily: "'Space Grotesk', sans-serif",
+        fontFamily: 'var(--font-display)',
       }}
       whileHover={{ scale: 1.05, borderColor: `${color}60` }}
       whileTap={{ scale: 0.95 }}
@@ -422,7 +422,7 @@ function CivCard({
           />
           <span
             className="text-[10px] font-semibold uppercase tracking-wider"
-            style={{ color: '#fff', fontFamily: "'Space Grotesk', sans-serif" }}
+            style={{ color: '#fff', fontFamily: 'var(--font-display)' }}
           >
             {civ.eraName}
           </span>
@@ -433,7 +433,7 @@ function CivCard({
           <h3
             className="mb-0.5"
             style={{
-              fontFamily: "'Space Grotesk', sans-serif",
+              fontFamily: 'var(--font-display)',
               fontSize: '19px',
               fontWeight: 700,
               color: '#fff',
@@ -509,7 +509,7 @@ function CivCard({
           >
             <span
               className="text-[11px] font-semibold uppercase tracking-wider"
-              style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+              style={{ fontFamily: 'var(--font-display)' }}
             >
               Explore
             </span>
@@ -805,7 +805,7 @@ export default function CivilizationIndex() {
             <h1
               className="text-[30px] sm:text-[38px] font-bold truncate"
               style={{
-                fontFamily: "'Space Grotesk', sans-serif",
+                fontFamily: 'var(--font-display)',
                 color: 'var(--color-text-primary)',
                 lineHeight: 1.1,
               }}
@@ -908,7 +908,7 @@ export default function CivilizationIndex() {
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-9 pr-10 py-2.5 rounded-full text-[12px] outline-none"
               style={{
-                fontFamily: "'Space Grotesk', sans-serif",
+                fontFamily: 'var(--font-display)',
                 background: 'var(--glass-bg)',
                 backdropFilter: 'blur(12px)',
                 border: '1px solid var(--color-border-subtle)',
@@ -978,7 +978,7 @@ export default function CivilizationIndex() {
                 background: 'rgba(196,154,68,0.12)',
                 border: '1px solid rgba(196,154,68,0.25)',
                 color: 'var(--color-accent-gold)',
-                fontFamily: "'Space Grotesk', sans-serif",
+                fontFamily: 'var(--font-display)',
                 fontSize: '12px',
                 fontWeight: 600,
               }}
@@ -1013,7 +1013,7 @@ export default function CivilizationIndex() {
                       <h2
                         className="mb-0.5"
                         style={{
-                          fontFamily: "'Space Grotesk', sans-serif",
+                          fontFamily: 'var(--font-display)',
                           fontSize: 'clamp(18px, 2.5vw, 22px)',
                           fontWeight: 700,
                           color: eraColor,

@@ -10,12 +10,23 @@ interface ThemeState {
 
 function applyTheme(theme: Theme) {
   document.documentElement.setAttribute('data-theme', theme);
-  localStorage.setItem('time-scroll-theme', theme);
+  // localStorage can throw (private mode quota, storage partitioning, corrupted
+  // storage). This runs at module-eval time, before any error boundary exists,
+  // so an unguarded throw would block the whole app from booting.
+  try {
+    localStorage.setItem('time-scroll-theme', theme);
+  } catch {
+    /* storage unavailable — theme just won't persist */
+  }
 }
 
 function getStoredTheme(): Theme {
-  const stored = localStorage.getItem('time-scroll-theme');
-  if (stored === 'light' || stored === 'dark') return stored;
+  try {
+    const stored = localStorage.getItem('time-scroll-theme');
+    if (stored === 'light' || stored === 'dark') return stored;
+  } catch {
+    /* storage unavailable — fall back to default */
+  }
   return 'dark';
 }
 

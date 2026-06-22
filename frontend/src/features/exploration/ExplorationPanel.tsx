@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { X, ChevronRight, MapPin, Scroll } from 'lucide-react';
 import { useUIStore } from '@/shared/stores/uiStore';
@@ -26,7 +27,13 @@ export function ExplorationPanel() {
 
   const show = activePanel === 'exploration' || activePanel === 'events';
   const isEvents = activePanel === 'events';
-  const visibleEvents = getVisibleEvents(currentYear);
+  // Only run the O(n) event filter when the events panel is actually open.
+  // This component stays mounted in GlobeExplorer, so without the guard the
+  // filter ran on every currentYear tick during playback even while hidden.
+  const visibleEvents = useMemo(
+    () => (show && isEvents ? getVisibleEvents(currentYear) : []),
+    [show, isEvents, getVisibleEvents, currentYear],
+  );
 
   return (
     <AnimatePresence>

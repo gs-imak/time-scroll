@@ -117,7 +117,7 @@ export function ComparisonTool() {
               </div>
               <h2
                 style={{
-                  fontFamily: "'Space Grotesk', sans-serif",
+                  fontFamily: 'var(--font-display)',
                   fontSize: 'clamp(22px, 3vw, 30px)',
                   fontWeight: 700,
                   color: 'var(--color-text-primary)',
@@ -148,7 +148,7 @@ export function ComparisonTool() {
             >
               <span
                 style={{
-                  fontFamily: "'Space Grotesk', sans-serif",
+                  fontFamily: 'var(--font-display)',
                   fontSize: 'clamp(28px, 5vw, 44px)',
                   fontWeight: 700,
                   background: 'linear-gradient(135deg, #c49a44 0%, #e8c876 50%, #c49a44 100%)',
@@ -249,7 +249,7 @@ export function ComparisonTool() {
                 onClick={clearCompareEvents}
                 className="flex items-center gap-2 h-[44px] px-5 rounded-[10px] cursor-pointer"
                 style={{
-                  fontFamily: "'Space Grotesk', sans-serif",
+                  fontFamily: 'var(--font-display)',
                   fontSize: '14px',
                   fontWeight: 500,
                   background: 'rgba(255,255,255,0.04)',
@@ -321,7 +321,7 @@ function ComparisonCard({ event, era, delay }: ComparisonCardProps) {
         <div className="absolute bottom-4 left-4 right-4">
           <h3
             style={{
-              fontFamily: "'Space Grotesk', sans-serif",
+              fontFamily: 'var(--font-display)',
               fontSize: '18px',
               fontWeight: 600,
               color: 'var(--color-text-primary)',
@@ -355,7 +355,7 @@ function ComparisonCard({ event, era, delay }: ComparisonCardProps) {
         <p
           className="pt-2"
           style={{
-            fontFamily: "'Space Grotesk', sans-serif",
+            fontFamily: 'var(--font-display)',
             fontSize: '13px',
             lineHeight: 1.6,
             color: 'var(--color-text-secondary)',
@@ -388,7 +388,7 @@ function DetailRow({
       </span>
       <span
         className="capitalize"
-        style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '14px', fontWeight: 500, color }}
+        style={{ fontFamily: 'var(--font-display)', fontSize: '14px', fontWeight: 500, color }}
       >
         {value}
       </span>

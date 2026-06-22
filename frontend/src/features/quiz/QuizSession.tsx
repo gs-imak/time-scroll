@@ -76,7 +76,8 @@ export function QuizSession({ state, onSelectAnswer, onConfirmAnswer, onUseHint,
             )}
             <button
               onClick={onQuit}
-              className="w-8 h-8 rounded-full flex items-center justify-center cursor-pointer hover:bg-white/[0.06] transition-colors"
+              aria-label="Quit quiz"
+              className="w-11 h-11 rounded-full flex items-center justify-center cursor-pointer hover:bg-white/[0.06] transition-colors"
             >
               <X size={16} className="text-text-muted" />
             </button>

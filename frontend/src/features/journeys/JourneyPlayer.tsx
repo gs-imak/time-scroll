@@ -117,14 +117,14 @@ export default function JourneyPlayer() {
         style={{ background: 'var(--color-void)' }}
       >
         <div className="text-center">
-          <p style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '18px', color: 'var(--color-text-secondary)' }}>
+          <p style={{ fontFamily: 'var(--font-display)', fontSize: '18px', color: 'var(--color-text-secondary)' }}>
             Journey not found
           </p>
           <button
             onClick={() => navigate('/journeys')}
             className="mt-4 px-5 h-[44px] rounded-[10px] cursor-pointer"
             style={{
-              fontFamily: "'Space Grotesk', sans-serif",
+              fontFamily: 'var(--font-display)',
               fontSize: '14px',
               fontWeight: 600,
               background: 'rgba(196, 154, 68, 0.15)',
@@ -216,7 +216,7 @@ export default function JourneyPlayer() {
             <span style={{ fontSize: '16px' }}>{journey.icon}</span>
             <span
               className="hidden sm:inline"
-              style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '13px', fontWeight: 500, color: 'var(--color-text-primary)' }}
+              style={{ fontFamily: 'var(--font-display)', fontSize: '13px', fontWeight: 500, color: 'var(--color-text-primary)' }}
             >
               {journey.title}
             </span>
@@ -281,13 +281,13 @@ export default function JourneyPlayer() {
                 <Check size={28} style={{ color: '#c49a44' }} />
               </div>
               <h2
-                style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '24px', fontWeight: 700, color: 'var(--color-text-primary)' }}
+                style={{ fontFamily: 'var(--font-display)', fontSize: '24px', fontWeight: 700, color: 'var(--color-text-primary)' }}
               >
                 Journey Complete
               </h2>
               <p
                 className="mt-2 mb-6"
-                style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '14px', color: 'var(--color-text-secondary)' }}
+                style={{ fontFamily: 'var(--font-display)', fontSize: '14px', color: 'var(--color-text-secondary)' }}
               >
                 You explored {completedEvents} events across the "{journey.title}" journey
               </p>
@@ -309,7 +309,7 @@ export default function JourneyPlayer() {
                 onClick={() => navigate('/journeys')}
                 className="h-[44px] px-6 rounded-[10px] cursor-pointer transition-all duration-200"
                 style={{
-                  fontFamily: "'Space Grotesk', sans-serif",
+                  fontFamily: 'var(--font-display)',
                   fontSize: '14px',
                   fontWeight: 600,
                   background: 'linear-gradient(135deg, #c49a44 0%, #a07830 100%)',
@@ -345,7 +345,7 @@ export default function JourneyPlayer() {
               background: 'var(--glass-strong-bg)',
               backdropFilter: 'blur(16px)',
               border: '1px solid var(--color-border-subtle)',
-              fontFamily: "'Space Grotesk', sans-serif",
+              fontFamily: 'var(--font-display)',
               fontSize: '14px',
               fontWeight: 500,
               color: 'var(--color-text-primary)',
@@ -390,7 +390,7 @@ export default function JourneyPlayer() {
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold/50',
             )}
             style={{
-              fontFamily: "'Space Grotesk', sans-serif",
+              fontFamily: 'var(--font-display)',
               fontSize: '14px',
               fontWeight: 600,
               background: isLastStep
@@ -481,7 +481,7 @@ function EventCard({
       <h2
         className="mb-4"
         style={{
-          fontFamily: "'Space Grotesk', sans-serif",
+          fontFamily: 'var(--font-display)',
           fontSize: 'clamp(22px, 3.5vw, 28px)',
           fontWeight: 700,
           color: 'var(--color-text-primary)',
@@ -497,7 +497,7 @@ function EventCard({
           <p
             key={i}
             style={{
-              fontFamily: "'Space Grotesk', sans-serif",
+              fontFamily: 'var(--font-display)',
               fontSize: '15px',
               lineHeight: 1.7,
               color: 'var(--color-text-secondary)',
@@ -523,7 +523,7 @@ function EventCard({
           >
             Did you know?
           </span>
-          <p style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '14px', lineHeight: 1.6, color: 'var(--color-text-secondary)' }}>
+          <p style={{ fontFamily: 'var(--font-display)', fontSize: '14px', lineHeight: 1.6, color: 'var(--color-text-secondary)' }}>
             {event.impactText}
           </p>
         </div>
@@ -562,7 +562,7 @@ function TransitionCard({
         </span>
         <span
           className="max-w-[200px] truncate"
-          style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '13px', fontWeight: 500, color: 'var(--color-text-secondary)' }}
+          style={{ fontFamily: 'var(--font-display)', fontSize: '13px', fontWeight: 500, color: 'var(--color-text-secondary)' }}
         >
           {fromEvent.title}
         </span>
@@ -586,7 +586,7 @@ function TransitionCard({
       >
         <p
           style={{
-            fontFamily: "'Space Grotesk', sans-serif",
+            fontFamily: 'var(--font-display)',
             fontSize: '16px',
             lineHeight: 1.8,
             color: 'var(--color-text-primary)',
@@ -610,7 +610,7 @@ function TransitionCard({
         </span>
         <span
           className="max-w-[200px] truncate"
-          style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '13px', fontWeight: 500, color: '#c49a44' }}
+          style={{ fontFamily: 'var(--font-display)', fontSize: '13px', fontWeight: 500, color: '#c49a44' }}
         >
           {toEvent.title}
         </span>

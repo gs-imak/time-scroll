@@ -132,7 +132,7 @@ export function KeyboardHelp() {
                 <div>
                   <h2
                     style={{
-                      fontFamily: "'Space Grotesk', sans-serif",
+                      fontFamily: 'var(--font-display)',
                       fontSize: '20px',
                       fontWeight: 700,
                       color: 'var(--color-text-primary)',
@@ -156,7 +156,7 @@ export function KeyboardHelp() {
               <motion.button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="w-9 h-9 rounded-full flex items-center justify-center cursor-pointer shrink-0"
+                className="w-11 h-11 rounded-full flex items-center justify-center cursor-pointer shrink-0"
                 style={{
                   background: 'var(--glass-bg)',
                   border: '1px solid var(--color-border-subtle)',
@@ -222,7 +222,7 @@ export function KeyboardHelp() {
                           <span
                             className="text-[12px]"
                             style={{
-                              fontFamily: "'Space Grotesk', sans-serif",
+                              fontFamily: 'var(--font-display)',
                               color: 'var(--color-text-secondary)',
                             }}
                           >

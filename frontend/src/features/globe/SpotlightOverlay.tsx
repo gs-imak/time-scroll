@@ -119,7 +119,7 @@ export function SpotlightOverlay() {
             >
               <div className="w-3 h-3 rounded-sm" style={{ background: color, boxShadow: `0 0 8px ${color}90` }} />
               <div>
-                <h2 className="text-[16px] font-bold" style={{ color, fontFamily: "'Space Grotesk', sans-serif", textShadow: `0 0 16px ${color}40` }}>
+                <h2 className="text-[16px] font-bold" style={{ color, fontFamily: 'var(--font-display)', textShadow: `0 0 16px ${color}40` }}>
                   {displayName}
                 </h2>
                 <p className="text-[11px] text-text-muted">
@@ -327,7 +327,8 @@ function ControlBtn({ onClick, disabled, children, title }: { onClick: () => voi
     <motion.button
       onClick={onClick}
       disabled={disabled}
-      className="w-8 h-8 rounded-full flex items-center justify-center cursor-pointer disabled:opacity-20 disabled:cursor-default"
+      aria-label={title}
+      className="w-11 h-11 rounded-full flex items-center justify-center cursor-pointer disabled:opacity-20 disabled:cursor-default"
       style={{ background: 'rgba(255,255,255,0.04)' }}
       whileHover={!disabled ? { scale: 1.1, background: 'rgba(255,255,255,0.08)' } : {}}
       whileTap={!disabled ? { scale: 0.9 } : {}}

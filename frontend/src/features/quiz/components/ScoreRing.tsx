@@ -44,7 +44,7 @@ export function ScoreRing({ score, size = 160, strokeWidth = 8, color }: Props) 
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <motion.span
           className="text-[36px] font-bold"
-          style={{ color, fontFamily: "'Space Grotesk', sans-serif" }}
+          style={{ color, fontFamily: 'var(--font-display)' }}
           initial={{ opacity: 0, scale: 0.5 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.5, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}

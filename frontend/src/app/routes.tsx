@@ -64,7 +64,7 @@ class ChunkErrorBoundary extends Component<
     if (this.state.hasError) {
       return (
         <div className="flex flex-col items-center justify-center h-screen bg-void text-text-primary gap-4">
-          <p className="text-text-secondary text-[14px]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+          <p className="text-text-secondary text-[14px]" style={{ fontFamily: 'var(--font-display)' }}>
             A new version is available
           </p>
           <button
@@ -78,7 +78,7 @@ class ChunkErrorBoundary extends Component<
             }}
             className="px-6 py-3 rounded-xl text-[14px] font-semibold cursor-pointer"
             style={{
-              fontFamily: "'Space Grotesk', sans-serif",
+              fontFamily: 'var(--font-display)',
               background: 'linear-gradient(135deg, #c49a44 0%, #a07830 100%)',
               color: '#08080c',
             }}

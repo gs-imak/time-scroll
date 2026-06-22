@@ -227,7 +227,7 @@ function ModeCard({
         </div>
         <h3
           className="text-[17px] font-bold mb-1"
-          style={{ fontFamily: "'Space Grotesk', sans-serif", color: 'var(--color-text-primary)' }}
+          style={{ fontFamily: 'var(--font-display)', color: 'var(--color-text-primary)' }}
         >
           {title}
         </h3>
@@ -281,7 +281,7 @@ function EraMasteryCard({
         <div className="flex items-center justify-between mb-3">
           <span
             className="text-[13px] font-bold"
-            style={{ fontFamily: "'Space Grotesk', sans-serif", color: 'var(--color-text-primary)' }}
+            style={{ fontFamily: 'var(--font-display)', color: 'var(--color-text-primary)' }}
           >
             {era.name}
           </span>
@@ -507,7 +507,7 @@ export default function QuizHub() {
                 <h1
                   className="text-[30px] sm:text-[38px] font-bold"
                   style={{
-                    fontFamily: "'Space Grotesk', sans-serif",
+                    fontFamily: 'var(--font-display)',
                     color: 'var(--color-text-primary)',
                   }}
                 >
@@ -537,7 +537,7 @@ export default function QuizHub() {
               onClick={() => handleStartQuiz('practice')}
               className="flex items-center gap-2.5 px-6 py-3 rounded-xl cursor-pointer font-semibold text-[14px] group shrink-0"
               style={{
-                fontFamily: "'Space Grotesk', sans-serif",
+                fontFamily: 'var(--font-display)',
                 background: 'linear-gradient(135deg, rgba(196,154,68,0.18) 0%, rgba(196,154,68,0.08) 100%)',
                 border: '1px solid rgba(196,154,68,0.25)',
                 color: 'var(--color-accent-gold)',
@@ -700,7 +700,7 @@ export default function QuizHub() {
             ].map(({ emoji, title, desc }) => (
               <GlassCard key={title} className="p-4 text-center">
                 <div className="text-[24px] mb-2">{emoji}</div>
-                <p className="text-[12px] font-bold mb-0.5" style={{ fontFamily: "'Space Grotesk', sans-serif", color: 'var(--color-text-primary)' }}>{title}</p>
+                <p className="text-[12px] font-bold mb-0.5" style={{ fontFamily: 'var(--font-display)', color: 'var(--color-text-primary)' }}>{title}</p>
                 <p className="text-[10px]" style={{ color: 'var(--color-text-muted)' }}>{desc}</p>
               </GlassCard>
             ))}
@@ -716,7 +716,7 @@ export default function QuizHub() {
                   <ItemIcon size={15} style={{ color: accent }} />
                 </div>
                 <div>
-                  <p className="text-[12px] font-semibold mb-0.5" style={{ fontFamily: "'Space Grotesk', sans-serif", color: 'var(--color-text-primary)' }}>{title}</p>
+                  <p className="text-[12px] font-semibold mb-0.5" style={{ fontFamily: 'var(--font-display)', color: 'var(--color-text-primary)' }}>{title}</p>
                   <p className="text-[10px] leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>{text}</p>
                 </div>
               </GlassCard>

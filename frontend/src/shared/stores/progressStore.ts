@@ -296,6 +296,29 @@ export const useProgressStore = create<ProgressStore>()(
         dailyChallengeDate: state.dailyChallengeDate,
         dailyChallengeCompleted: state.dailyChallengeCompleted,
       }),
+      version: 1,
+      // Coerce every rehydrated field to its expected type. Corrupt or
+      // schema-drifted localStorage would otherwise reach achievement checks
+      // (.includes / Object.values) at boot and crash the whole app with no
+      // recovery path, since this runs above any error boundary.
+      merge: (persisted, current) => {
+        const p = (persisted ?? {}) as Partial<ProgressState>;
+        const arr = (v: unknown): string[] => (Array.isArray(v) ? v.filter((x) => typeof x === 'string') : []);
+        const numRec = (v: unknown): Record<string, number> =>
+          v && typeof v === 'object' && !Array.isArray(v) ? (v as Record<string, number>) : {};
+        const strRec = (v: unknown): Record<string, string> =>
+          v && typeof v === 'object' && !Array.isArray(v) ? (v as Record<string, string>) : {};
+        return {
+          ...current,
+          ...p,
+          viewedEvents: arr(p.viewedEvents),
+          quizScores: numRec(p.quizScores),
+          unlockedAchievements: arr(p.unlockedAchievements),
+          favoriteEvents: arr(p.favoriteEvents),
+          eventNotes: strRec(p.eventNotes),
+          currentStreak: typeof p.currentStreak === 'number' ? p.currentStreak : current.currentStreak,
+        };
+      },
     },
   ),
 );

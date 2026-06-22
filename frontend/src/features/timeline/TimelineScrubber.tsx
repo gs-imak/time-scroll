@@ -61,6 +61,41 @@ export function TimelineScrubber() {
     [setYear, getPercentFromPointer],
   );
 
+  // Keyboard operation for the slider — without this, the role="slider" track is
+  // focusable but Arrow keys do nothing (WCAG 2.1.1). Arrows step the year (Shift
+  // = coarse), Home/End jump to the range ends, PageUp/Down jump by era.
+  const onKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      const step = e.shiftKey ? 100 : 10;
+      switch (e.key) {
+        case 'ArrowRight':
+        case 'ArrowUp':
+          setYear(Math.min(MAX_YEAR, currentYear + step));
+          break;
+        case 'ArrowLeft':
+        case 'ArrowDown':
+          setYear(Math.max(MIN_YEAR, currentYear - step));
+          break;
+        case 'Home':
+          setYear(MIN_YEAR);
+          break;
+        case 'End':
+          setYear(MAX_YEAR);
+          break;
+        case 'PageUp':
+          nextEra();
+          break;
+        case 'PageDown':
+          prevEra();
+          break;
+        default:
+          return;
+      }
+      e.preventDefault();
+    },
+    [currentYear, setYear, nextEra, prevEra],
+  );
+
   const onPointerMove = useCallback(
     (e: React.PointerEvent) => {
       const pct = getPercentFromPointer(e.clientX);
@@ -217,6 +252,7 @@ export function TimelineScrubber() {
             onPointerUp={onPointerUp}
             onPointerCancel={onPointerUp}
             onPointerLeave={onPointerLeave}
+            onKeyDown={onKeyDown}
             role="slider"
             aria-label="Timeline scrubber"
             aria-valuemin={MIN_YEAR}

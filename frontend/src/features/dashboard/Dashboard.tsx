@@ -12,6 +12,7 @@ import { ERAS } from '@/shared/utils/constants';
 import { EVENT_QUIZZES } from '@/shared/data/eventQuizzes';
 import { JOURNEYS } from '@/shared/data/journeys';
 import { WarEntryButtons } from '@/features/events/WarEntryButtons';
+import type { HistoricalEvent } from '@/shared/types/events';
 
 import { cn } from '@/shared/utils/cn';
 
@@ -190,7 +191,7 @@ export default function Dashboard() {
           <div>
             <h1
               className="text-text-primary leading-tight"
-              style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 'clamp(24px, 4vw, 32px)', fontWeight: 700 }}
+              style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(24px, 4vw, 32px)', fontWeight: 700 }}
             >
               Welcome, Explorer
             </h1>
@@ -209,7 +210,7 @@ export default function Dashboard() {
                 }}
               >
                 <Flame size={16} style={{ color: '#c49a44' }} />
-                <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '14px', fontWeight: 600, color: '#c49a44' }}>
+                <span style={{ fontFamily: 'var(--font-display)', fontSize: '14px', fontWeight: 600, color: '#c49a44' }}>
                   {currentStreak}
                 </span>
               </div>
@@ -218,7 +219,7 @@ export default function Dashboard() {
               onClick={() => navigate('/explore')}
               className="flex items-center gap-2 h-[44px] px-5 rounded-[10px] cursor-pointer"
               style={{
-                fontFamily: "'Space Grotesk', sans-serif", fontSize: '14px', fontWeight: 600,
+                fontFamily: 'var(--font-display)', fontSize: '14px', fontWeight: 600,
                 background: 'linear-gradient(135deg, #c49a44 0%, #a07830 100%)', color: '#08080c',
               }}
               whileHover={{ scale: 1.04, boxShadow: '0 0 24px rgba(196, 154, 68, 0.3)' }}
@@ -326,7 +327,7 @@ export default function Dashboard() {
 
                   <h3
                     className="text-text-primary"
-                    style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '20px', fontWeight: 600, lineHeight: 1.3 }}
+                    style={{ fontFamily: 'var(--font-display)', fontSize: '20px', fontWeight: 600, lineHeight: 1.3 }}
                   >
                     {dailyEvent.title}
                   </h3>
@@ -339,7 +340,7 @@ export default function Dashboard() {
 
                   <div className="mt-4">
                     {dailyChallengeCompleted ? (
-                      <p style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '14px', color: '#6d9476' }}>
+                      <p style={{ fontFamily: 'var(--font-display)', fontSize: '14px', color: '#6d9476' }}>
                         Well done! Come back tomorrow for a new challenge.
                       </p>
                     ) : (
@@ -347,7 +348,7 @@ export default function Dashboard() {
                         onClick={() => navigate(`/explore?event=${dailyEvent.id}`)}
                         className="flex items-center gap-2 h-[44px] px-5 rounded-[10px] cursor-pointer"
                         style={{
-                          fontFamily: "'Space Grotesk', sans-serif",
+                          fontFamily: 'var(--font-display)',
                           fontSize: '14px',
                           fontWeight: 600,
                           background: 'linear-gradient(135deg, #c49a44 0%, #a07830 100%)',
@@ -382,7 +383,7 @@ export default function Dashboard() {
               </div>
             </div>
             <div>
-              <span className="block text-text-primary" style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '32px', fontWeight: 700, lineHeight: 1 }}>
+              <span className="block text-text-primary" style={{ fontFamily: 'var(--font-display)', fontSize: '32px', fontWeight: 700, lineHeight: 1 }}>
                 <AnimatedNumber value={exploredCount} />
               </span>
               <span className="block mt-1" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: 'var(--color-text-muted)' }}>
@@ -399,7 +400,7 @@ export default function Dashboard() {
               <Brain size={24} style={{ color: '#c49a44', opacity: 0.7 }} />
             </div>
             <div>
-              <span className="block text-text-primary" style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '32px', fontWeight: 700, lineHeight: 1 }}>
+              <span className="block text-text-primary" style={{ fontFamily: 'var(--font-display)', fontSize: '32px', fontWeight: 700, lineHeight: 1 }}>
                 <AnimatedNumber value={quizCount} />
               </span>
               <span className="block mt-1" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: 'var(--color-text-muted)' }}>
@@ -416,7 +417,7 @@ export default function Dashboard() {
               <Trophy size={24} style={{ color: '#c49a44', opacity: 0.7 }} />
             </div>
             <div>
-              <span className="block text-text-primary" style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '32px', fontWeight: 700, lineHeight: 1 }}>
+              <span className="block text-text-primary" style={{ fontFamily: 'var(--font-display)', fontSize: '32px', fontWeight: 700, lineHeight: 1 }}>
                 <AnimatedNumber value={achievementCount} />
               </span>
               <span className="block mt-1" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: 'var(--color-text-muted)' }}>
@@ -471,14 +472,14 @@ export default function Dashboard() {
                         <span style={{ fontSize: '20px' }}>{journey.icon}</span>
                         <h3
                           className="text-text-primary group-hover:text-[#c49a44] transition-colors truncate"
-                          style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '15px', fontWeight: 500 }}
+                          style={{ fontFamily: 'var(--font-display)', fontSize: '15px', fontWeight: 500 }}
                         >
                           {journey.title}
                         </h3>
                       </div>
                       <p
                         className="line-clamp-2 mb-3"
-                        style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '13px', color: 'var(--color-text-secondary)', lineHeight: 1.5 }}
+                        style={{ fontFamily: 'var(--font-display)', fontSize: '13px', color: 'var(--color-text-secondary)', lineHeight: 1.5 }}
                       >
                         {journey.description}
                       </p>
@@ -558,7 +559,7 @@ export default function Dashboard() {
                       <div className="px-4 py-3">
                         <h3
                           className="text-text-primary group-hover:text-[#c49a44] transition-colors truncate"
-                          style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '15px', fontWeight: 500 }}
+                          style={{ fontFamily: 'var(--font-display)', fontSize: '15px', fontWeight: 500 }}
                         >
                           {event.title}
                         </h3>
@@ -574,7 +575,7 @@ export default function Dashboard() {
           ) : (
             <GlassCard className="flex items-center justify-center gap-3 py-10 px-6">
               <Sparkles size={20} style={{ color: '#c49a44' }} />
-              <span className="text-text-primary" style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '16px', fontWeight: 500 }}>
+              <span className="text-text-primary" style={{ fontFamily: 'var(--font-display)', fontSize: '16px', fontWeight: 500 }}>
                 You have explored every event!
               </span>
             </GlassCard>
@@ -648,7 +649,7 @@ export default function Dashboard() {
                       <div className="px-4 py-3">
                         <h3
                           className="text-text-primary group-hover:text-[#c49a44] transition-colors truncate"
-                          style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '15px', fontWeight: 500 }}
+                          style={{ fontFamily: 'var(--font-display)', fontSize: '15px', fontWeight: 500 }}
                         >
                           {event.title}
                         </h3>
@@ -690,7 +691,7 @@ export default function Dashboard() {
                     <div className="w-10 h-[3px] rounded-full mb-3" style={{ background: color }} />
                     <h3
                       className="text-text-primary group-hover:text-white transition-colors"
-                      style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '15px', fontWeight: 500 }}
+                      style={{ fontFamily: 'var(--font-display)', fontSize: '15px', fontWeight: 500 }}
                     >
                       {era.name}
                     </h3>
@@ -732,7 +733,7 @@ export default function Dashboard() {
                     <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: catColor }} />
                     <span
                       className="flex-1 text-text-primary truncate"
-                      style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '14px', fontWeight: 500 }}
+                      style={{ fontFamily: 'var(--font-display)', fontSize: '14px', fontWeight: 500 }}
                     >
                       {event.title}
                     </span>
@@ -805,7 +806,7 @@ const EVENT_CATEGORIES: { id: string; label: string; color: string }[] = [
 ];
 
 function EventsTab({ events, viewedEvents, navigate }: {
-  events: any[];
+  events: HistoricalEvent[];
   viewedEvents: string[];
   navigate: (path: string) => void;
 }) {
@@ -819,7 +820,7 @@ function EventsTab({ events, viewedEvents, navigate }: {
       if (eraFilter && e.eraId !== eraFilter) return false;
       if (search && !e.title.toLowerCase().includes(search.toLowerCase())) return false;
       return true;
-    }).sort((a: any, b: any) => a.year - b.year);
+    }).sort((a, b) => a.year - b.year);
   }, [events, categoryFilter, eraFilter, search]);
 
   return (
@@ -868,7 +869,7 @@ function EventsTab({ events, viewedEvents, navigate }: {
           All ({events.length})
         </button>
         {EVENT_CATEGORIES.map(cat => {
-          const count = events.filter((e: any) => e.category === cat.id).length;
+          const count = events.filter((e) => e.category === cat.id).length;
           const active = categoryFilter === cat.id;
           return (
             <button
@@ -890,7 +891,7 @@ function EventsTab({ events, viewedEvents, navigate }: {
 
       {/* Event list */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-        {filtered.map((event: any) => {
+        {filtered.map((event) => {
           const catColor = CATEGORY_COLORS[event.category] ?? '#8a8a9a';
           const viewed = viewedEvents.includes(event.id);
           return (
@@ -938,7 +939,7 @@ function EventsTab({ events, viewedEvents, navigate }: {
                 <div className="px-4 py-3">
                   <h3
                     className="text-text-primary group-hover:text-accent-gold transition-colors truncate"
-                    style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '14px', fontWeight: 500 }}
+                    style={{ fontFamily: 'var(--font-display)', fontSize: '14px', fontWeight: 500 }}
                   >
                     {event.title}
                   </h3>
@@ -997,7 +998,7 @@ function AchievementsTab({ viewedEvents, quizScores, unlockedAchievements, curre
         {stats.map((stat, i) => (
           <GlassCard key={i} className="px-5 py-4">
             <p className="text-[10px] font-mono uppercase tracking-wider text-text-muted mb-1">{stat.label}</p>
-            <p className="text-[24px] font-bold" style={{ color: stat.color, fontFamily: "'Space Grotesk', sans-serif" }}>
+            <p className="text-[24px] font-bold" style={{ color: stat.color, fontFamily: 'var(--font-display)' }}>
               {stat.value}
               {stat.total && <span className="text-[14px] text-text-muted font-normal">/{stat.total}</span>}
             </p>
@@ -1042,7 +1043,7 @@ function AchievementsTab({ viewedEvents, quizScores, unlockedAchievements, curre
                 {unlocked ? ach.icon : <Lock size={16} className="text-text-muted" />}
               </div>
               <div className="min-w-0">
-                <h3 className="text-[14px] font-semibold text-text-primary" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                <h3 className="text-[14px] font-semibold text-text-primary" style={{ fontFamily: 'var(--font-display)' }}>
                   {ach.title}
                 </h3>
                 <p className="text-[11px] text-text-secondary mt-0.5">{ach.desc}</p>
@@ -1108,7 +1109,7 @@ function ActionButton({
         <Icon size={20} strokeWidth={1.8} style={{ color: '#c49a44' }} />
       </div>
       <div>
-        <span className="block text-text-primary" style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '15px', fontWeight: 500 }}>
+        <span className="block text-text-primary" style={{ fontFamily: 'var(--font-display)', fontSize: '15px', fontWeight: 500 }}>
           {label}
         </span>
         <span className="block" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: 'var(--color-text-muted)' }}>

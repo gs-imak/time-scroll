@@ -273,7 +273,7 @@ function JourneyCard({
           <DiffIcon size={11} style={{ color: '#fff' }} />
           <span
             className="text-[10px] font-semibold uppercase tracking-wider"
-            style={{ color: '#fff', fontFamily: "'Space Grotesk', sans-serif" }}
+            style={{ color: '#fff', fontFamily: 'var(--font-display)' }}
           >
             {diff.label}
           </span>
@@ -292,7 +292,7 @@ function JourneyCard({
             <CheckCircle2 size={11} style={{ color: '#fff' }} />
             <span
               className="text-[10px] font-semibold uppercase tracking-wider"
-              style={{ color: '#fff', fontFamily: "'Space Grotesk', sans-serif" }}
+              style={{ color: '#fff', fontFamily: 'var(--font-display)' }}
             >
               Complete
             </span>
@@ -310,7 +310,7 @@ function JourneyCard({
             <Play size={10} style={{ color: '#fff', fill: '#fff' }} />
             <span
               className="text-[10px] font-semibold uppercase tracking-wider"
-              style={{ color: '#fff', fontFamily: "'Space Grotesk', sans-serif" }}
+              style={{ color: '#fff', fontFamily: 'var(--font-display)' }}
             >
               In Progress
             </span>
@@ -330,7 +330,7 @@ function JourneyCard({
             <h3
               className="flex-1"
               style={{
-                fontFamily: "'Space Grotesk', sans-serif",
+                fontFamily: 'var(--font-display)',
                 fontSize: '19px',
                 fontWeight: 700,
                 color: '#fff',
@@ -397,7 +397,7 @@ function JourneyCard({
           >
             <span
               className="text-[11px] font-semibold uppercase tracking-wider"
-              style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+              style={{ fontFamily: 'var(--font-display)' }}
             >
               {started ? 'Continue' : 'Start'}
             </span>
@@ -553,7 +553,7 @@ export default function JourneyBrowser() {
             <h1
               className="text-[30px] sm:text-[38px] font-bold truncate"
               style={{
-                fontFamily: "'Space Grotesk', sans-serif",
+                fontFamily: 'var(--font-display)',
                 color: 'var(--color-text-primary)',
                 lineHeight: 1.1,
               }}

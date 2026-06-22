@@ -92,28 +92,30 @@ function Reveal({ children, delay = 0 }: { children: React.ReactNode; delay?: nu
 function AnimatedYear({ year }: { year: number }) {
   const ref = useRef<HTMLSpanElement>(null);
   const inView = useInView(ref, { once: true });
-  const [display, setDisplay] = useState(year > 0 ? 1 : year + 500);
 
+  const format = (v: number) =>
+    v < 0 ? `${Math.abs(v).toLocaleString()} BCE` : `${v.toLocaleString()} CE`;
+
+  // Pure visual count-up: drive the DOM node directly instead of calling
+  // setState ~72×/open. Also cancels the rAF on unmount.
   useEffect(() => {
     if (!inView) return;
     const start = year > 0 ? Math.max(1, year - 200) : year + 500;
     const end = year;
     const duration = 1200;
     const startTime = performance.now();
+    let raf = 0;
     const tick = (now: number) => {
       const t = Math.min(1, (now - startTime) / duration);
       const eased = 1 - Math.pow(1 - t, 3); // ease-out cubic
-      setDisplay(Math.round(start + (end - start) * eased));
-      if (t < 1) requestAnimationFrame(tick);
+      if (ref.current) ref.current.textContent = format(Math.round(start + (end - start) * eased));
+      if (t < 1) raf = requestAnimationFrame(tick);
     };
-    requestAnimationFrame(tick);
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
   }, [inView, year]);
 
-  const formatted = display < 0
-    ? `${Math.abs(display).toLocaleString()} BCE`
-    : `${display.toLocaleString()} CE`;
-
-  return <span ref={ref}>{formatted}</span>;
+  return <span ref={ref}>{format(year > 0 ? 1 : year + 500)}</span>;
 }
 
 export function EventStory() {
@@ -162,13 +164,14 @@ export function EventStory() {
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const { scrollYProgress } = useScroll({ container: scrollRef });
-  const [progress, setProgress] = useState(0);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [activeSection, setActiveSection] = useState('overview');
   const [copied, setCopied] = useState(false);
 
+  // setShowScrollTop only re-renders when the boolean actually flips; the
+  // progress bar reads scrollYProgress directly (a MotionValue), so scrolling
+  // no longer triggers a React render every tick.
   useMotionValueEvent(scrollYProgress, 'change', v => {
-    setProgress(v);
     setShowScrollTop(v > 0.15);
   });
 
@@ -365,7 +368,7 @@ export function EventStory() {
             <motion.div
               className="h-full origin-left"
               style={{
-                scaleX: progress,
+                scaleX: scrollYProgress,
                 background: `linear-gradient(90deg, ${cat.color}, ${cat.color}80)`,
                 boxShadow: `0 0 8px ${cat.color}40`,
               }}
@@ -520,7 +523,7 @@ export function EventStory() {
                 <div className="flex items-center gap-2">
                   <motion.button
                     onClick={() => event && toggleFavorite(event.id)}
-                    className="w-10 h-10 rounded-full flex items-center justify-center bg-white/[0.06] hover:bg-white/[0.1] transition-colors cursor-pointer backdrop-blur-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5a9aaa] focus-visible:ring-offset-2 focus-visible:ring-offset-void"
+                    className="w-11 h-11 rounded-full flex items-center justify-center bg-white/[0.06] hover:bg-white/[0.1] transition-colors cursor-pointer backdrop-blur-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5a9aaa] focus-visible:ring-offset-2 focus-visible:ring-offset-void"
                     whileTap={{ scale: 0.9 }}
                     aria-label={isFavorited ? 'Remove from favorites' : 'Add to favorites'}>
                     <Heart
@@ -531,13 +534,13 @@ export function EventStory() {
                     />
                   </motion.button>
                   <motion.button onClick={onShare}
-                    className="w-10 h-10 rounded-full flex items-center justify-center bg-white/[0.06] hover:bg-white/[0.1] transition-colors cursor-pointer backdrop-blur-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5a9aaa] focus-visible:ring-offset-2 focus-visible:ring-offset-void"
+                    className="w-11 h-11 rounded-full flex items-center justify-center bg-white/[0.06] hover:bg-white/[0.1] transition-colors cursor-pointer backdrop-blur-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5a9aaa] focus-visible:ring-offset-2 focus-visible:ring-offset-void"
                     whileTap={{ scale: 0.9 }}
                     aria-label={copied ? 'Copied to clipboard' : 'Share this event'}>
                     <Share2 size={15} className="text-text-muted" aria-hidden="true" />
                   </motion.button>
                   <button onClick={onClose}
-                    className="w-10 h-10 rounded-full flex items-center justify-center bg-white/[0.06] hover:bg-white/[0.1] transition-colors cursor-pointer backdrop-blur-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5a9aaa] focus-visible:ring-offset-2 focus-visible:ring-offset-void"
+                    className="w-11 h-11 rounded-full flex items-center justify-center bg-white/[0.06] hover:bg-white/[0.1] transition-colors cursor-pointer backdrop-blur-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5a9aaa] focus-visible:ring-offset-2 focus-visible:ring-offset-void"
                     aria-label="Close event story">
                     <X size={18} className="text-text-secondary" aria-hidden="true" />
                   </button>
@@ -928,7 +931,7 @@ export function EventStory() {
                 <section className="mb-20">
                   <SectionLabel>Your Notes</SectionLabel>
                   <div className="rounded-2xl p-6 relative" style={{ background: 'var(--glass-bg)', backdropFilter: 'blur(24px)', border: '1px solid var(--color-border-subtle)' }}>
-                    <textarea value={noteText} onChange={e => handleNoteChange(e.target.value)} onBlur={handleNoteBlur} maxLength={500} rows={4} placeholder="Write your notes about this event..." className="notes-textarea w-full bg-transparent resize-none outline-none text-[14px] leading-[1.8]" style={{ color: 'var(--color-text-primary)', fontFamily: "'Space Grotesk', sans-serif" }} />
+                    <textarea value={noteText} onChange={e => handleNoteChange(e.target.value)} onBlur={handleNoteBlur} maxLength={500} rows={4} placeholder="Write your notes about this event..." className="notes-textarea w-full bg-transparent resize-none outline-none text-[14px] leading-[1.8]" style={{ color: 'var(--color-text-primary)', fontFamily: 'var(--font-display)' }} />
                     <div className="flex justify-end mt-2 text-[11px]" style={{ fontFamily: "'JetBrains Mono', monospace", color: noteText.length >= 450 ? '#b85454' : '#3a3a4a' }}>{noteText.length}/500</div>
                   </div>
                 </section>

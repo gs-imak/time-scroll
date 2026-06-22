@@ -349,7 +349,7 @@ export function SearchOverlay() {
                 style={{
                   color: 'var(--color-text-primary)',
                   caretColor: 'var(--color-accent-gold)',
-                  fontFamily: "'Space Grotesk', sans-serif",
+                  fontFamily: 'var(--font-display)',
                 }}
                 aria-label="Search"
                 aria-activedescendant={hasResults ? `search-result-${activeIndex}` : undefined}
@@ -479,7 +479,7 @@ export function SearchOverlay() {
                                   fontWeight: 600,
                                   textTransform: 'uppercase',
                                   letterSpacing: '0.06em',
-                                  fontFamily: "'Space Grotesk', sans-serif",
+                                  fontFamily: 'var(--font-display)',
                                 }}
                               >
                                 {ERAS.find((e) => e.id === r.eraId)?.name ?? r.eraId}
@@ -643,7 +643,7 @@ export function SearchOverlay() {
                       onClick={() => setQuery(s)}
                       className="px-3 py-1.5 rounded-full text-[11px] font-medium cursor-pointer"
                       style={{
-                        fontFamily: "'Space Grotesk', sans-serif",
+                        fontFamily: 'var(--font-display)',
                         background: 'var(--glass-bg)',
                         border: '1px solid var(--color-border-subtle)',
                         color: 'var(--color-text-secondary)',
@@ -782,7 +782,7 @@ function ResultRow({
         <p
           className="truncate"
           style={{
-            fontFamily: "'Space Grotesk', sans-serif",
+            fontFamily: 'var(--font-display)',
             fontSize: '13px',
             fontWeight: 600,
             color: 'var(--color-text-primary)',

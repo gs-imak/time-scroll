@@ -13,7 +13,9 @@
   /* === Text — neutral, no blue tint === */
   --color-text-primary: #e0e0e6;
   --color-text-secondary: #8a8a9a;
-  --color-text-muted: #55556a;
+  /* Raised from #55556a (2.76:1, failed WCAG AA) to ~4.75:1 on --color-void.
+     Used 200+ times for informational text, so it must meet AA. */
+  --color-text-muted: #7a7a8c;
 
   /* === Accents — desaturated, cinematic === */
   --color-accent-gold: #c49a44;
@@ -49,6 +51,9 @@
   /* === Fonts === */
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  /* Display / heading face — the de-facto title typeface across the app.
+     Tokenized so it can be changed in one place (was hardcoded inline ~120x). */
+  --font-display: 'Space Grotesk', system-ui, sans-serif;
 
   /* === Radii === */
   --radius-sm: 6px;
@@ -78,7 +83,8 @@
 
   --color-text-primary: #1a1a20;
   --color-text-secondary: #5a5a6a;
-  --color-text-muted: #9a9aaa;
+  /* Deepened from #9a9aaa (2.50:1, failed AA) to ~4.80:1 on light --color-void. */
+  --color-text-muted: #6a6a78;
 
   /* Accents — slightly deepened for light bg contrast */
   --color-accent-gold: #b08830;

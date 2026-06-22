@@ -1,5 +1,3 @@
-import { getGeoJsonFromCache } from '@/shared/data/geoJsonCache';
-import { BOUNDARY_YEAR_MAP } from '@/shared/utils/constants';
 import { computeFeatureBounds } from '@/shared/utils/geo';
 import type { DiffOverlay } from '@/shared/stores/warStore';
 
@@ -12,14 +10,20 @@ const AREA_CHANGE_THRESHOLD = 0.15; // 15% bounding-box area change counts as ga
  * Cheap on purpose: works on bounding-box centroids and bounding-box area,
  * not real geodesy. Catches the major WWI/WWII shifts (Austro-Hungarian
  * breakup, fall of France, Soviet expansion) without a geometry library.
+ *
+ * The caller supplies `getFeatures` so this stays decoupled from any specific
+ * GeoJSON cache. War Mode renders from the CShapes war cache (`getWarGeoJson`),
+ * NOT the aourednik timeline cache — looking the wrong one up here is exactly
+ * why diff overlays used to come back empty on every beat.
  */
-export function computeYearDiff(prevYear: number, nextYear: number, now: number): DiffOverlay[] {
-  const prevFile = BOUNDARY_YEAR_MAP[prevYear];
-  const nextFile = BOUNDARY_YEAR_MAP[nextYear];
-  if (!prevFile || !nextFile) return [];
-
-  const prev = getGeoJsonFromCache(prevFile);
-  const next = getGeoJsonFromCache(nextFile);
+export function computeYearDiff(
+  prevYear: number,
+  nextYear: number,
+  now: number,
+  getFeatures: (year: number) => object[] | null | undefined,
+): DiffOverlay[] {
+  const prev = getFeatures(prevYear);
+  const next = getFeatures(nextYear);
   if (!prev || !next) return [];
 
   // Group features by NAME — a country can have multiple polygon features.

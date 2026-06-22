@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useRive } from '@rive-app/react-webgl2';
-import { useGlobe } from '@/features/globe/GlobeView';
+import { useGlobe } from '@/features/globe/globeContext';
 import { useTimeStore } from '@/shared/stores/timeStore';
 import { useLandmarkStore } from '@/shared/stores/landmarkStore';
 import { useMapStore } from '@/shared/stores/mapStore';

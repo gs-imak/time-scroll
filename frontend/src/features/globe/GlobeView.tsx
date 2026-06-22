@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState, useMemo, createContext, useContext, useCallback, type ReactNode } from 'react';
+import { useEffect, useRef, useState, useMemo, useCallback, type ReactNode } from 'react';
 import Globe, { type GlobeMethods } from 'react-globe.gl';
+import { GlobeContext } from './globeContext';
 import * as THREE from 'three';
 import { useMapStore } from '@/shared/stores/mapStore';
 import { useTimeStore } from '@/shared/stores/timeStore';
@@ -29,15 +30,6 @@ import { useLabelCollision } from './useLabelCollision';
 import { CIV_ALIASES } from '@/shared/data/civAliases';
 import { CIV_DESCRIPTIONS, NAME_DESCRIPTIONS } from '@/shared/data/civDescriptions';
 import { motion, AnimatePresence } from 'framer-motion';
-
-// === Globe context for child components (landmarks, etc.) ===
-interface GlobeContextValue {
-  globeRef: React.RefObject<GlobeMethods | undefined> | null;
-  getScreenCoords: (lat: number, lng: number) => { x: number; y: number } | null;
-}
-
-const GlobeContext = createContext<GlobeContextValue>({ globeRef: null, getScreenCoords: () => null });
-export const useGlobe = () => useContext(GlobeContext);
 
 // === Civilization territory colors — deterministic per NAME for visual distinction ===
 // Hand-picked palette for major civilizations + hash-based fallback for others
@@ -265,6 +257,27 @@ export function GlobeView({ children }: GlobeViewProps) {
   const journeyArcs = useJourneyArcsStore(s => s.arcs);
   const loadedFileRef = useRef<string | null>(null);
 
+  // Three.js resources created in onGlobeReady that must be torn down on unmount.
+  // react-globe.gl does NOT dispose its WebGLRenderer/scene/textures when the
+  // React component unmounts, so without this every visit to the globe route
+  // leaks a live WebGL context + the 8K textures; browsers cap live contexts
+  // (~16) and the globe eventually renders black.
+  const cloudRafRef = useRef<number>(0);
+  const disposablesRef = useRef<{
+    renderer?: THREE.WebGLRenderer;
+    scene?: THREE.Scene;
+    controls?: ReturnType<GlobeMethods['controls']>;
+    controlsChange?: () => void;
+    altitudeThrottle?: ReturnType<typeof setTimeout> | null;
+    canvas?: HTMLCanvasElement;
+    onContextLost?: EventListener;
+    cloudMesh?: THREE.Mesh;
+    cloudGeo?: THREE.BufferGeometry;
+    cloudMat?: THREE.Material;
+    cloudTexture?: THREE.Texture;
+  }>({});
+  const [contextLost, setContextLost] = useState(false);
+
   // Territory selection — click a territory to isolate and highlight it
   const [selectedTerritory, setSelectedTerritory] = useState<string | null>(null);
 
@@ -317,17 +330,19 @@ export function GlobeView({ children }: GlobeViewProps) {
 
         // Track camera altitude for visibility tier system
         const setCameraAltitude = useCameraStore.getState().setCameraAltitude;
-        let throttleTimer: ReturnType<typeof setTimeout> | null = null;
-        controls.addEventListener('change', () => {
-          if (throttleTimer) return;
-          throttleTimer = setTimeout(() => {
-            throttleTimer = null;
+        const onControlsChange = () => {
+          if (disposablesRef.current.altitudeThrottle) return;
+          disposablesRef.current.altitudeThrottle = setTimeout(() => {
+            disposablesRef.current.altitudeThrottle = null;
             if (globeRef.current) {
               const pov = globeRef.current.pointOfView();
               setCameraAltitude(pov.altitude);
             }
           }, 60);
-        });
+        };
+        controls.addEventListener('change', onControlsChange);
+        disposablesRef.current.controls = controls;
+        disposablesRef.current.controlsChange = onControlsChange;
       }
 
       // Tighten camera near/far ratio for better depth buffer precision
@@ -385,15 +400,65 @@ export function GlobeView({ children }: GlobeViewProps) {
         cloudMesh.name = 'cloudLayer';
         scene.add(cloudMesh);
 
-        // Slowly rotate clouds independently
+        // Track for disposal on unmount
+        disposablesRef.current.scene = scene;
+        disposablesRef.current.cloudMesh = cloudMesh;
+        disposablesRef.current.cloudGeo = cloudGeo;
+        disposablesRef.current.cloudMat = cloudMat;
+        disposablesRef.current.cloudTexture = cloudTexture;
+
+        // Slowly rotate clouds independently — store the rAF id so the loop can
+        // be cancelled on unmount (otherwise it runs forever on a detached mesh).
         const animateClouds = () => {
           cloudMesh.rotation.y += 0.00005;
-          requestAnimationFrame(animateClouds);
+          cloudRafRef.current = requestAnimationFrame(animateClouds);
         };
-        animateClouds();
+        cloudRafRef.current = requestAnimationFrame(animateClouds);
+      }
+
+      // Capture the renderer + canvas so we can dispose the WebGL context on
+      // unmount and recover from a lost context instead of showing a dead globe.
+      const renderer = globeRef.current.renderer();
+      if (renderer) {
+        disposablesRef.current.renderer = renderer;
+        const canvas = renderer.domElement;
+        const onContextLost: EventListener = (e) => {
+          e.preventDefault();
+          if (cloudRafRef.current) cancelAnimationFrame(cloudRafRef.current);
+          setContextLost(true);
+        };
+        canvas.addEventListener('webglcontextlost', onContextLost, false);
+        disposablesRef.current.canvas = canvas;
+        disposablesRef.current.onContextLost = onContextLost;
       }
     }
   }, [setMapReady]);
+
+  // Dispose every Three.js / WebGL resource on unmount — react-globe.gl leaks
+  // the renderer, scene, and 8K textures otherwise, exhausting the browser's
+  // live WebGL context budget across route changes.
+  useEffect(() => {
+    return () => {
+      const d = disposablesRef.current;
+      if (cloudRafRef.current) cancelAnimationFrame(cloudRafRef.current);
+      if (d.altitudeThrottle) clearTimeout(d.altitudeThrottle);
+      if (d.controls && d.controlsChange) {
+        d.controls.removeEventListener('change', d.controlsChange);
+      }
+      if (d.canvas && d.onContextLost) {
+        d.canvas.removeEventListener('webglcontextlost', d.onContextLost);
+      }
+      if (d.scene && d.cloudMesh) d.scene.remove(d.cloudMesh);
+      d.cloudGeo?.dispose();
+      d.cloudMat?.dispose();
+      d.cloudTexture?.dispose();
+      if (d.renderer) {
+        d.renderer.dispose();
+        d.renderer.forceContextLoss?.();
+      }
+      disposablesRef.current = {};
+    };
+  }, []);
 
   // Fly to event location when selectedEventId changes and globe is ready
   const selectedEventId = useEventsStore(s => s.selectedEventId);
@@ -461,10 +526,18 @@ export function GlobeView({ children }: GlobeViewProps) {
     return () => window.removeEventListener('keydown', onKey);
   }, [selectedTerritory]);
 
-  // Preload all 53 GeoJSON boundary files on globe mount so every
-  // boundary switch is instant — no network delays during scrubbing
+  // Preload all GeoJSON boundary files so boundary switches are instant — but
+  // defer to idle time so the large batch of parallel fetches never competes
+  // with first paint / first interaction. The per-year loader below still
+  // fetches the current file on demand, and CivLegend re-triggers this on open.
   useEffect(() => {
-    preloadAllGeoJson();
+    const ric = window.requestIdleCallback;
+    if (ric) {
+      const id = ric(() => preloadAllGeoJson(), { timeout: 4000 });
+      return () => window.cancelIdleCallback?.(id);
+    }
+    const t = setTimeout(() => preloadAllGeoJson(), 2000);
+    return () => clearTimeout(t);
   }, []);
 
   // Preload the 15 war snapshots the first time War Mode activates (one-time cost)
@@ -529,8 +602,14 @@ export function GlobeView({ children }: GlobeViewProps) {
     })();
   }, [currentYear, warActive]);
 
-  // Get visible events, then filter by zoom tier, then cluster nearby ones
-  const allVisibleEvents = getVisibleEvents(currentYear);
+  // Get visible events, then filter by zoom tier, then cluster nearby ones.
+  // Memoized so the array keeps a stable reference across the many GlobeView
+  // re-renders where currentYear is unchanged, letting the downstream
+  // visibility-tier and clustering memos stay valid.
+  const allVisibleEvents = useMemo(
+    () => getVisibleEvents(currentYear),
+    [getVisibleEvents, currentYear],
+  );
   const { filteredLabels: civilizationLabelsRaw, filteredEvents } = useVisibilityTier(
     allCivilizationLabels,
     allVisibleEvents,
@@ -949,6 +1028,22 @@ export function GlobeView({ children }: GlobeViewProps) {
 
           />
         )}
+
+        {/* WebGL context-loss recovery — shown instead of a frozen black globe */}
+        {contextLost && (
+          <div className="absolute inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-void/90 text-text-primary">
+            <p className="text-[14px] text-text-secondary" style={{ fontFamily: "var(--font-display)" }}>
+              The 3D view lost its graphics context
+            </p>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-6 py-3 rounded-xl text-[14px] font-semibold cursor-pointer transition-transform hover:scale-[1.03] active:scale-[0.97]"
+              style={{ background: 'var(--color-accent-cyan)', color: 'var(--color-void)', fontFamily: 'var(--font-display)' }}
+            >
+              Reload the globe
+            </button>
+          </div>
+        )}
         {ready && children}
 
         {/* Territory info card — shows when a territory is clicked */}
@@ -1002,7 +1097,7 @@ export function GlobeView({ children }: GlobeViewProps) {
                       {/* Close button */}
                       <motion.button
                         onClick={() => setSelectedTerritory(null)}
-                        className="absolute top-3 right-3 w-7 h-7 rounded-full flex items-center justify-center cursor-pointer"
+                        className="absolute top-3 right-3 w-11 h-11 rounded-full flex items-center justify-center cursor-pointer"
                         style={{ background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(8px)' }}
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
@@ -1024,7 +1119,7 @@ export function GlobeView({ children }: GlobeViewProps) {
                       <div className="min-w-0">
                         <h3
                           className="text-[16px] font-bold leading-tight break-words"
-                          style={{ color: civColor, fontFamily: "'Space Grotesk', sans-serif" }}
+                          style={{ color: civColor, fontFamily: 'var(--font-display)' }}
                         >
                           {selectedTerritory}
                         </h3>

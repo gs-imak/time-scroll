@@ -44,7 +44,7 @@ export function EventDetailSheet() {
           className={
             isMobile
               ? 'fixed bottom-44 left-3 right-3 z-40 rounded-2xl max-h-[calc(100vh-200px)] overflow-y-auto'
-              : 'fixed top-5 right-5 z-40 w-[380px] rounded-2xl max-h-[85vh] overflow-y-auto'
+              : 'fixed top-5 right-5 z-40 w-80 lg:w-[360px] rounded-2xl max-h-[85vh] overflow-y-auto'
           }
           style={{
             background: 'var(--glass-strong-bg)',
@@ -66,7 +66,7 @@ export function EventDetailSheet() {
 
           <div className="p-5">
             {/* Header: meta + close */}
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2.5">
                 {/* Small colored dot — minimal accent */}
                 <span
@@ -106,7 +106,7 @@ export function EventDetailSheet() {
             {/* Fly to button — neutral glass, not colored */}
             <button
               onClick={onFlyTo}
-              className="w-full flex items-center justify-center gap-2 h-10 rounded-lg text-[13px] font-medium transition-all cursor-pointer hover:bg-white/[0.08] active:scale-[0.98]"
+              className="w-full flex items-center justify-center gap-2 h-11 rounded-lg text-[13px] font-medium transition-all cursor-pointer hover:bg-white/[0.08] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-cyan/50"
               style={{
                 background: 'rgba(255, 255, 255, 0.04)',
                 border: '1px solid var(--color-border-subtle)',

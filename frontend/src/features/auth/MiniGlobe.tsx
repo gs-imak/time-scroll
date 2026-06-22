@@ -62,7 +62,8 @@ export function MiniGlobe() {
 
     const controls = globeRef.current.controls();
     if (controls) {
-      controls.autoRotate = true;
+      // Respect reduced-motion: don't spin the globe for users who opt out.
+      controls.autoRotate = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       controls.autoRotateSpeed = 0.4;
       controls.enableDamping = true;
       controls.dampingFactor = 0.12;
@@ -266,7 +267,7 @@ export function MiniGlobe() {
           >
             <MousePointer2 size={14} style={{ color: 'rgba(255,255,255,0.6)' }} />
           </motion.div>
-          <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)', fontFamily: "'Space Grotesk', sans-serif", fontWeight: 500 }}>
+          <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)', fontFamily: 'var(--font-display)', fontWeight: 500 }}>
             Drag to explore
           </span>
         </motion.div>

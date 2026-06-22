@@ -12,6 +12,14 @@ export function QuizTimer({ duration, isRunning, onExpire }: Props) {
   const [remaining, setRemaining] = useState(duration);
   const expiredRef = useRef(false);
 
+  // Keep the latest onExpire in a ref so the interval always calls the current
+  // callback without tearing down/recreating the timer when the prop identity
+  // changes (which would otherwise drop ticks or fire a stale closure).
+  const onExpireRef = useRef(onExpire);
+  useEffect(() => {
+    onExpireRef.current = onExpire;
+  }, [onExpire]);
+
   useEffect(() => {
     setRemaining(duration);
     expiredRef.current = false;
@@ -19,19 +27,22 @@ export function QuizTimer({ duration, isRunning, onExpire }: Props) {
 
   useEffect(() => {
     if (!isRunning) return;
+    // Re-arm the expiry guard each time the timer starts, so a timer that is
+    // paused and resumed within the same question can fire onExpire again.
+    expiredRef.current = false;
     const interval = setInterval(() => {
       setRemaining(prev => {
         const next = prev - 0.1;
         if (next <= 0 && !expiredRef.current) {
           expiredRef.current = true;
-          onExpire();
+          onExpireRef.current();
           return 0;
         }
         return Math.max(0, next);
       });
     }, 100);
     return () => clearInterval(interval);
-  }, [isRunning, onExpire]);
+  }, [isRunning]);
 
   const pct = (remaining / duration) * 100;
   const isLow = remaining < 10;

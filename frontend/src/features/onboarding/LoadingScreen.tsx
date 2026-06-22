@@ -160,7 +160,7 @@ export function LoadingScreen() {
             <motion.h1
               className="text-center leading-[1.0]"
               style={{
-                fontFamily: "'Space Grotesk', sans-serif",
+                fontFamily: 'var(--font-display)',
                 letterSpacing: '0.08em',
               }}
               initial={{ opacity: 0, y: 20 }}

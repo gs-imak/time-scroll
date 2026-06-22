@@ -19,7 +19,7 @@ export function LogoPreview() {
     >
       <h1
         style={{
-          fontFamily: "'Space Grotesk', sans-serif",
+          fontFamily: 'var(--font-display)',
           fontSize: 28,
           fontWeight: 700,
           color: '#e0e0e6',
@@ -124,7 +124,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
     <div style={{ marginBottom: 56 }}>
       <h2
         style={{
-          fontFamily: "'Space Grotesk', sans-serif",
+          fontFamily: 'var(--font-display)',
           fontSize: 16,
           fontWeight: 600,
           color: '#c49a44',

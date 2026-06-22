@@ -64,7 +64,7 @@ function WarCard({ war, title, span, blurb }: WarCardProps) {
             className="text-[16px] font-bold leading-tight"
             style={{
               color: ACCENT,
-              fontFamily: "'Space Grotesk', sans-serif",
+              fontFamily: 'var(--font-display)',
               letterSpacing: '0.04em',
             }}
           >
@@ -99,7 +99,7 @@ export function WarEntryButtons() {
         className="text-[14px] font-bold uppercase mb-1"
         style={{
           color: 'var(--color-text-primary)',
-          fontFamily: "'Space Grotesk', sans-serif",
+          fontFamily: 'var(--font-display)',
           letterSpacing: '0.12em',
         }}
       >

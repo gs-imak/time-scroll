@@ -121,7 +121,7 @@ export function WarOverlay() {
                   className="text-[16px] font-bold leading-tight"
                   style={{
                     color: ACCENT,
-                    fontFamily: "'Space Grotesk', sans-serif",
+                    fontFamily: 'var(--font-display)',
                     letterSpacing: '0.04em',
                     textShadow: `0 0 16px ${ACCENT}40`,
                   }}
@@ -193,7 +193,7 @@ export function WarOverlay() {
               >
                 <h3
                   className="text-[13px] font-bold mb-3"
-                  style={{ color: ACCENT, fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '0.04em' }}
+                  style={{ color: ACCENT, fontFamily: 'var(--font-display)', letterSpacing: '0.04em' }}
                 >
                   SOURCES & CREDITS
                 </h3>

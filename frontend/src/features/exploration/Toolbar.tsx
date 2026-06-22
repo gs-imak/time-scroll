@@ -37,7 +37,7 @@ function ToolButton({ icon: Icon, label, active, onClick }: ToolButtonProps) {
 
       {hovered && (
         <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 pointer-events-none z-50">
-          <div className="glass-strong rounded-lg px-3 py-1.5 text-xs font-medium text-text-primary whitespace-nowrap shadow-lg">
+          <div className="glass-strong rounded-lg px-3 py-1.5 text-[11px] font-medium text-text-primary whitespace-nowrap shadow-lg">
             {label}
           </div>
         </div>

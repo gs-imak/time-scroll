@@ -62,37 +62,3 @@ export function computeSnapshotYearsForCiv(aliasSet: Set<string>): number[] {
 
   return years.sort((a, b) => a - b);
 }
-
-/** Compute the visual centroid (bounding box center) of matching features at a given year */
-export function computeCentroid(
-  fileName: string,
-  aliasSet: Set<string>,
-): { lat: number; lng: number } | null {
-  const features = cache.get(fileName);
-  if (!features) return null;
-
-  const matching = features.filter((f: any) => aliasSet.has(f.properties?.NAME));
-  if (matching.length === 0) return null;
-
-  let minLat = 90, maxLat = -90, minLng = 180, maxLng = -180;
-
-  for (const f of matching as any[]) {
-    const coordSets = f.geometry.type === 'MultiPolygon'
-      ? f.geometry.coordinates.flat(2)
-      : f.geometry.coordinates.flat(1);
-
-    for (const coord of coordSets) {
-      const lng = coord[0];
-      const lat = coord[1];
-      if (lat < minLat) minLat = lat;
-      if (lat > maxLat) maxLat = lat;
-      if (lng < minLng) minLng = lng;
-      if (lng > maxLng) maxLng = lng;
-    }
-  }
-
-  return {
-    lat: (minLat + maxLat) / 2,
-    lng: (minLng + maxLng) / 2,
-  };
-}

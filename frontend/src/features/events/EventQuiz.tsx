@@ -28,7 +28,6 @@ export function EventQuiz({ eventId, eventTitle, categoryColor, onComplete }: Ev
   if (!questions || questions.length === 0) return null;
 
   const question = questions[currentQ];
-  const isCorrect = selected === question?.correctIndex;
   const total = questions.length;
   const scorePercent = Math.round((correctCount / total) * 100);
 
@@ -47,7 +46,9 @@ export function EventQuiz({ eventId, eventTitle, categoryColor, onComplete }: Ev
       setSelected(null);
       setAnswered(false);
     } else {
-      const finalScore = Math.round(((correctCount + (isCorrect ? 0 : 0)) / total) * 100);
+      // correctCount already includes this question's answer — it is
+      // incremented in handleSelect on the prior render, before this click.
+      const finalScore = Math.round((correctCount / total) * 100);
       setFinished(true);
       onComplete?.(finalScore);
 
@@ -57,7 +58,7 @@ export function EventQuiz({ eventId, eventTitle, categoryColor, onComplete }: Ev
         setIsDailyComplete(true);
       }
     }
-  }, [currentQ, total, correctCount, isCorrect, onComplete, eventId, dailyChallengeEventId, dailyChallengeCompleted, completeDailyChallenge]);
+  }, [currentQ, total, correctCount, onComplete, eventId, dailyChallengeEventId, dailyChallengeCompleted, completeDailyChallenge]);
 
   const handleRestart = useCallback(() => {
     setCurrentQ(0);
@@ -140,7 +141,7 @@ export function EventQuiz({ eventId, eventTitle, categoryColor, onComplete }: Ev
             transition={{ delay: 0.5 }}
           >
             <Star size={16} style={{ color: '#c49a44' }} fill="#c49a44" />
-            <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '14px', fontWeight: 600, color: '#c49a44' }}>
+            <span style={{ fontFamily: 'var(--font-display)', fontSize: '14px', fontWeight: 600, color: '#c49a44' }}>
               Daily Challenge Complete!
             </span>
           </motion.div>

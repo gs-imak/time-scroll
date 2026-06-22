@@ -41,7 +41,7 @@ function StatCard({
       <div className="min-w-0">
         <p
           className="text-[24px] font-bold leading-none"
-          style={{ fontFamily: "'Space Grotesk', sans-serif", color: 'var(--color-text-primary)' }}
+          style={{ fontFamily: 'var(--font-display)', color: 'var(--color-text-primary)' }}
         >
           {value}
         </p>
@@ -95,7 +95,7 @@ export default function ProfilePage() {
           <h1
             className="text-text-primary leading-tight"
             style={{
-              fontFamily: "'Space Grotesk', sans-serif",
+              fontFamily: 'var(--font-display)',
               fontSize: 'clamp(24px, 4vw, 32px)',
               fontWeight: 700,
             }}
@@ -152,7 +152,7 @@ export default function ProfilePage() {
               <h2
                 className="text-text-primary leading-tight"
                 style={{
-                  fontFamily: "'Space Grotesk', sans-serif",
+                  fontFamily: 'var(--font-display)',
                   fontSize: '24px',
                   fontWeight: 700,
                 }}
@@ -183,7 +183,7 @@ export default function ProfilePage() {
                     className="text-[12px] font-semibold"
                     style={{
                       color: 'var(--color-accent-gold)',
-                      fontFamily: "'Space Grotesk', sans-serif",
+                      fontFamily: 'var(--font-display)',
                     }}
                   >
                     {progressPct}%
@@ -252,7 +252,7 @@ export default function ProfilePage() {
             onClick={() => navigate('/settings')}
             className="flex items-center gap-2 h-11 px-5 rounded-[10px] cursor-pointer"
             style={{
-              fontFamily: "'Space Grotesk', sans-serif",
+              fontFamily: 'var(--font-display)',
               fontSize: '14px',
               fontWeight: 600,
               background: 'var(--glass-bg)',
@@ -270,7 +270,7 @@ export default function ProfilePage() {
             onClick={handleSignOut}
             className="flex items-center gap-2 h-11 px-5 rounded-[10px] cursor-pointer"
             style={{
-              fontFamily: "'Space Grotesk', sans-serif",
+              fontFamily: 'var(--font-display)',
               fontSize: '14px',
               fontWeight: 600,
               background: 'rgba(184, 84, 84, 0.10)',

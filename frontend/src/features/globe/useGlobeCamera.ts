@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { useGlobe } from './GlobeView';
+import { useGlobe } from './globeContext';
 
 export function useGlobeCamera() {
   const { globeRef } = useGlobe();

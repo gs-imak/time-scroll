@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useWarStore } from '@/shared/stores/warStore';
 import { useTimeStore } from '@/shared/stores/timeStore';
 import { computeYearDiff } from './warDiff';
+import { getWarGeoJson, closestWarYear } from '@/shared/data/warGeoJsonCache';
 import { WAR_EVENTS } from '@/shared/data/warEvents';
 
 /**
@@ -53,7 +54,14 @@ export function useWarPlayback() {
     // Compute diff overlays vs the previous snapshot
     if (currentIndex > 0) {
       const prevYear = snapshotYears[currentIndex - 1]!;
-      const diffs = computeYearDiff(prevYear, year, now);
+      // Resolve from the war cache (the data actually on screen), not the
+      // aourednik timeline cache.
+      const diffs = computeYearDiff(
+        prevYear,
+        year,
+        now,
+        (y) => getWarGeoJson(closestWarYear(y)),
+      );
       state.setDiffOverlays(diffs);
     } else {
       state.setDiffOverlays([]);

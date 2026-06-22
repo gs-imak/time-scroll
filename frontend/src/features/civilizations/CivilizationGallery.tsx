@@ -328,7 +328,7 @@ export default function CivilizationGallery() {
           <h2
             className="mb-2"
             style={{
-              fontFamily: "'Space Grotesk', sans-serif",
+              fontFamily: 'var(--font-display)',
               fontSize: '20px',
               fontWeight: 700,
               color: 'var(--color-text-primary)',
@@ -351,7 +351,7 @@ export default function CivilizationGallery() {
             onClick={() => navigate('/civilizations')}
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-[10px] cursor-pointer"
             style={{
-              fontFamily: "'Space Grotesk', sans-serif",
+              fontFamily: 'var(--font-display)',
               fontSize: '13px',
               fontWeight: 600,
               background: 'rgba(196,154,68,0.12)',
@@ -429,7 +429,7 @@ export default function CivilizationGallery() {
             onClick={() => navigate('/civilizations')}
             className="inline-flex items-center gap-2 mb-10 px-4 py-2 rounded-[10px] cursor-pointer"
             style={{
-              fontFamily: "'Space Grotesk', sans-serif",
+              fontFamily: 'var(--font-display)',
               fontSize: '12px',
               fontWeight: 500,
               background: 'var(--glass-bg)',
@@ -468,7 +468,7 @@ export default function CivilizationGallery() {
             <span
               className="text-[11px] font-semibold uppercase tracking-wider"
               style={{
-                fontFamily: "'Space Grotesk', sans-serif",
+                fontFamily: 'var(--font-display)',
                 color: civData.eraColor,
               }}
             >
@@ -480,7 +480,7 @@ export default function CivilizationGallery() {
           <motion.h1
             className="mb-5 max-w-[800px]"
             style={{
-              fontFamily: "'Space Grotesk', sans-serif",
+              fontFamily: 'var(--font-display)',
               fontSize: 'clamp(32px, 6vw, 56px)',
               fontWeight: 700,
               color: 'var(--color-text-primary)',
@@ -569,7 +569,7 @@ export default function CivilizationGallery() {
           <GlassCard className="p-6 md:p-8" style={{ background: 'var(--glass-strong-bg)' }}>
             <p
               style={{
-                fontFamily: "'Space Grotesk', sans-serif",
+                fontFamily: 'var(--font-display)',
                 fontSize: 'clamp(16px, 2vw, 19px)',
                 lineHeight: 1.55,
                 color: 'var(--color-text-primary)',
@@ -590,7 +590,7 @@ export default function CivilizationGallery() {
                 <GlassCard className="p-6">
                   <p
                     style={{
-                      fontFamily: "'Space Grotesk', sans-serif",
+                      fontFamily: 'var(--font-display)',
                       fontSize: '14px',
                       lineHeight: 1.65,
                       color: 'var(--color-text-secondary)',
@@ -630,7 +630,7 @@ export default function CivilizationGallery() {
                       <p
                         className="flex-1"
                         style={{
-                          fontFamily: "'Space Grotesk', sans-serif",
+                          fontFamily: 'var(--font-display)',
                           fontSize: '12.5px',
                           lineHeight: 1.5,
                           color: 'var(--color-text-secondary)',
@@ -654,7 +654,7 @@ export default function CivilizationGallery() {
               <p
                 className="italic"
                 style={{
-                  fontFamily: "'Space Grotesk', sans-serif",
+                  fontFamily: 'var(--font-display)',
                   fontSize: '14px',
                   lineHeight: 1.6,
                   color: 'var(--color-text-secondary)',
@@ -715,7 +715,7 @@ export default function CivilizationGallery() {
                       <h3
                         className="truncate"
                         style={{
-                          fontFamily: "'Space Grotesk', sans-serif",
+                          fontFamily: 'var(--font-display)',
                           fontSize: '14px',
                           fontWeight: 700,
                           color: 'var(--color-text-primary)',
