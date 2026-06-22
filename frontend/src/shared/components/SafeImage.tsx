@@ -40,6 +40,7 @@ export function SafeImage({ src, alt, className = '', style, fallbackColor = '#c
       className={className}
       style={style}
       loading="lazy"
+      decoding="async"
       onError={() => setFailed(true)}
     />
   );

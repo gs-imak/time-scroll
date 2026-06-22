@@ -1,7 +1,8 @@
-import { useEffect, type ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import { cn } from '@/shared/utils/cn';
+import { useFocusTrap } from '@/shared/hooks/useFocusTrap';
 import { IconButton } from './IconButton';
 
 interface ModalProps {
@@ -13,6 +14,9 @@ interface ModalProps {
 }
 
 export function Modal({ open, onClose, children, className, title }: ModalProps) {
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(dialogRef, open);
+
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -33,6 +37,10 @@ export function Modal({ open, onClose, children, className, title }: ModalProps)
             onClick={onClose}
           />
           <motion.div
+            ref={dialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label={title}
             className={cn(
               'fixed z-50 glass-strong rounded-[var(--radius-xl)] shadow-2xl',
               'left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2',
