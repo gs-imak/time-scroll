@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { Era } from '@/shared/types/timeline';
-import { ERAS, MIN_YEAR, MAX_YEAR } from '@/shared/utils/constants';
+import { ERAS, MIN_YEAR, MAX_YEAR, getEraForYear } from '@/shared/utils/constants';
 
 interface TimeStore {
   currentYear: number;
@@ -14,10 +14,6 @@ interface TimeStore {
   prevEra: () => void;
   togglePlay: () => void;
   setPlaybackSpeed: (speed: number) => void;
-}
-
-function getEraForYear(year: number): Era {
-  return ERAS.find(e => year >= e.startYear && year < e.endYear) ?? ERAS[0]!;
 }
 
 export const useTimeStore = create<TimeStore>((set, get) => ({

@@ -46,14 +46,7 @@ const ERA_HEX: Record<string, string> = {
   modern: '#5a9aaa',
 };
 
-const CATEGORY_HEX: Record<EventCategory, string> = {
-  war: '#b85454',
-  discovery: '#5a8fa5',
-  cultural: '#c49a44',
-  political: '#8b80b0',
-  construction: '#6d9476',
-  natural: '#b87a60',
-};
+import { CATEGORY_COLORS as CATEGORY_HEX, getCategoryColor } from '@/shared/data/categories';
 
 const CATEGORY_LABELS: { id: EventCategory; label: string }[] = [
   { id: 'war', label: 'War' },
@@ -812,7 +805,7 @@ export default function TimelineView() {
               <FilterPill
                 key={cat.id}
                 label={cat.label}
-                color={CATEGORY_HEX[cat.id]}
+                color={getCategoryColor(cat.id)}
                 active={selectedCategories.includes(cat.id)}
                 onClick={() => toggleCategory(cat.id)}
               />

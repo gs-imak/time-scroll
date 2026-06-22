@@ -1,5 +1,5 @@
 import { EVENT_CIVILIZATION } from './civilizationAssets';
-import { SEED_EVENTS, ERAS } from '@/shared/utils/constants';
+import { SEED_EVENTS, ERAS, findEraForYear, getEraById } from '@/shared/utils/constants';
 
 export interface CivilizationLabel {
   slug: string;
@@ -45,7 +45,7 @@ export const ALL_CIVILIZATION_LABELS = buildAllCivilizationLabels();
  * era or the era before it (same logic as event visibility in eventsStore).
  */
 export function getVisibleCivilizationLabels(currentYear: number): CivilizationLabel[] {
-  const currentEra = ERAS.find(era => currentYear >= era.startYear && currentYear < era.endYear);
+  const currentEra = findEraForYear(currentYear);
   if (!currentEra) return [];
 
   const currentEraIdx = ERAS.indexOf(currentEra);
@@ -56,7 +56,7 @@ export function getVisibleCivilizationLabels(currentYear: number): CivilizationL
       if (!event) return false;
       if (event.year > currentYear) return false;
 
-      const eventEra = ERAS.find(era => era.id === event.eraId);
+      const eventEra = getEraById(event.eraId);
       if (!eventEra) return false;
 
       const eventEraIdx = ERAS.indexOf(eventEra);

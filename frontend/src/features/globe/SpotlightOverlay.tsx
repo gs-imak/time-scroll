@@ -21,14 +21,7 @@ const CATEGORY_ICONS: Record<string, typeof Swords> = {
   natural: Mountain,
 };
 
-const CATEGORY_COLORS: Record<string, string> = {
-  war: '#b85454',
-  discovery: '#5a8fa5',
-  cultural: '#c49a44',
-  political: '#8b80b0',
-  construction: '#6d9476',
-  natural: '#b87a60',
-};
+import { CATEGORY_COLORS } from '@/shared/data/categories';
 
 export function SpotlightOverlay() {
   useSpotlightPlayback();

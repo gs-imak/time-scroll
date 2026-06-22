@@ -13,14 +13,7 @@ import type { EventCategory } from '@/shared/types/events';
 
 /* ── Constants ── */
 
-const CATEGORY_HEX: Record<EventCategory, string> = {
-  war: '#b85454',
-  discovery: '#5a8fa5',
-  cultural: '#c49a44',
-  political: '#8b80b0',
-  construction: '#6d9476',
-  natural: '#b87a60',
-};
+import { CATEGORY_COLORS as CATEGORY_HEX } from '@/shared/data/categories';
 
 const ERA_HEX: Record<string, string> = {
   prehistory: '#8d7b68',

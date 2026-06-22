@@ -13,14 +13,7 @@ function formatYear(y: number) {
   return y < 0 ? `${Math.abs(y)} BCE` : `${y} CE`;
 }
 
-const CATEGORY_COLORS: Record<string, string> = {
-  war: '#b85454',
-  discovery: '#5a8fa5',
-  cultural: '#c49a44',
-  political: '#8b80b0',
-  construction: '#6d9476',
-  natural: '#b87a60',
-};
+import { CATEGORY_COLORS } from '@/shared/data/categories';
 
 type StepType = 'event' | 'transition';
 

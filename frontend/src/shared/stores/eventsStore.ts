@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { HistoricalEvent, EventCategory } from '@/shared/types/events';
-import { SEED_EVENTS, ERAS } from '@/shared/utils/constants';
+import { SEED_EVENTS, ERAS, findEraForYear, getEraById } from '@/shared/utils/constants';
 import { NEW_EVENTS } from '@/shared/data/newEvents';
 import { WAR_EVENTS } from '@/shared/data/warEvents';
 
@@ -28,11 +28,6 @@ interface EventsStore {
   getVisibleEvents: (year: number) => HistoricalEvent[];
 }
 
-// Find which era a year belongs to
-function getEraForYear(year: number) {
-  return ERAS.find(era => year >= era.startYear && year < era.endYear);
-}
-
 export const useEventsStore = create<EventsStore>((set, get) => ({
   events: ALL_EVENTS,
   selectedEventId: null,
@@ -43,13 +38,13 @@ export const useEventsStore = create<EventsStore>((set, get) => ({
 
   getVisibleEvents: (year: number) => {
     const { events, filters } = get();
-    const currentEra = getEraForYear(year);
+    const currentEra = findEraForYear(year);
 
     return events.filter(e => {
       // Only show events from the current era + the one before it
       // This prevents 97 markers from stacking at modern times
       if (currentEra) {
-        const eventEra = ERAS.find(era => era.id === e.eraId);
+        const eventEra = getEraById(e.eraId);
         if (eventEra) {
           const currentEraIdx = ERAS.indexOf(currentEra);
           const eventEraIdx = ERAS.indexOf(eventEra);
