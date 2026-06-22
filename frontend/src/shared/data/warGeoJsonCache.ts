@@ -17,11 +17,13 @@ export const WAR_YEARS = [
   1938, 1939, 1940, 1941, 1942, 1943, 1944, 1945,
 ] as const;
 
-const cache = new Map<number, object[]>();
+import type { BoundaryFeature } from '@/shared/types/geo';
+
+const cache = new Map<number, BoundaryFeature[]>();
 let preloadPromise: Promise<void> | null = null;
 let preloaded = false;
 
-export function getWarGeoJson(year: number): object[] | null {
+export function getWarGeoJson(year: number): BoundaryFeature[] | null {
   return cache.get(year) ?? null;
 }
 

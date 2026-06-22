@@ -7,7 +7,7 @@ import { useTimeStore } from '@/shared/stores/timeStore';
 import { useEventsStore } from '@/shared/stores/eventsStore';
 import { useJourneyArcsStore } from '@/shared/stores/journeyArcsStore';
 import { useCameraStore } from '@/shared/stores/cameraStore';
-import { closestBoundaryYear } from '@/shared/utils/geo';
+import { closestBoundaryYear, assignStableIds } from '@/shared/utils/geo';
 import { formatYear } from '@/shared/utils/format';
 import { BOUNDARY_YEAR_MAP } from '@/shared/utils/constants';
 import { getVisibleCivilizationLabels } from '@/shared/data/civilizationLabels';
@@ -161,92 +161,6 @@ function getCachedSideMaterial(
 
 // === Sorted boundary years ===
 const SORTED_BOUNDARY_YEARS = Object.keys(BOUNDARY_YEAR_MAP).map(Number).sort((a, b) => a - b);
-
-/**
- * Normalize polygon winding so every outer ring is clockwise and every
- * inner ring (hole) is counter-clockwise. three-globe's polygon extruder
- * uses earcut, which interprets a CCW outer ring as a hole and fills the
- * COMPLEMENT of the polygon — so a single malformed civilization (e.g.
- * aourednik's "Bantu" feature, which has CCW outer rings) renders as a
- * fill covering the entire visible hemisphere.
- *
- * We rewind at load time so the rendering pipeline never sees bad winding,
- * regardless of data source. This mutates coordinates in place but only
- * for rings that actually need flipping.
- */
-function signedRingArea(ring: number[][]): number {
-  let sum = 0;
-  for (let i = 0; i < ring.length - 1; i++) {
-    const a = ring[i]!;
-    const b = ring[i + 1]!;
-    sum += (b[0]! - a[0]!) * (b[1]! + a[1]!);
-  }
-  return sum / 2;
-}
-
-function ensureClockwisePolygon(rings: number[][][]): void {
-  for (let idx = 0; idx < rings.length; idx++) {
-    const ring = rings[idx]!;
-    const area = signedRingArea(ring);
-    const isCW = area > 0;
-    const wantCW = idx === 0; // outer ring CW, holes CCW
-    if (wantCW !== isCW) ring.reverse();
-  }
-}
-
-function rewindFeatures(features: any[]): any[] {
-  for (const f of features) {
-    const g = f?.geometry;
-    if (!g) continue;
-    if (g.type === 'Polygon') {
-      ensureClockwisePolygon(g.coordinates);
-    } else if (g.type === 'MultiPolygon') {
-      for (const poly of g.coordinates) {
-        ensureClockwisePolygon(poly);
-      }
-    }
-  }
-  return features;
-}
-
-/**
- * Assign stable __id to each GeoJSON feature based on civilization NAME.
- * This enables react-globe.gl's built-in tween transition system —
- * matched polygons smoothly animate altitude changes, new polygons
- * rise up from below the surface, and disappearing ones sink down.
- * Without stable IDs, the library assigns random IDs and every update
- * destroys/recreates all polygons with no transition.
- *
- * If the feature has a SHAPE_HASH property (CShapes-extracted war
- * snapshots), we use NAME + SHAPE_HASH so that a country whose geometry
- * didn't change across snapshots keeps the exact same id. This makes
- * react-globe.gl perform ZERO visible redraw for unchanged borders and
- * a clean altitude crossfade only for countries whose shape actually
- * changed — giving the smooth Civ-style year-by-year transition.
- */
-function assignStableIds(features: any[]): any[] {
-  // First normalize every polygon's ring winding to clockwise. three-globe's
-  // earcut triangulator interprets CCW outer rings as holes and fills the
-  // polygon's complement — one bad civilization (aourednik has this for
-  // "Bantu" in prehistoric years, and browsers handle the degenerate case
-  // differently on macOS vs. Windows) is enough to fill the whole globe.
-  rewindFeatures(features);
-
-  // Track occurrence per (name, hash) pair so split MultiPolygon pieces all
-  // get unique ids. Without this, the 4 sub-polygons of "Italy/Sardinia"
-  // would all collapse onto the same __id and react-globe.gl would only
-  // render one of them.
-  const counts = new Map<string, number>();
-  return features.map((f: any) => {
-    const name: string = f.properties?.NAME || '?';
-    const hash: string | undefined = f.properties?.SHAPE_HASH;
-    const base = hash ? `${name}_${hash}` : name;
-    const idx = counts.get(base) || 0;
-    counts.set(base, idx + 1);
-    f.__id = `${base}_${idx}`;
-    return f;
-  });
-}
 
 interface GlobeViewProps {
   children?: ReactNode;

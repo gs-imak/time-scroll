@@ -3,13 +3,14 @@
  * for instant snapshot switching during Civilization Spotlight mode.
  */
 import { BOUNDARY_YEAR_MAP } from '@/shared/utils/constants';
+import type { BoundaryFeature } from '@/shared/types/geo';
 
-const cache = new Map<string, object[]>();
+const cache = new Map<string, BoundaryFeature[]>();
 let preloadPromise: Promise<void> | null = null;
 let preloaded = false;
 
 /** Get cached features for a given file name (without .geojson extension) */
-export function getGeoJsonFromCache(fileName: string): object[] | null {
+export function getGeoJsonFromCache(fileName: string): BoundaryFeature[] | null {
   return cache.get(fileName) ?? null;
 }
 
@@ -40,7 +41,7 @@ export function preloadAllGeoJson(): Promise<void> {
 }
 
 /** Also store features from normal on-demand loading so spotlight can reuse them */
-export function cacheGeoJson(fileName: string, features: object[]): void {
+export function cacheGeoJson(fileName: string, features: BoundaryFeature[]): void {
   if (!cache.has(fileName)) {
     cache.set(fileName, features);
   }

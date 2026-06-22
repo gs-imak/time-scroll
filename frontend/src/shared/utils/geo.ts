@@ -1,3 +1,5 @@
+import type { BoundaryFeature } from '@/shared/types/geo';
+
 /** Haversine distance between two points in km */
 export function haversineDistance(
   lat1: number, lon1: number,
@@ -63,4 +65,67 @@ export function computeFeatureBounds(feature: any): {
     lng: (minLng + maxLng) / 2,
     area: (maxLat - minLat) * (maxLng - minLng),
   };
+}
+
+/**
+ * Polygon winding normalization. three-globe's earcut triangulator treats a
+ * CCW outer ring as a hole and fills the polygon's COMPLEMENT — one malformed
+ * feature (e.g. aourednik's CCW "Bantu") can fill the whole hemisphere. We
+ * rewind at load time so the renderer never sees bad winding. Mutates in place.
+ */
+function signedRingArea(ring: number[][]): number {
+  let sum = 0;
+  for (let i = 0; i < ring.length - 1; i++) {
+    const a = ring[i]!;
+    const b = ring[i + 1]!;
+    sum += (b[0]! - a[0]!) * (b[1]! + a[1]!);
+  }
+  return sum / 2;
+}
+
+function ensureClockwisePolygon(rings: number[][][]): void {
+  for (let idx = 0; idx < rings.length; idx++) {
+    const ring = rings[idx]!;
+    const area = signedRingArea(ring);
+    const isCW = area > 0;
+    const wantCW = idx === 0; // outer ring CW, holes CCW
+    if (wantCW !== isCW) ring.reverse();
+  }
+}
+
+/** Rewind every outer ring to clockwise (holes CCW) across a feature list. */
+export function rewindFeatures(features: BoundaryFeature[]): BoundaryFeature[] {
+  for (const f of features) {
+    const g = f?.geometry;
+    if (!g) continue;
+    if (g.type === 'Polygon') {
+      ensureClockwisePolygon(g.coordinates as number[][][]);
+    } else if (g.type === 'MultiPolygon') {
+      for (const poly of g.coordinates as number[][][][]) {
+        ensureClockwisePolygon(poly);
+      }
+    }
+  }
+  return features;
+}
+
+/**
+ * Rewind winding, then assign a stable `__id` to each feature so react-globe.gl
+ * can tween polygons across boundary changes instead of destroying/recreating
+ * them. Uses NAME + SHAPE_HASH when present (CShapes war snapshots) so unchanged
+ * borders keep the same id (zero redraw) and only changed shapes crossfade.
+ * A per-(name,hash) counter keeps split MultiPolygon pieces uniquely ided.
+ */
+export function assignStableIds(features: BoundaryFeature[]): BoundaryFeature[] {
+  rewindFeatures(features);
+  const counts = new Map<string, number>();
+  return features.map((f) => {
+    const name: string = f.properties?.NAME || '?';
+    const hash: string | undefined = f.properties?.SHAPE_HASH;
+    const base = hash ? `${name}_${hash}` : name;
+    const idx = counts.get(base) || 0;
+    counts.set(base, idx + 1);
+    f.__id = `${base}_${idx}`;
+    return f;
+  });
 }
