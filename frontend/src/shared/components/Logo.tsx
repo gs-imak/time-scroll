@@ -255,7 +255,7 @@ function WordmarkLogo({
         x={4}
         y={26}
         fill={`url(#ts-w-g)`}
-        fontFamily="'Space Grotesk', sans-serif"
+        fontFamily="var(--font-display)"
         fontSize={22}
         letterSpacing="0.08em"
       >
@@ -316,7 +316,7 @@ function FullLogo({
         y={84}
         textAnchor="middle"
         fill={`url(#ts-ft-g)`}
-        fontFamily="'Space Grotesk', sans-serif"
+        fontFamily="var(--font-display)"
         fontSize={20}
         letterSpacing="0.1em"
       >
@@ -397,7 +397,7 @@ function HorizontalLogo({
         x={60}
         y={30}
         fill={`url(#ts-ht-g)`}
-        fontFamily="'Space Grotesk', sans-serif"
+        fontFamily="var(--font-display)"
         fontSize={21}
         letterSpacing="0.08em"
       >
@@ -449,7 +449,7 @@ function CompactLogo({
         x={markSize + 8}
         y={20}
         fill={`url(#ts-ct-g)`}
-        fontFamily="'Space Grotesk', sans-serif"
+        fontFamily="var(--font-display)"
         fontSize={14.5}
         letterSpacing="0.08em"
       >

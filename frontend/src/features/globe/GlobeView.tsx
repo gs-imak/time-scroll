@@ -6,7 +6,7 @@ import { useMapStore } from '@/shared/stores/mapStore';
 import { useTimeStore } from '@/shared/stores/timeStore';
 import { useEventsStore } from '@/shared/stores/eventsStore';
 import { useJourneyArcsStore } from '@/shared/stores/journeyArcsStore';
-import { useCameraStore } from '@/shared/stores/cameraStore';
+import { useCameraStore, altitudeToZoom } from '@/shared/stores/cameraStore';
 import { closestBoundaryYear, assignStableIds } from '@/shared/utils/geo';
 import { formatYear } from '@/shared/utils/format';
 import { BOUNDARY_YEAR_MAP } from '@/shared/utils/constants';
@@ -179,6 +179,10 @@ export function GlobeView({ children }: GlobeViewProps) {
   const selectEvent = useEventsStore(s => s.selectEvent);
   const journeyArcs = useJourneyArcsStore(s => s.arcs);
   const loadedFileRef = useRef<string | null>(null);
+  // Tracks the most-recently-requested boundary file. A slow, superseded fetch
+  // (from fast timeline scrubbing) compares against this after it resolves and
+  // discards itself instead of clobbering newer borders. See the boundary loader.
+  const requestedFileRef = useRef<string | null>(null);
 
   // Three.js resources created in onGlobeReady that must be torn down on unmount.
   // react-globe.gl does NOT dispose its WebGLRenderer/scene/textures when the
@@ -220,9 +224,12 @@ export function GlobeView({ children }: GlobeViewProps) {
     [currentYear],
   );
 
-  // Responsive sizing
+  // Responsive sizing — resize bursts are coalesced into one measurement per
+  // frame via a requestAnimationFrame guard so a drag-resize doesn't fire a
+  // setDimensions storm (each one resizes the WebGL renderer).
   useEffect(() => {
-    const updateSize = () => {
+    let rafId = 0;
+    const measure = () => {
       if (containerRef.current) {
         setDimensions({
           width: containerRef.current.clientWidth,
@@ -230,9 +237,19 @@ export function GlobeView({ children }: GlobeViewProps) {
         });
       }
     };
-    updateSize();
-    window.addEventListener('resize', updateSize);
-    return () => window.removeEventListener('resize', updateSize);
+    const onResize = () => {
+      if (rafId) return;
+      rafId = requestAnimationFrame(() => {
+        rafId = 0;
+        measure();
+      });
+    };
+    measure();
+    window.addEventListener('resize', onResize);
+    return () => {
+      window.removeEventListener('resize', onResize);
+      if (rafId) cancelAnimationFrame(rafId);
+    };
   }, []);
 
   // Globe ready handler
@@ -253,6 +270,7 @@ export function GlobeView({ children }: GlobeViewProps) {
 
         // Track camera altitude for visibility tier system
         const setCameraAltitude = useCameraStore.getState().setCameraAltitude;
+        const setViewport = useMapStore.getState().setViewport;
         const onControlsChange = () => {
           if (disposablesRef.current.altitudeThrottle) return;
           disposablesRef.current.altitudeThrottle = setTimeout(() => {
@@ -260,6 +278,11 @@ export function GlobeView({ children }: GlobeViewProps) {
             if (globeRef.current) {
               const pov = globeRef.current.pointOfView();
               setCameraAltitude(pov.altitude);
+              // Feed the live camera into mapStore so altitude/zoom-gated overlays
+              // react to real navigation. Without this viewport.zoom stayed frozen
+              // at its initial value and Landmark overlays (triggerZoom 5.0) — which
+              // also need the camera center for their distance gate — never appeared.
+              setViewport({ zoom: altitudeToZoom(pov.altitude), center: [pov.lng, pov.lat] });
             }
           }, 60);
         };
@@ -478,6 +501,8 @@ export function GlobeView({ children }: GlobeViewProps) {
       const warYear = closestWarYear(currentYear);
       const fileName = `war_${warYear}`;
       if (fileName === loadedFileRef.current) return;
+      // Record this as the latest intent so an in-flight older fetch bails.
+      requestedFileRef.current = fileName;
 
       const cached = getWarGeoJson(warYear);
       if (cached) {
@@ -492,6 +517,8 @@ export function GlobeView({ children }: GlobeViewProps) {
           const res = await fetch(`/assets/geo-war/world_${warYear}.geojson`);
           if (!res.ok) return;
           const geojson = await res.json();
+          // A newer year was requested while this response was in flight — discard.
+          if (requestedFileRef.current !== fileName) return;
           const features = geojson.features || [];
           setPolygonsData(assignStableIds(features));
           loadedFileRef.current = fileName;
@@ -504,6 +531,7 @@ export function GlobeView({ children }: GlobeViewProps) {
     const year = closestBoundaryYear(currentYear, SORTED_BOUNDARY_YEARS);
     const fileName = BOUNDARY_YEAR_MAP[year];
     if (!fileName || fileName === loadedFileRef.current) return;
+    requestedFileRef.current = fileName;
 
     const cached = getGeoJsonFromCache(fileName);
     if (cached) {
@@ -518,8 +546,11 @@ export function GlobeView({ children }: GlobeViewProps) {
         if (!res.ok) return;
         const geojson = await res.json();
         const features = geojson.features || [];
-        setPolygonsData(assignStableIds(features));
+        // Cache the fetched data regardless (a re-scrub to this year is then
+        // instant), but only paint it if this is still the current request.
         cacheGeoJson(fileName, features);
+        if (requestedFileRef.current !== fileName) return;
+        setPolygonsData(assignStableIds(features));
         loadedFileRef.current = fileName;
       } catch { /* skip */ }
     })();
@@ -666,7 +697,7 @@ export function GlobeView({ children }: GlobeViewProps) {
             // Globe appearance — 8K NASA Blue Marble + 8K bump map
             globeImageUrl="/assets/images/earth-8k.jpg"
             bumpImageUrl="/assets/images/earth-bump-8k.png"
-            backgroundImageUrl="//unpkg.com/three-globe/example/img/night-sky.png"
+            backgroundImageUrl="/assets/images/night-sky.png"
             atmosphereColor="#6db3f2"
             atmosphereAltitude={0.18}
             showAtmosphere={true}

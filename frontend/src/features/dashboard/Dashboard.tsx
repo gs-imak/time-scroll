@@ -4,8 +4,10 @@ import { motion } from 'framer-motion';
 import {
   Flame, Globe, Dices, Brain, Trophy, ArrowRight,
   Compass, Sparkles, Heart, CheckCircle, Scale, BookOpen, Clock, ChevronRight,
-  Scroll, Lock,
+  Scroll, Lock, Swords, Palette, Landmark, Hammer, Leaf, Image as ImageIcon,
 } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+import { Card } from '@/shared/components/Card';
 import { useProgressStore, ACHIEVEMENTS } from '@/shared/stores/progressStore';
 import { useEventsStore } from '@/shared/stores/eventsStore';
 import { ERAS } from '@/shared/utils/constants';
@@ -74,21 +76,43 @@ function ProgressRing({ progress, size = 80, stroke = 6 }: { progress: number; s
   );
 }
 
-function GlassCard({ children, className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+/** Lucide icon per event category — used by image placeholders so a missing
+    image never shows a broken-image glyph. */
+const CATEGORY_ICONS: Record<string, LucideIcon> = {
+  war: Swords,
+  discovery: Compass,
+  cultural: Palette,
+  political: Landmark,
+  construction: Hammer,
+  natural: Leaf,
+};
+
+/** Era/category-tinted gradient + icon, rendered UNDER the event <img>.
+    When the image is null or fails to load (onError hides the img), this
+    shows through — same box, no layout jump. */
+function EventImageFallback({ category, eraId }: { category: string; eraId?: string }) {
+  const color = (eraId ? ERA_COLORS[eraId] : undefined) ?? CATEGORY_COLORS[category] ?? '#8a8a9a';
+  const Icon = CATEGORY_ICONS[category] ?? ImageIcon;
   return (
     <div
-      className={cn('rounded-[12px] transition-all duration-200', className)}
-      style={{
-        background: 'var(--glass-bg)',
-        backdropFilter: 'blur(24px)',
-        border: '1px solid var(--color-border-subtle)',
-        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.03)',
-      }}
-      {...props}
+      className="absolute inset-0 flex items-center justify-center"
+      style={{ background: `linear-gradient(135deg, ${color}30, ${color}10)` }}
+      aria-hidden="true"
     >
-      {children}
+      <Icon size={24} style={{ color: `${color}90` }} />
     </div>
   );
+}
+
+/** Enter AND Space both activate custom role="button" cards (WCAG 2.1.1 —
+    Space alone would scroll the page instead). */
+function cardKeyHandler(action: () => void) {
+  return (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      action();
+    }
+  };
 }
 
 type DashboardTab = 'overview' | 'events' | 'achievements';
@@ -178,7 +202,9 @@ export default function Dashboard() {
         background: 'radial-gradient(ellipse 80% 50% at 50% 20%, var(--color-elevated) 0%, var(--color-surface) 30%, var(--color-void) 60%, var(--color-void) 100%)',
       }}
     >
-      <div className="w-full max-w-[1100px] mx-auto px-6 md:px-10 py-12 md:py-16">
+      {/* pt-20 below lg clears the fixed mobile nav button: 12px offset + 44px
+          button + 24px (xl) gap = 80px. Desktop sidebar appears at lg. */}
+      <div className="w-full max-w-[1100px] mx-auto px-6 md:px-10 pt-20 lg:pt-16 pb-12 md:pb-16">
 
         {/* ── Header ── */}
         <motion.header
@@ -192,7 +218,7 @@ export default function Dashboard() {
             >
               Welcome, Explorer
             </h1>
-            <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '13px', color: 'var(--color-text-muted)', marginTop: '4px' }}>
+            <p style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--color-text-muted)', marginTop: '4px' }}>
               Your journey through time continues
             </p>
           </div>
@@ -262,8 +288,9 @@ export default function Dashboard() {
         {/* ── Daily Challenge ── */}
         {dailyEvent && (
           <motion.section className="mb-12" {...section(0.15)}>
-            <GlassCard
-              className="relative overflow-hidden"
+            <Card
+              variant="glass"
+              className="rounded-[12px] p-0 relative overflow-hidden transition-all duration-200"
               style={{
                 border: dailyChallengeCompleted
                   ? '1px solid rgba(109, 148, 118, 0.35)'
@@ -274,15 +301,18 @@ export default function Dashboard() {
               }}
             >
               <div className="flex flex-col sm:flex-row gap-0">
-                {/* Image */}
-                <div
-                  className="w-full sm:w-[220px] h-[140px] sm:h-auto relative flex-shrink-0 overflow-hidden"
-                  style={{
-                    background: getCardImage(dailyEvent)
-                      ? `url(${getCardImage(dailyEvent)}) center/cover`
-                      : `linear-gradient(135deg, ${CATEGORY_COLORS[dailyEvent.category] ?? '#8a8a9a'}30, ${CATEGORY_COLORS[dailyEvent.category] ?? '#8a8a9a'}10)`,
-                  }}
-                >
+                {/* Image (fallback gradient + icon underneath, img on top) */}
+                <div className="w-full sm:w-[220px] h-[140px] sm:h-auto relative flex-shrink-0 overflow-hidden">
+                  <EventImageFallback category={dailyEvent.category} eraId={dailyEvent.eraId} />
+                  {getCardImage(dailyEvent) && (
+                    <img
+                      src={getCardImage(dailyEvent)!}
+                      alt=""
+                      loading="lazy"
+                      className="absolute inset-0 w-full h-full object-cover"
+                      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                    />
+                  )}
                   <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, transparent 40%, rgba(14,14,20,0.95) 100%)' }} />
                   <div className="absolute inset-0 sm:hidden" style={{ background: 'linear-gradient(to bottom, transparent 40%, rgba(14,14,20,0.95) 100%)' }} />
                 </div>
@@ -293,7 +323,7 @@ export default function Dashboard() {
                     <span
                       className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full"
                       style={{
-                        fontFamily: "'JetBrains Mono', monospace",
+                        fontFamily: 'var(--font-mono)',
                         fontSize: '11px',
                         fontWeight: 600,
                         letterSpacing: '0.08em',
@@ -312,7 +342,7 @@ export default function Dashboard() {
                     <span
                       className="px-2.5 py-0.5 rounded-full"
                       style={{
-                        fontFamily: "'JetBrains Mono', monospace",
+                        fontFamily: 'var(--font-mono)',
                         fontSize: '11px',
                         color: CATEGORY_COLORS[dailyEvent.category] ?? '#8a8a9a',
                         background: `${CATEGORY_COLORS[dailyEvent.category] ?? '#8a8a9a'}15`,
@@ -330,7 +360,7 @@ export default function Dashboard() {
                   </h3>
                   <span
                     className="mt-1"
-                    style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '13px', color: 'var(--color-text-muted)' }}
+                    style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--color-text-muted)' }}
                   >
                     {formatYear(dailyEvent.year)}{dailyEvent.locationName ? ` \u00b7 ${dailyEvent.locationName}` : ''}
                   </span>
@@ -361,7 +391,7 @@ export default function Dashboard() {
                   </div>
                 </div>
               </div>
-            </GlassCard>
+            </Card>
           </motion.section>
         )}
 
@@ -372,7 +402,7 @@ export default function Dashboard() {
 
         {/* ── Progress Overview ── */}
         <motion.section className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-12" {...section(0.2)}>
-          <GlassCard className="flex items-center gap-4 p-5">
+          <Card variant="glass" className="rounded-[12px] flex items-center gap-4 p-5">
             <div className="relative flex items-center justify-center">
               <ProgressRing progress={totalEvents > 0 ? exploredCount / totalEvents : 0} />
               <div className="absolute inset-0 flex items-center justify-center">
@@ -383,13 +413,13 @@ export default function Dashboard() {
               <span className="block text-text-primary" style={{ fontFamily: 'var(--font-display)', fontSize: '32px', fontWeight: 700, lineHeight: 1 }}>
                 <AnimatedNumber value={exploredCount} />
               </span>
-              <span className="block mt-1" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: 'var(--color-text-muted)' }}>
+              <span className="block mt-1" style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--color-text-muted)' }}>
                 of {totalEvents} events explored
               </span>
             </div>
-          </GlassCard>
+          </Card>
 
-          <GlassCard className="flex items-center gap-4 p-5">
+          <Card variant="glass" className="rounded-[12px] flex items-center gap-4 p-5">
             <div
               className="flex items-center justify-center rounded-[12px]"
               style={{ width: '56px', height: '56px', background: 'rgba(196, 154, 68, 0.1)' }}
@@ -400,13 +430,13 @@ export default function Dashboard() {
               <span className="block text-text-primary" style={{ fontFamily: 'var(--font-display)', fontSize: '32px', fontWeight: 700, lineHeight: 1 }}>
                 <AnimatedNumber value={quizCount} />
               </span>
-              <span className="block mt-1" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: 'var(--color-text-muted)' }}>
+              <span className="block mt-1" style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--color-text-muted)' }}>
                 quizzes{quizCount > 0 ? ` \u00b7 ${avgScore}% avg` : ' completed'}
               </span>
             </div>
-          </GlassCard>
+          </Card>
 
-          <GlassCard className="flex items-center gap-4 p-5">
+          <Card variant="glass" className="rounded-[12px] flex items-center gap-4 p-5">
             <div
               className="flex items-center justify-center rounded-[12px]"
               style={{ width: '56px', height: '56px', background: 'rgba(196, 154, 68, 0.1)' }}
@@ -417,11 +447,11 @@ export default function Dashboard() {
               <span className="block text-text-primary" style={{ fontFamily: 'var(--font-display)', fontSize: '32px', fontWeight: 700, lineHeight: 1 }}>
                 <AnimatedNumber value={achievementCount} />
               </span>
-              <span className="block mt-1" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: 'var(--color-text-muted)' }}>
+              <span className="block mt-1" style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--color-text-muted)' }}>
                 of {ACHIEVEMENTS.length} achievements
               </span>
             </div>
-          </GlassCard>
+          </Card>
         </motion.section>
 
         {/* ── Featured Journeys ── */}
@@ -431,7 +461,7 @@ export default function Dashboard() {
             <button
               onClick={() => navigate('/journeys')}
               className="flex items-center gap-1 cursor-pointer transition-colors duration-200 hover:text-[#c49a44]"
-              style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: 'var(--color-text-muted)' }}
+              style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--color-text-muted)' }}
             >
               View all <ChevronRight size={14} />
             </button>
@@ -447,13 +477,14 @@ export default function Dashboard() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.3 + i * 0.08, ease: EASE }}
                 >
-                  <GlassCard
-                    className="group relative overflow-hidden cursor-pointer transition-all duration-200 hover:border-white/[0.14] hover:translate-y-[-2px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-void active:scale-[0.97]"
+                  <Card
+                    variant="glass"
+                    className="rounded-[12px] p-0 group relative overflow-hidden cursor-pointer transition-all duration-200 hover:border-white/[0.14] hover:translate-y-[-2px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold focus-visible:ring-offset-2 focus-visible:ring-offset-void active:scale-[0.97]"
                     style={{ border: '1px solid var(--color-border-subtle)' }}
                     onClick={() => navigate(`/journeys/${journey.id}`)}
                     role="button"
                     tabIndex={0}
-                    onKeyDown={e => e.key === 'Enter' && navigate(`/journeys/${journey.id}`)}
+                    onKeyDown={cardKeyHandler(() => navigate(`/journeys/${journey.id}`))}
                   >
                     {progress > 0 && (
                       <div
@@ -481,15 +512,15 @@ export default function Dashboard() {
                         {journey.description}
                       </p>
                       <div className="flex items-center gap-3">
-                        <span className="inline-flex items-center gap-1" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', color: 'var(--color-text-muted)' }}>
+                        <span className="inline-flex items-center gap-1" style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-text-muted)' }}>
                           <BookOpen size={12} /> {journey.eventIds.length} events
                         </span>
-                        <span className="inline-flex items-center gap-1" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', color: 'var(--color-text-muted)' }}>
+                        <span className="inline-flex items-center gap-1" style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-text-muted)' }}>
                           <Clock size={12} /> {journey.estimatedMinutes} min
                         </span>
                       </div>
                     </div>
-                  </GlassCard>
+                  </Card>
                 </motion.div>
               );
             })}
@@ -510,19 +541,15 @@ export default function Dashboard() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.4 + i * 0.08, ease: EASE }}
                   >
-                    <GlassCard className="group overflow-hidden cursor-pointer transition-all duration-200 hover:border-white/[0.14] hover:translate-y-[-2px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-void active:scale-[0.97]"
+                    <Card variant="glass" className="rounded-[12px] p-0 group overflow-hidden cursor-pointer transition-all duration-200 hover:border-white/[0.14] hover:translate-y-[-2px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold focus-visible:ring-offset-2 focus-visible:ring-offset-void active:scale-[0.97]"
                       style={{ border: '1px solid var(--color-border-subtle)' }}
                       onClick={() => navigate(`/explore?event=${event.id}`)}
                       role="button"
                       tabIndex={0}
-                      onKeyDown={e => e.key === 'Enter' && navigate(`/explore?event=${event.id}`)}
+                      onKeyDown={cardKeyHandler(() => navigate(`/explore?event=${event.id}`))}
                     >
-                      <div
-                        className="w-full aspect-[16/10] relative overflow-hidden"
-                        style={{
-                          background: `linear-gradient(135deg, ${catColor}30, ${catColor}10)`,
-                        }}
-                      >
+                      <div className="w-full aspect-[16/10] relative overflow-hidden">
+                        <EventImageFallback category={event.category} eraId={event.eraId} />
                         {getCardImage(event) && (
                           <img
                             src={getCardImage(event)!}
@@ -560,22 +587,22 @@ export default function Dashboard() {
                         >
                           {event.title}
                         </h3>
-                        <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: 'var(--color-text-muted)' }}>
+                        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--color-text-muted)' }}>
                           {formatYear(event.year)}
                         </span>
                       </div>
-                    </GlassCard>
+                    </Card>
                   </motion.div>
                 );
               })}
             </div>
           ) : (
-            <GlassCard className="flex items-center justify-center gap-3 py-10 px-6">
+            <Card variant="glass" className="rounded-[12px] flex items-center justify-center gap-3 py-10 px-6">
               <Sparkles size={20} style={{ color: '#c49a44' }} />
               <span className="text-text-primary" style={{ fontFamily: 'var(--font-display)', fontSize: '16px', fontWeight: 500 }}>
                 You have explored every event!
               </span>
-            </GlassCard>
+            </Card>
           )}
         </motion.section>
 
@@ -599,19 +626,15 @@ export default function Dashboard() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.4 + i * 0.08, ease: EASE }}
                   >
-                    <GlassCard className="group overflow-hidden cursor-pointer transition-all duration-200 hover:border-white/[0.14] hover:translate-y-[-2px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-void active:scale-[0.97]"
+                    <Card variant="glass" className="rounded-[12px] p-0 group overflow-hidden cursor-pointer transition-all duration-200 hover:border-white/[0.14] hover:translate-y-[-2px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold focus-visible:ring-offset-2 focus-visible:ring-offset-void active:scale-[0.97]"
                       style={{ border: '1px solid var(--color-border-subtle)' }}
                       onClick={() => navigate(`/explore?event=${event.id}`)}
                       role="button"
                       tabIndex={0}
-                      onKeyDown={e => e.key === 'Enter' && navigate(`/explore?event=${event.id}`)}
+                      onKeyDown={cardKeyHandler(() => navigate(`/explore?event=${event.id}`))}
                     >
-                      <div
-                        className="w-full aspect-[16/10] relative overflow-hidden"
-                        style={{
-                          background: `linear-gradient(135deg, ${catColor}30, ${catColor}10)`,
-                        }}
-                      >
+                      <div className="w-full aspect-[16/10] relative overflow-hidden">
+                        <EventImageFallback category={event.category} eraId={event.eraId} />
                         {getCardImage(event) && (
                           <img
                             src={getCardImage(event)!}
@@ -650,11 +673,11 @@ export default function Dashboard() {
                         >
                           {event.title}
                         </h3>
-                        <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: 'var(--color-text-muted)' }}>
+                        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--color-text-muted)' }}>
                           {formatYear(event.year)}
                         </span>
                       </div>
-                    </GlassCard>
+                    </Card>
                   </motion.div>
                 );
               })}
@@ -676,13 +699,14 @@ export default function Dashboard() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.5 + i * 0.06, ease: EASE }}
                 >
-                  <GlassCard
-                    className="group px-5 py-4 cursor-pointer transition-all duration-200 hover:border-white/[0.14] hover:translate-y-[-2px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-void active:scale-[0.97]"
+                  <Card
+                    variant="glass"
+                    className="rounded-[12px] group px-5 py-4 cursor-pointer transition-all duration-200 hover:border-white/[0.14] hover:translate-y-[-2px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold focus-visible:ring-offset-2 focus-visible:ring-offset-void active:scale-[0.97]"
                     style={{ border: '1px solid var(--color-border-subtle)' }}
                     onClick={() => navigate(`/explore/${era.startYear}`)}
                     role="button"
                     tabIndex={0}
-                    onKeyDown={e => e.key === 'Enter' && navigate(`/explore/${era.startYear}`)}
+                    onKeyDown={cardKeyHandler(() => navigate(`/explore/${era.startYear}`))}
                     aria-label={`${era.name}: ${era.explored} of ${era.total} explored`}
                   >
                     <div className="w-10 h-[3px] rounded-full mb-3" style={{ background: color }} />
@@ -702,11 +726,11 @@ export default function Dashboard() {
                           transition={{ duration: 0.8, delay: 0.6 + i * 0.06, ease: EASE }}
                         />
                       </div>
-                      <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: 'var(--color-text-secondary)', whiteSpace: 'nowrap' }}>
+                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--color-text-secondary)', whiteSpace: 'nowrap' }}>
                         {era.explored}/{era.total}
                       </span>
                     </div>
-                  </GlassCard>
+                  </Card>
                 </motion.div>
               );
             })}
@@ -717,7 +741,7 @@ export default function Dashboard() {
         {recentEvents.length > 0 && (
           <motion.section className="mb-12" {...section(0.5)}>
             <SectionLabel>Recent Discoveries</SectionLabel>
-            <GlassCard className="divide-y divide-white/[0.04]">
+            <Card variant="glass" className="rounded-[12px] p-0 divide-y divide-white/[0.04]">
               {recentEvents.map((event) => {
                 if (!event) return null;
                 const catColor = CATEGORY_COLORS[event.category] ?? '#8a8a9a';
@@ -725,7 +749,7 @@ export default function Dashboard() {
                   <button
                     key={event.id}
                     onClick={() => navigate(`/explore?event=${event.id}`)}
-                    className="w-full flex items-center gap-3 px-5 py-3 text-left cursor-pointer hover:bg-white/[0.03] transition-colors active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-void"
+                    className="w-full flex items-center gap-3 px-5 py-3 text-left cursor-pointer hover:bg-white/[0.03] transition-colors active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold focus-visible:ring-offset-2 focus-visible:ring-offset-void"
                   >
                     <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: catColor }} />
                     <span
@@ -734,7 +758,7 @@ export default function Dashboard() {
                     >
                       {event.title}
                     </span>
-                    <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: 'var(--color-text-muted)' }}>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--color-text-muted)' }}>
                       {formatYear(event.year)}
                     </span>
                     <motion.span
@@ -754,7 +778,7 @@ export default function Dashboard() {
                   </button>
                 );
               })}
-            </GlassCard>
+            </Card>
           </motion.section>
         )}
 
@@ -833,7 +857,7 @@ function EventsTab({ events, viewedEvents, navigate }: {
           style={{
             background: 'var(--glass-bg)',
             border: '1px solid var(--color-border-subtle)',
-            fontFamily: "'Inter', sans-serif",
+            fontFamily: 'var(--font-sans)',
           }}
         />
         <select
@@ -852,11 +876,12 @@ function EventsTab({ events, viewedEvents, navigate }: {
         </select>
       </div>
 
-      {/* Category pills */}
+      {/* Category pills — slim visual, but a 44px (h-11) ::after hit area per
+          the design-system minimum touch target */}
       <div className="flex flex-wrap gap-2 mb-8">
         <button
           onClick={() => setCategoryFilter(null)}
-          className="px-3 py-1.5 rounded-full text-[11px] font-medium cursor-pointer transition-all"
+          className="px-3 py-1.5 rounded-full text-[11px] font-medium cursor-pointer transition-all relative after:absolute after:inset-x-0 after:top-1/2 after:h-11 after:-translate-y-1/2 after:content-['']"
           style={{
             background: !categoryFilter ? 'var(--color-accent-gold)' : 'var(--glass-bg)',
             color: !categoryFilter ? 'var(--color-void)' : 'var(--color-text-muted)',
@@ -872,7 +897,7 @@ function EventsTab({ events, viewedEvents, navigate }: {
             <button
               key={cat.id}
               onClick={() => setCategoryFilter(active ? null : cat.id)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-medium cursor-pointer transition-all"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-medium cursor-pointer transition-all relative after:absolute after:inset-x-0 after:top-1/2 after:h-11 after:-translate-y-1/2 after:content-['']"
               style={{
                 background: active ? `${cat.color}25` : 'var(--glass-bg)',
                 color: active ? cat.color : 'var(--color-text-muted)',
@@ -897,15 +922,14 @@ function EventsTab({ events, viewedEvents, navigate }: {
               whileHover={{ y: -2 }}
               transition={{ duration: 0.15 }}
             >
-              <GlassCard
-                className="overflow-hidden cursor-pointer group"
+              <Card
+                variant="glass"
+                className="rounded-[12px] p-0 overflow-hidden cursor-pointer group transition-all duration-200"
                 style={{ border: '1px solid var(--color-border-subtle)' }}
                 onClick={() => navigate(`/explore?event=${event.id}`)}
               >
-                <div
-                  className="w-full aspect-[16/10] relative overflow-hidden"
-                  style={{ background: `linear-gradient(135deg, ${catColor}30, ${catColor}10)` }}
-                >
+                <div className="w-full aspect-[16/10] relative overflow-hidden">
+                  <EventImageFallback category={event.category} eraId={event.eraId} />
                   {event.imageUrl && (
                     <img
                       src={event.imageUrl}
@@ -940,11 +964,11 @@ function EventsTab({ events, viewedEvents, navigate }: {
                   >
                     {event.title}
                   </h3>
-                  <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', color: 'var(--color-text-muted)' }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-text-muted)' }}>
                     {formatYear(event.year)}
                   </span>
                 </div>
-              </GlassCard>
+              </Card>
             </motion.div>
           );
         })}
@@ -993,20 +1017,20 @@ function AchievementsTab({ viewedEvents, quizScores, unlockedAchievements, curre
       {/* Stats grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-10">
         {stats.map((stat, i) => (
-          <GlassCard key={i} className="px-5 py-4">
+          <Card variant="glass" key={i} className="rounded-[12px] px-5 py-4">
             <p className="text-[10px] font-mono uppercase tracking-wider text-text-muted mb-1">{stat.label}</p>
             <p className="text-[24px] font-bold" style={{ color: stat.color, fontFamily: 'var(--font-display)' }}>
               {stat.value}
               {stat.total && <span className="text-[14px] text-text-muted font-normal">/{stat.total}</span>}
             </p>
-          </GlassCard>
+          </Card>
         ))}
       </div>
 
       {/* Achievements grid */}
       <h2
         className="uppercase tracking-[0.15em] mb-4"
-        style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '13px', fontWeight: 500, color: 'var(--color-text-muted)' }}
+        style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', fontWeight: 500, color: 'var(--color-text-muted)' }}
       >
         All Achievements ({unlockedAchievements.length}/{ACHIEVEMENTS.length})
       </h2>
@@ -1015,10 +1039,11 @@ function AchievementsTab({ viewedEvents, quizScores, unlockedAchievements, curre
         {ACHIEVEMENTS.map((ach) => {
           const unlocked = unlockedAchievements.includes(ach.id);
           return (
-            <GlassCard
+            <Card
+              variant="glass"
               key={ach.id}
               className={cn(
-                'flex items-center gap-4 px-5 py-4',
+                'rounded-[12px] flex items-center gap-4 px-5 py-4',
                 !unlocked && 'opacity-40',
               )}
               style={{
@@ -1050,7 +1075,7 @@ function AchievementsTab({ viewedEvents, quizScores, unlockedAchievements, curre
                   </span>
                 )}
               </div>
-            </GlassCard>
+            </Card>
           );
         })}
       </div>
@@ -1062,7 +1087,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
     <h2
       className="uppercase tracking-[0.15em] mb-4"
-      style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '13px', fontWeight: 500, color: 'var(--color-text-muted)' }}
+      style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', fontWeight: 500, color: 'var(--color-text-muted)' }}
     >
       {children}
     </h2>
@@ -1088,7 +1113,7 @@ function ActionButton({
       disabled={disabled}
       className={cn(
         'flex items-center gap-4 w-full rounded-[12px] px-5 py-4 text-left cursor-pointer transition-all duration-200',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-void',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold focus-visible:ring-offset-2 focus-visible:ring-offset-void',
         disabled && 'opacity-40 cursor-not-allowed',
       )}
       style={{
@@ -1109,7 +1134,7 @@ function ActionButton({
         <span className="block text-text-primary" style={{ fontFamily: 'var(--font-display)', fontSize: '15px', fontWeight: 500 }}>
           {label}
         </span>
-        <span className="block" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: 'var(--color-text-muted)' }}>
+        <span className="block" style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--color-text-muted)' }}>
           {desc}
         </span>
       </div>

@@ -1,7 +1,8 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { X, MapPin } from 'lucide-react';
 import { useMonumentViewer } from './useMonumentViewer';
+import { useFocusTrap } from '@/shared/hooks/useFocusTrap';
 import { formatYear } from '@/shared/utils/format';
 
 import { CATEGORY_COLORS } from '@/shared/data/categories';
@@ -30,6 +31,10 @@ const contentVariants = {
 
 export function MonumentViewer() {
   const { isOpen, event, close } = useMonumentViewer();
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  // Keep keyboard focus inside the full-screen viewer while it is open.
+  useFocusTrap(dialogRef, isOpen);
 
   const handleEscape = useCallback(
     (e: KeyboardEvent) => {
@@ -58,6 +63,7 @@ export function MonumentViewer() {
       {isOpen && event?.modelUrl && (
         <motion.div
           key="monument-viewer"
+          ref={dialogRef}
           className="fixed inset-0 z-50 flex flex-col"
           style={{ background: 'var(--color-void)' }}
           variants={overlayVariants}

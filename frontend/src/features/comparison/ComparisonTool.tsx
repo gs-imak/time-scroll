@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+﻿import { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Trash2, MapPin, Calendar, Tag, Layers, GitCompareArrows } from 'lucide-react';
 import { useProgressStore } from '@/shared/stores/progressStore';
@@ -6,7 +6,7 @@ import { useEventsStore } from '@/shared/stores/eventsStore';
 import { ERAS } from '@/shared/utils/constants';
 import { formatYear } from '@/shared/utils/format';
 
-/* ── Color maps (for dynamic alpha concatenation) ── */
+/* â”€â”€ Color maps (for dynamic alpha concatenation) â”€â”€ */
 
 import { CATEGORY_COLORS as CATEGORY_HEX } from '@/shared/data/categories';
 
@@ -121,7 +121,7 @@ export function ComparisonTool() {
               </h2>
               <p
                 style={{
-                  fontFamily: "'JetBrains Mono', monospace",
+                  fontFamily: 'var(--font-mono)',
                   fontSize: '12px',
                   color: 'var(--color-text-muted)',
                   marginTop: '6px',
@@ -215,10 +215,10 @@ export function ComparisonTool() {
 
                 {/* Year labels */}
                 <div className="flex justify-between mt-3">
-                  <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: 'var(--color-text-secondary)' }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--color-text-secondary)' }}>
                     {formatYear(Math.min(eventA.year, eventB.year))}
                   </span>
-                  <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: 'var(--color-text-secondary)' }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--color-text-secondary)' }}>
                     {formatYear(Math.max(eventA.year, eventB.year))}
                   </span>
                 </div>
@@ -376,7 +376,7 @@ function DetailRow({
   return (
     <div className="flex items-center gap-3">
       <Icon size={14} style={{ color: 'var(--color-text-muted)', flexShrink: 0 }} />
-      <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', color: 'var(--color-text-muted)', minWidth: '60px' }}>
+      <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-text-muted)', minWidth: '60px' }}>
         {label}
       </span>
       <span

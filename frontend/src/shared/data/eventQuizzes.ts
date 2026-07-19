@@ -390,3 +390,12 @@ export const EVENT_QUIZZES: Record<string, { question: string; options: string[]
     { question: 'Why was Jezero Crater chosen for the landing?', options: ['It\'s flat', 'It once held a lake that could have harbored life', 'It has ice', 'It\'s near the equator'], correctIndex: 1 },
   ],
 };
+
+/** Total number of per-event quiz questions across all of EVENT_QUIZZES.
+ *  Import this instead of hardcoding a question count in marketing copy —
+ *  see the "features/quiz/data/quizQuestions.ts" module for the separate
+ *  Quiz Hub question bank, which exposes its own count via `.length`. */
+export const QUESTION_COUNT: number = Object.values(EVENT_QUIZZES).reduce(
+  (total, questions) => total + questions.length,
+  0,
+);

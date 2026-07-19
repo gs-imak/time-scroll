@@ -1,8 +1,10 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   X, Search, Navigation, Keyboard, Eye, Layers, Home,
 } from 'lucide-react';
+import { useTimeStore } from '@/shared/stores/timeStore';
+import { useFocusTrap } from '@/shared/hooks/useFocusTrap';
 
 const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
@@ -52,6 +54,27 @@ const SHORTCUT_GROUPS: ShortcutGroup[] = [
 
 export function KeyboardHelp() {
   const [open, setOpen] = useState(false);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(dialogRef, open);
+
+  // Pause timeline playback while the shortcuts dialog is open; resume only
+  // if it was actually playing before (never start playback the user
+  // hadn't begun). Same pattern as SearchOverlay.
+  const wasPlayingRef = useRef(false);
+  useEffect(() => {
+    if (open) {
+      const { isPlaying, togglePlay } = useTimeStore.getState();
+      if (isPlaying) {
+        wasPlayingRef.current = true;
+        togglePlay();
+      } else {
+        wasPlayingRef.current = false;
+      }
+    } else if (wasPlayingRef.current) {
+      useTimeStore.getState().togglePlay();
+      wasPlayingRef.current = false;
+    }
+  }, [open]);
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -92,6 +115,7 @@ export function KeyboardHelp() {
 
           {/* Modal */}
           <motion.div
+            ref={dialogRef}
             className="relative w-[500px] max-w-full rounded-2xl overflow-hidden"
             style={{
               background: 'var(--glass-strong-bg)',
@@ -144,7 +168,7 @@ export function KeyboardHelp() {
                   <p
                     className="mt-0.5"
                     style={{
-                      fontFamily: "'JetBrains Mono', monospace",
+                      fontFamily: 'var(--font-mono)',
                       fontSize: '11px',
                       color: 'var(--color-text-muted)',
                     }}
@@ -242,7 +266,7 @@ export function KeyboardHelp() {
                                 <kbd
                                   className="inline-flex items-center justify-center min-w-[26px] h-[24px] px-2 rounded-md text-[11px] font-semibold"
                                   style={{
-                                    fontFamily: "'JetBrains Mono', monospace",
+                                    fontFamily: 'var(--font-mono)',
                                     background: `${group.color}14`,
                                     border: `1px solid ${group.color}35`,
                                     color: group.color,
@@ -275,7 +299,7 @@ export function KeyboardHelp() {
                 <span
                   className="text-[10px]"
                   style={{
-                    fontFamily: "'JetBrains Mono', monospace",
+                    fontFamily: 'var(--font-mono)',
                     color: 'var(--color-text-muted)',
                     letterSpacing: '0.04em',
                   }}
@@ -285,7 +309,7 @@ export function KeyboardHelp() {
                 <kbd
                   className="inline-flex items-center justify-center min-w-[20px] h-[18px] px-1.5 rounded text-[10px]"
                   style={{
-                    fontFamily: "'JetBrains Mono', monospace",
+                    fontFamily: 'var(--font-mono)',
                     background: 'rgba(196,154,68,0.14)',
                     border: '1px solid rgba(196,154,68,0.3)',
                     color: 'var(--color-accent-gold)',
@@ -296,7 +320,7 @@ export function KeyboardHelp() {
                 <span
                   className="text-[10px]"
                   style={{
-                    fontFamily: "'JetBrains Mono', monospace",
+                    fontFamily: 'var(--font-mono)',
                     color: 'var(--color-text-muted)',
                     letterSpacing: '0.04em',
                   }}
@@ -312,7 +336,7 @@ export function KeyboardHelp() {
                 <span
                   className="text-[10px]"
                   style={{
-                    fontFamily: "'JetBrains Mono', monospace",
+                    fontFamily: 'var(--font-mono)',
                     letterSpacing: '0.04em',
                   }}
                 >

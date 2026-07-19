@@ -42,8 +42,11 @@ export function MiniGlobe() {
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [interacted, setInteracted] = useState(false);
 
+  // Resize bursts coalesced into one measurement per frame (rAF guard) so a
+  // drag-resize doesn't fire a setDimensions storm that re-sizes the renderer.
   useEffect(() => {
-    const updateSize = () => {
+    let rafId = 0;
+    const measure = () => {
       if (containerRef.current) {
         setDimensions({
           width: containerRef.current.clientWidth,
@@ -51,9 +54,19 @@ export function MiniGlobe() {
         });
       }
     };
-    updateSize();
-    window.addEventListener('resize', updateSize);
-    return () => window.removeEventListener('resize', updateSize);
+    const onResize = () => {
+      if (rafId) return;
+      rafId = requestAnimationFrame(() => {
+        rafId = 0;
+        measure();
+      });
+    };
+    measure();
+    window.addEventListener('resize', onResize);
+    return () => {
+      window.removeEventListener('resize', onResize);
+      if (rafId) cancelAnimationFrame(rafId);
+    };
   }, []);
 
   const onReady = useCallback(() => {
@@ -191,7 +204,7 @@ export function MiniGlobe() {
           onGlobeReady={onReady}
           globeImageUrl="/assets/images/earth-8k.jpg"
           bumpImageUrl="/assets/images/earth-bump-8k.png"
-          backgroundImageUrl="//unpkg.com/three-globe/example/img/night-sky.png"
+          backgroundImageUrl="/assets/images/night-sky.png"
           atmosphereColor="#6db3f2"
           atmosphereAltitude={0.25}
           showAtmosphere={true}

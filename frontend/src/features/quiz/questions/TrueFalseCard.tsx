@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, X } from 'lucide-react';
+import { Check, X, CheckCircle, XCircle } from 'lucide-react';
 import type { TrueFalseQuestion } from '../types';
 
 interface Props {
@@ -51,16 +51,50 @@ export function TrueFalseCard({ question, selected, isAnswered, onSelect }: Prop
               key={label}
               onClick={() => onSelect(value)}
               disabled={isAnswered}
-              className="flex flex-col items-center gap-3 p-6 rounded-xl cursor-pointer disabled:cursor-default transition-all"
+              className="relative flex flex-col items-center gap-3 p-6 rounded-xl cursor-pointer disabled:cursor-default transition-all"
               style={{ background: bg, border: `1px solid ${border}` }}
               whileHover={!isAnswered ? { scale: 1.03 } : {}}
               whileTap={!isAnswered ? { scale: 0.97 } : {}}
             >
               <Icon size={28} style={{ color: textColor }} />
               <span className="text-[15px] font-semibold" style={{ color: textColor }}>{label}</span>
+
+              {/* Correctness icon — color alone must not carry the result
+                  (WCAG 1.4.1); mirrors the MCQCard CheckCircle/XCircle pattern. */}
+              <AnimatePresence>
+                {isAnswered && isCorrectAnswer && (
+                  <motion.div
+                    className="absolute top-3 right-3"
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: 'spring', stiffness: 400 }}
+                  >
+                    <CheckCircle size={18} className="text-[#6d9476]" />
+                  </motion.div>
+                )}
+                {isAnswered && isSelected && !isCorrectAnswer && (
+                  <motion.div
+                    className="absolute top-3 right-3"
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: 'spring', stiffness: 400 }}
+                  >
+                    <XCircle size={18} className="text-[#b85454]" />
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </motion.button>
           );
         })}
+      </div>
+
+      {/* Screen-reader result announcement (WCAG 4.1.3) */}
+      <div aria-live="polite" className="sr-only">
+        {isAnswered
+          ? selected === question.isTrue
+            ? 'Correct'
+            : `Incorrect. Correct answer: ${question.isTrue ? 'True' : 'False'}`
+          : ''}
       </div>
 
       <AnimatePresence>

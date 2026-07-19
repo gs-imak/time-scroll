@@ -58,7 +58,7 @@ export function ExplorationPanel() {
                   {isEvents ? visibleEvents.length : LOCATIONS.filter(l => l.availableEras.includes(currentEra.id)).length}
                 </span>
               </div>
-              <IconButton icon={X} size={16} onClick={() => setActivePanel('none')} />
+              <IconButton icon={X} size={16} onClick={() => setActivePanel('none')} aria-label="Close" />
             </div>
 
             {isEvents ? (

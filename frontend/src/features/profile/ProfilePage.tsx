@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router';
-import { User, Flame, Compass, Trophy, Brain, Heart, LogOut, Settings as SettingsIcon } from 'lucide-react';
+import { User, Flame, Compass, Trophy, Brain, Heart, Target, LogOut, Settings as SettingsIcon } from 'lucide-react';
 import { useProgressStore } from '@/shared/stores/progressStore';
 import { useEventsStore } from '@/shared/stores/eventsStore';
 
@@ -47,7 +47,7 @@ function StatCard({
         </p>
         <p
           className="mt-1 text-[11px] uppercase tracking-wider text-text-muted"
-          style={{ fontFamily: "'JetBrains Mono', monospace" }}
+          style={{ fontFamily: 'var(--font-mono)' }}
         >
           {label}
         </p>
@@ -89,7 +89,9 @@ export default function ProfilePage() {
           'radial-gradient(ellipse 80% 50% at 50% 20%, var(--color-elevated) 0%, var(--color-surface) 30%, var(--color-void) 60%, var(--color-void) 100%)',
       }}
     >
-      <div className="w-full max-w-[900px] mx-auto px-6 md:px-10 py-12 md:py-16">
+      {/* pt-20 below lg clears the fixed mobile nav button: 12px offset + 44px
+          button + 24px (xl) gap = 80px. Desktop sidebar appears at lg. */}
+      <div className="w-full max-w-[900px] mx-auto px-6 md:px-10 pt-20 lg:pt-16 pb-12 md:pb-16">
         {/* ── Header ── */}
         <motion.header className="mb-12" {...section(0.1)}>
           <h1
@@ -104,7 +106,7 @@ export default function ProfilePage() {
           </h1>
           <p
             style={{
-              fontFamily: "'JetBrains Mono', monospace",
+              fontFamily: 'var(--font-mono)',
               fontSize: '13px',
               color: 'var(--color-text-muted)',
               marginTop: '4px',
@@ -162,7 +164,7 @@ export default function ProfilePage() {
               <p
                 className="mt-1"
                 style={{
-                  fontFamily: "'JetBrains Mono', monospace",
+                  fontFamily: 'var(--font-mono)',
                   fontSize: '12px',
                   color: 'var(--color-text-muted)',
                 }}
@@ -175,7 +177,7 @@ export default function ProfilePage() {
                 <div className="flex items-center justify-between mb-1.5">
                   <span
                     className="text-[11px] uppercase tracking-wider text-text-muted"
-                    style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                    style={{ fontFamily: 'var(--font-mono)' }}
                   >
                     Collection progress
                   </span>
@@ -209,7 +211,9 @@ export default function ProfilePage() {
           </div>
         </motion.section>
 
-        {/* ── Stats grid ── */}
+        {/* ── Stats grid — 6 cards: even 2-col (mobile) and 3-col (sm+) rows,
+            no orphaned last row. Quizzes and average score are separate
+            stats; the % lives in the value, formatted once. ── */}
         <motion.section
           className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-10"
           {...section(0.2)}
@@ -234,9 +238,15 @@ export default function ProfilePage() {
           />
           <StatCard
             icon={Brain}
-            label={`avg ${avgScore}%`}
+            label="quizzes taken"
             value={quizCount}
             accent="#6d9476"
+          />
+          <StatCard
+            icon={Target}
+            label="Average score"
+            value={`${avgScore}%`}
+            accent="#8b80b0"
           />
           <StatCard
             icon={Heart}

@@ -140,7 +140,7 @@ Use the token (`var(--font-display)` or the `font-display` utility) — never a 
 |----------|-----------------|---------------------|
 | Hover    | scale(1.05)     | 200ms ease-out      |
 | Active   | scale(0.95)     | 100ms               |
-| Focus    | ring-2 cyan/50  | instant              |
+| Focus    | ring-2 full-opacity accent + ring-offset-2 ring-offset-void | instant |
 
 ---
 
@@ -152,3 +152,4 @@ Use the token (`var(--font-display)` or the `font-display` utility) — never a 
 4. **Minimum touch target: 44px** for any interactive element.
 5. **All interactive elements need hover + active states.**
 6. **Test at 1440x900** as the primary desktop viewport.
+7. **Focus rings must use full color opacity** (never `/50` or `/30`) **paired with `ring-offset-2 ring-offset-void`.** A `/50`-opacity ring computes to ~2.4:1 against dark backgrounds, below the WCAG 1.4.11 3:1 minimum; full opacity gets ~6.3:1. See `IconButton.tsx` for the reference implementation.

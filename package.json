@@ -4,6 +4,10 @@
   "workspaces": [
     "frontend"
   ],
+  "overrides": {
+    "three": "0.170.0",
+    "@types/three": "0.170.0"
+  },
   "devDependencies": {
     "adm-zip": "^0.5.17",
     "sharp": "^0.34.5"

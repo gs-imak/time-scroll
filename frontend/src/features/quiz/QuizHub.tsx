@@ -13,6 +13,7 @@ import type { QuizMode, QuizSessionConfig } from './types';
 import type { EventCategory } from '@/shared/types/events';
 import { useProgressStore } from '@/shared/stores/progressStore';
 import { ERAS } from '@/shared/utils/constants';
+import { Card } from '@/shared/components/Card';
 
 /* ── Animation presets ── */
 
@@ -89,30 +90,6 @@ const MODES: {
   },
 ];
 
-/* ── Shared glass card ── */
-
-function GlassCard({
-  children,
-  className,
-  strong,
-  ...props
-}: React.HTMLAttributes<HTMLDivElement> & { strong?: boolean }) {
-  return (
-    <div
-      className={`rounded-xl transition-all duration-200 ${className ?? ''}`}
-      style={{
-        background: strong ? 'var(--glass-strong-bg)' : 'var(--glass-bg)',
-        backdropFilter: strong ? 'blur(40px)' : 'blur(24px)',
-        border: '1px solid var(--color-border-subtle)',
-        boxShadow: 'inset 0 1px 0 var(--glass-inset)',
-      }}
-      {...props}
-    >
-      {children}
-    </div>
-  );
-}
-
 /* ── Stat card sub-component ── */
 
 function StatCard({
@@ -132,7 +109,7 @@ function StatCard({
 }) {
   return (
     <motion.div variants={scaleIn} custom={index}>
-      <GlassCard className="p-5 sm:p-6 group hover:border-border-active cursor-default relative overflow-hidden">
+      <Card variant="glass" className="rounded-xl p-5 sm:p-6 group hover:border-border-active cursor-default relative overflow-hidden transition-all duration-200">
         {/* Subtle colored glow at top */}
         <div
           className="absolute top-0 left-0 right-0 h-[2px]"
@@ -155,20 +132,20 @@ function StatCard({
         <div className="flex items-baseline gap-1">
           <span
             className="text-2xl sm:text-[28px] font-bold"
-            style={{ fontFamily: "'JetBrains Mono', monospace", color: 'var(--color-text-primary)' }}
+            style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-text-primary)' }}
           >
             {value}
           </span>
           {suffix && (
             <span
               className="text-sm font-medium"
-              style={{ fontFamily: "'JetBrains Mono', monospace", color: 'var(--color-text-muted)' }}
+              style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-text-muted)' }}
             >
               {suffix}
             </span>
           )}
         </div>
-      </GlassCard>
+      </Card>
     </motion.div>
   );
 }
@@ -233,7 +210,7 @@ function ModeCard({
         </h3>
         <p
           className="text-[11px] font-medium mb-3"
-          style={{ fontFamily: "'JetBrains Mono', monospace", color }}
+          style={{ fontFamily: 'var(--font-mono)', color }}
         >
           {tagline}
         </p>
@@ -271,7 +248,7 @@ function EraMasteryCard({
 
   return (
     <motion.div variants={fadeUp}>
-      <GlassCard className="p-4 relative overflow-hidden group hover:border-border-active cursor-default">
+      <Card variant="glass" className="rounded-xl p-4 relative overflow-hidden group hover:border-border-active cursor-default transition-all duration-200">
         {/* Era color stripe */}
         <div
           className="absolute top-0 left-0 w-full h-[2px]"
@@ -290,7 +267,7 @@ function EraMasteryCard({
             style={{
               background: `${color}14`,
               color,
-              fontFamily: "'JetBrains Mono', monospace",
+              fontFamily: 'var(--font-mono)',
             }}
           >
             {questionCount}q
@@ -302,7 +279,7 @@ function EraMasteryCard({
           <span
             className="text-lg font-bold"
             style={{
-              fontFamily: "'JetBrains Mono', monospace",
+              fontFamily: 'var(--font-mono)',
               color: quizzed ? color : 'var(--color-text-muted)',
             }}
           >
@@ -334,7 +311,7 @@ function EraMasteryCard({
             Not attempted yet
           </p>
         )}
-      </GlassCard>
+      </Card>
     </motion.div>
   );
 }
@@ -487,7 +464,9 @@ export default function QuizHub() {
         `,
       }}
     >
-      <div className="w-full max-w-[1000px] mx-auto px-5 sm:px-8 md:px-10 py-10 md:py-14">
+      {/* pt-20 below lg clears the fixed mobile nav button: 12px offset + 44px
+          button + 24px (xl) gap = 80px. Desktop sidebar appears at lg. */}
+      <div className="w-full max-w-[1000px] mx-auto px-5 sm:px-8 md:px-10 pt-20 lg:pt-14 pb-10 md:pb-14">
         {/* ─────────────────────────────────
             SECTION 1 — Hero Header
            ───────────────────────────────── */}
@@ -521,7 +500,7 @@ export default function QuizHub() {
                 Test your knowledge across{' '}
                 <span
                   style={{
-                    fontFamily: "'JetBrains Mono', monospace",
+                    fontFamily: 'var(--font-mono)',
                     color: 'var(--color-accent-gold)',
                     fontWeight: 600,
                   }}
@@ -639,7 +618,7 @@ export default function QuizHub() {
               <span
                 className="text-[10px] font-bold px-2 py-0.5 rounded-full"
                 style={{
-                  fontFamily: "'JetBrains Mono', monospace",
+                  fontFamily: 'var(--font-mono)',
                   background: 'rgba(196,154,68,0.12)',
                   color: 'var(--color-accent-gold)',
                 }}
@@ -658,14 +637,14 @@ export default function QuizHub() {
             transition={{ duration: 0.3, ease: EASE }}
             className="overflow-hidden"
           >
-            <GlassCard className="p-5">
+            <Card variant="glass" className="rounded-xl p-5">
               <QuizFilters
                 selectedEras={selectedEras}
                 selectedCategories={selectedCategories}
                 onToggleEra={toggleEra}
                 onToggleCategory={toggleCategory}
               />
-            </GlassCard>
+            </Card>
           </motion.div>
         </motion.section>
 
@@ -698,11 +677,11 @@ export default function QuizHub() {
               { emoji: '🖼️', title: 'Image ID', desc: 'Identify from a picture', color: '#c49a44' },
               { emoji: '📅', title: 'Timeline Order', desc: 'Arrange events in order', color: '#8b80b0' },
             ].map(({ emoji, title, desc }) => (
-              <GlassCard key={title} className="p-4 text-center">
+              <Card variant="glass" key={title} className="rounded-xl p-4 text-center">
                 <div className="text-[24px] mb-2">{emoji}</div>
                 <p className="text-[12px] font-bold mb-0.5" style={{ fontFamily: 'var(--font-display)', color: 'var(--color-text-primary)' }}>{title}</p>
                 <p className="text-[10px]" style={{ color: 'var(--color-text-muted)' }}>{desc}</p>
-              </GlassCard>
+              </Card>
             ))}
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -711,7 +690,7 @@ export default function QuizHub() {
               { icon: BrainCircuit, title: 'Hints cost 50% points', text: 'Eliminate wrong answers, but at a price.', accent: '#c49a44' },
               { icon: Flame, title: 'Streak = +10 bonus', text: 'Answer 3 in a row for extra points.', accent: '#b85454' },
             ].map(({ icon: ItemIcon, title, text, accent }) => (
-              <GlassCard key={title} className="p-4 flex items-start gap-3">
+              <Card variant="glass" key={title} className="rounded-xl p-4 flex items-start gap-3">
                 <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: `${accent}14` }}>
                   <ItemIcon size={15} style={{ color: accent }} />
                 </div>
@@ -719,7 +698,7 @@ export default function QuizHub() {
                   <p className="text-[12px] font-semibold mb-0.5" style={{ fontFamily: 'var(--font-display)', color: 'var(--color-text-primary)' }}>{title}</p>
                   <p className="text-[10px] leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>{text}</p>
                 </div>
-              </GlassCard>
+              </Card>
             ))}
           </div>
         </motion.section>

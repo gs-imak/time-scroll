@@ -9,6 +9,23 @@ function computeTier(altitude: number): VisibilityTier {
   return 'LOCAL';
 }
 
+/**
+ * Convert a react-globe.gl camera altitude (distance from the surface in units
+ * of globe radius; lower = closer) into the "zoom" scale that Landmark
+ * `triggerZoom` thresholds are expressed in.
+ *
+ * Formula: `zoom = 2 / altitude`, clamped so a near-zero altitude can't blow up.
+ * Calibrated so that `triggerZoom` 5.0 corresponds to altitude 0.4 — the app's
+ * event fly-to altitude and the REGIONAL↔LOCAL tier boundary, i.e. an
+ * unambiguous "zoomed right into a place" state. Reference points:
+ *   - altitude 2.5 (default globe view)     → zoom 0.8
+ *   - altitude 0.4 (event fly-to / LOCAL)    → zoom 5.0
+ *   - altitude 0.2 (very close)              → zoom 10
+ */
+export function altitudeToZoom(altitude: number): number {
+  return 2 / Math.max(altitude, 0.05);
+}
+
 interface CameraState {
   altitude: number;
   tier: VisibilityTier;

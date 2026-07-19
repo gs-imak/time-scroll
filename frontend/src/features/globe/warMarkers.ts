@@ -87,6 +87,21 @@ function renderBadgeCanvas(title: string): HTMLCanvasElement {
   return canvas;
 }
 
+// A war badge is fully determined by its title, so build the canvas + texture
+// once per distinct title and share it. three-globe removes (never disposes)
+// custom-layer markers on churn, so the shared texture stays valid.
+const badgeTextureCache = new Map<string, THREE.CanvasTexture>();
+
+function getBadgeTexture(title: string): THREE.CanvasTexture {
+  let tex = badgeTextureCache.get(title);
+  if (tex) return tex;
+  tex = new THREE.CanvasTexture(renderBadgeCanvas(title));
+  tex.minFilter = THREE.LinearFilter;
+  tex.magFilter = THREE.LinearFilter;
+  badgeTextureCache.set(title, tex);
+  return tex;
+}
+
 export function createTetheredMarker(opts: { id: string; title: string }): THREE.Group {
   const group = new THREE.Group();
   const tetherHeight = 8;
@@ -148,11 +163,8 @@ export function createTetheredMarker(opts: { id: string; title: string }): THREE
   tetherCyl.position.y = tetherHeight / 2;
   group.add(tetherCyl);
 
-  // Badge sprite
-  const canvas = renderBadgeCanvas(opts.title);
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.minFilter = THREE.LinearFilter;
-  texture.magFilter = THREE.LinearFilter;
+  // Badge sprite (cached texture — identical per title)
+  const texture = getBadgeTexture(opts.title);
   const sprite = new THREE.Sprite(
     new THREE.SpriteMaterial({
       map: texture,
@@ -173,8 +185,20 @@ export function createTetheredMarker(opts: { id: string; title: string }): THREE
 
 // ── Conflict pulse ────────────────────────────────────────────────
 
+const PULSE_LIFETIME_MS = 1800;
+const PULSE_INNER_START = 0.5;
+const PULSE_INNER_END = 4.5;
+
+// Shared flat unit ring for all conflict pulses. Its normal is +Y (via the baked
+// rotateX) so the per-marker orientation quaternion — which maps local +Y to the
+// globe's outward radial — lays it flat on the surface. Each pulse then animates
+// purely through mesh.scale + material.opacity, so we never dispose/rebuild a
+// RingGeometry every frame. The ring is intentionally never disposed (module
+// lifetime); three-globe removes but does not deallocate custom-layer meshes.
+const UNIT_PULSE_RING = new THREE.RingGeometry(1, 1.12, 32);
+UNIT_PULSE_RING.rotateX(-Math.PI / 2);
+
 export function createConflictPulse(bornAt: number): THREE.Mesh {
-  const geom = new THREE.RingGeometry(0.5, 0.7, 32);
   const mat = new THREE.MeshBasicMaterial({
     color: PULSE_COLOR,
     transparent: true,
@@ -182,15 +206,11 @@ export function createConflictPulse(bornAt: number): THREE.Mesh {
     side: THREE.DoubleSide,
     depthWrite: false,
   });
-  const mesh = new THREE.Mesh(geom, mat);
-  mesh.rotation.x = -Math.PI / 2;
+  const mesh = new THREE.Mesh(UNIT_PULSE_RING, mat);
+  mesh.scale.setScalar(PULSE_INNER_START);
   mesh.userData = { bornAt, type: 'pulse' };
   return mesh;
 }
-
-const PULSE_LIFETIME_MS = 1800;
-const PULSE_INNER_START = 0.5;
-const PULSE_INNER_END = 4.5;
 
 /** Advance a pulse mesh's expansion / fade based on now timestamp. */
 export function updateConflictPulse(mesh: THREE.Mesh, now: number): boolean {
@@ -198,12 +218,9 @@ export function updateConflictPulse(mesh: THREE.Mesh, now: number): boolean {
   const t = (now - bornAt) / PULSE_LIFETIME_MS;
   if (t >= 1) return false;
   const eased = 1 - Math.pow(1 - t, 2);
-  const innerR = PULSE_INNER_START + (PULSE_INNER_END - PULSE_INNER_START) * eased;
-  const outerR = innerR + 0.25;
-  // Replace geometry to update ring radii
-  mesh.geometry.dispose();
-  mesh.geometry = new THREE.RingGeometry(innerR, outerR, 32);
-  mesh.geometry.rotateX(-Math.PI / 2);
+  const radius = PULSE_INNER_START + (PULSE_INNER_END - PULSE_INNER_START) * eased;
+  // Expand by scaling the shared unit ring rather than rebuilding geometry.
+  mesh.scale.setScalar(radius);
   (mesh.material as THREE.MeshBasicMaterial).opacity = 0.7 * (1 - t);
   return true;
 }

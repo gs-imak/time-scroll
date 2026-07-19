@@ -16,6 +16,7 @@ import type { HistoricalEvent } from '@/shared/types/events';
 import { EventQuiz } from './EventQuiz';
 import { EventMapVisual } from './EventMapVisual';
 import { getEventPlacements, getIllustrationUrl, getFloatClasses, getGalleryImages } from '@/shared/data/illustrationPlacements';
+import { useFocusTrap } from '@/shared/hooks/useFocusTrap';
 import { useMonumentViewer } from '@/features/monuments/useMonumentViewer';
 
 // ── Category visuals ──
@@ -167,6 +168,12 @@ export function EventStory() {
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [activeSection, setActiveSection] = useState('overview');
   const [copied, setCopied] = useState(false);
+  // Hero/media <img> may point at a dead URL (data now allows null/dead
+  // imageUrl) — track failure so a styled placeholder renders instead.
+  const [mediaImgFailed, setMediaImgFailed] = useState(false);
+
+  // Shared focus trap (Tab/Shift+Tab cycling + focus restore on close).
+  useFocusTrap(dialogRef, Boolean(event));
 
   // setShowScrollTop only re-renders when the boolean actually flips; the
   // progress bar reads scrollYProgress directly (a MotionValue), so scrolling
@@ -302,30 +309,13 @@ export function EventStory() {
     };
   }, [event?.id]);
 
-  // Keyboard: Escape / arrow navigation + focus trap
+  // Keyboard: Escape / arrow navigation (Tab cycling handled by useFocusTrap)
   useEffect(() => {
     if (!event) return;
     const handler = (e: KeyboardEvent) => {
       if (e.key === 'Escape') { onClose(); return; }
       if (e.key === 'ArrowLeft' && prev) { selectEvent(prev.id); return; }
       if (e.key === 'ArrowRight' && next) { selectEvent(next.id); return; }
-
-      // Focus trap — keep Tab inside the dialog
-      if (e.key === 'Tab' && dialogRef.current) {
-        const focusable = Array.from(
-          dialogRef.current.querySelectorAll<HTMLElement>(
-            'a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex="-1"])'
-          )
-        ).filter(el => !el.closest('[aria-hidden="true"]'));
-        if (focusable.length === 0) return;
-        const first = focusable[0];
-        const last = focusable[focusable.length - 1];
-        if (e.shiftKey) {
-          if (document.activeElement === first) { e.preventDefault(); last?.focus(); }
-        } else {
-          if (document.activeElement === last) { e.preventDefault(); first?.focus(); }
-        }
-      }
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
@@ -333,6 +323,7 @@ export function EventStory() {
 
   useEffect(() => {
     if (scrollRef.current && event) scrollRef.current.scrollTop = 0;
+    setMediaImgFailed(false);
   }, [event?.id]);
 
   useEffect(() => {
@@ -352,6 +343,7 @@ export function EventStory() {
     <AnimatePresence>
       {event && cat && era && (
         <motion.div
+          ref={dialogRef}
           className="fixed inset-0 z-50"
           role="dialog"
           aria-modal="true"
@@ -381,7 +373,7 @@ export function EventStory() {
               <button
                 key={s}
                 onClick={() => scrollToSection(s)}
-                className="group flex items-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5a9aaa] focus-visible:ring-offset-2 focus-visible:ring-offset-void rounded-full"
+                className="group flex items-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-cyan focus-visible:ring-offset-2 focus-visible:ring-offset-void rounded-full"
                 aria-label={`Scroll to ${SECTION_LABELS[s]} section`}
                 aria-current={activeSection === s ? 'true' : undefined}
               >
@@ -406,7 +398,7 @@ export function EventStory() {
             {showScrollTop && (
               <motion.button
                 onClick={scrollToTop}
-                className="fixed bottom-8 right-8 z-40 w-11 h-11 rounded-full flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5a9aaa] focus-visible:ring-offset-2 focus-visible:ring-offset-void"
+                className="fixed bottom-8 right-8 z-40 w-11 h-11 rounded-full flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-cyan focus-visible:ring-offset-2 focus-visible:ring-offset-void"
                 style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid var(--color-border-subtle)', backdropFilter: 'blur(12px)' }}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -523,24 +515,25 @@ export function EventStory() {
                 <div className="flex items-center gap-2">
                   <motion.button
                     onClick={() => event && toggleFavorite(event.id)}
-                    className="w-11 h-11 rounded-full flex items-center justify-center bg-white/[0.06] hover:bg-white/[0.1] transition-colors cursor-pointer backdrop-blur-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5a9aaa] focus-visible:ring-offset-2 focus-visible:ring-offset-void"
+                    className="w-11 h-11 rounded-full flex items-center justify-center bg-white/[0.06] hover:bg-white/[0.1] transition-colors cursor-pointer backdrop-blur-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-cyan focus-visible:ring-offset-2 focus-visible:ring-offset-void"
                     whileTap={{ scale: 0.9 }}
                     aria-label={isFavorited ? 'Remove from favorites' : 'Add to favorites'}>
                     <Heart
                       size={15}
                       fill={isFavorited ? '#c49a44' : 'none'}
-                      stroke={isFavorited ? '#c49a44' : '#55556a'}
+                      stroke={isFavorited ? '#c49a44' : 'var(--color-text-muted)'}
                       aria-hidden="true"
                     />
                   </motion.button>
                   <motion.button onClick={onShare}
-                    className="w-11 h-11 rounded-full flex items-center justify-center bg-white/[0.06] hover:bg-white/[0.1] transition-colors cursor-pointer backdrop-blur-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5a9aaa] focus-visible:ring-offset-2 focus-visible:ring-offset-void"
+                    className="w-11 h-11 rounded-full flex items-center justify-center bg-white/[0.06] hover:bg-white/[0.1] transition-colors cursor-pointer backdrop-blur-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-cyan focus-visible:ring-offset-2 focus-visible:ring-offset-void"
                     whileTap={{ scale: 0.9 }}
                     aria-label={copied ? 'Copied to clipboard' : 'Share this event'}>
                     <Share2 size={15} className="text-text-muted" aria-hidden="true" />
                   </motion.button>
                   <button onClick={onClose}
-                    className="w-11 h-11 rounded-full flex items-center justify-center bg-white/[0.06] hover:bg-white/[0.1] transition-colors cursor-pointer backdrop-blur-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5a9aaa] focus-visible:ring-offset-2 focus-visible:ring-offset-void"
+                    ref={closeButtonRef}
+                    className="w-11 h-11 rounded-full flex items-center justify-center bg-white/[0.06] hover:bg-white/[0.1] transition-colors cursor-pointer backdrop-blur-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-cyan focus-visible:ring-offset-2 focus-visible:ring-offset-void"
                     aria-label="Close event story">
                     <X size={18} className="text-text-secondary" aria-hidden="true" />
                   </button>
@@ -638,7 +631,7 @@ export function EventStory() {
                       const isActive = ee.id === event.id;
                       return (
                         <button key={ee.id} onClick={() => selectEvent(ee.id)}
-                          className="absolute top-1/2 group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5a9aaa] rounded-full"
+                          className="absolute top-1/2 group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-cyan rounded-full"
                           aria-label={`Go to ${ee.title} (${formatYear(ee.year)})`}
                           aria-current={isActive ? 'true' : undefined}
                           style={{
@@ -665,17 +658,18 @@ export function EventStory() {
                 </div>
               </Reveal>
 
-              {/* Media */}
+              {/* Media — on load error fall through to the styled placeholder
+                  below instead of collapsing (no broken glyph, no dead gap) */}
               <Reveal delay={0.05}>
                 <div className="mb-16">
-                  {(illustrations?.sceneBreaks?.[0] || event.imageUrl) ? (
+                  {!mediaImgFailed && (illustrations?.sceneBreaks?.[0] || event.imageUrl) ? (
                     <figure className="rounded-2xl overflow-hidden -mx-2 sm:-mx-4">
                       <img
                         src={illustrations?.sceneBreaks?.[0] ? getIllustrationUrl(illustrations.sceneBreaks[0].slug, illustrations.sceneBreaks[0].num) : event.imageUrl!}
                         alt={event.title}
                         className="w-full h-auto object-contain"
                         loading="lazy"
-                        onError={(e) => { (e.target as HTMLImageElement).parentElement!.style.display = 'none'; }}
+                        onError={() => setMediaImgFailed(true)}
                       />
                     </figure>
                   ) : event.videoUrl ? (
@@ -846,14 +840,20 @@ export function EventStory() {
                             whileHover={{ borderColor: `${ceCat?.color ?? '#8a8a9a'}25`, backgroundColor: 'rgba(255,255,255,0.02)', x: 4 }}
                             whileTap={{ scale: 0.98 }}
                           >
-                            {/* Thumbnail from event's illustration pack */}
+                            {/* Thumbnail — category-tinted underlay behind the
+                                img; on error only the img hides (fixed 48px box,
+                                no layout jump) */}
                             {ceThumb && (
-                              <div className="shrink-0 w-12 h-12 rounded-lg overflow-hidden bg-[#0a0a12]">
+                              <div
+                                className="relative shrink-0 w-12 h-12 rounded-lg overflow-hidden flex items-center justify-center"
+                                style={{ background: `linear-gradient(135deg, ${ceCat?.color ?? '#8a8a9a'}30, ${ceCat?.color ?? '#8a8a9a'}10)` }}
+                              >
+                                <span className="block w-2.5 h-2.5 rounded-full" style={{ background: ceCat?.color ?? '#8a8a9a' }} />
                                 <img
                                   src={getIllustrationUrl(ceThumb.slug, ceThumb.num)}
-                                  alt="" className="w-full h-full object-cover"
+                                  alt="" className="absolute inset-0 w-full h-full object-cover"
                                   loading="lazy"
-                                  onError={(e) => { (e.target as HTMLImageElement).parentElement!.style.display = 'none'; }}
+                                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                                 />
                               </div>
                             )}
@@ -932,7 +932,7 @@ export function EventStory() {
                   <SectionLabel>Your Notes</SectionLabel>
                   <div className="rounded-2xl p-6 relative" style={{ background: 'var(--glass-bg)', backdropFilter: 'blur(24px)', border: '1px solid var(--color-border-subtle)' }}>
                     <textarea value={noteText} onChange={e => handleNoteChange(e.target.value)} onBlur={handleNoteBlur} maxLength={500} rows={4} placeholder="Write your notes about this event..." className="notes-textarea w-full bg-transparent resize-none outline-none text-[14px] leading-[1.8]" style={{ color: 'var(--color-text-primary)', fontFamily: 'var(--font-display)' }} />
-                    <div className="flex justify-end mt-2 text-[11px]" style={{ fontFamily: "'JetBrains Mono', monospace", color: noteText.length >= 450 ? '#b85454' : '#3a3a4a' }}>{noteText.length}/500</div>
+                    <div className="flex justify-end mt-2 text-[11px]" style={{ fontFamily: 'var(--font-mono)', color: noteText.length >= 450 ? '#b85454' : '#3a3a4a' }}>{noteText.length}/500</div>
                   </div>
                 </section>
               </Reveal>
@@ -974,12 +974,16 @@ export function EventStory() {
                           </motion.div>
                         </Reveal>
                       ))}
-                      {/* Explicit images from event data */}
-                      {event.images?.map((img, i) => (
+                      {/* Explicit images from event data — may contain dead
+                          URLs; tinted underlay + icon shows if the img errors */}
+                      {event.images?.filter(Boolean).map((img, i) => (
                         <Reveal key={`ext-${i}`} delay={(galleryImages.length + i) * 0.04}>
-                          <motion.div className="rounded-xl overflow-hidden aspect-[4/3] cursor-pointer"
+                          <motion.div className="relative rounded-xl overflow-hidden aspect-[4/3] cursor-pointer flex items-center justify-center"
+                            style={{ background: `linear-gradient(135deg, ${cat.color}30, ${cat.color}10)` }}
                             whileHover={{ scale: 1.03 }} transition={{ type: 'spring', stiffness: 400, damping: 25 }}>
-                            <img src={img} alt={`${event.title} ${i + 1}`} className="w-full h-full object-cover" loading="lazy" />
+                            <ImageIcon size={20} className="text-text-muted" aria-hidden="true" />
+                            <img src={img} alt={`${event.title} ${i + 1}`} className="absolute inset-0 w-full h-full object-cover" loading="lazy"
+                              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                           </motion.div>
                         </Reveal>
                       ))}
@@ -1059,7 +1063,7 @@ function NavButton({ dir, event, onSelect }: { dir: 'left' | 'right'; event: His
   if (!event) return <div className="w-10" aria-hidden="true" />;
   return (
     <motion.button onClick={() => onSelect(event.id)}
-      className="flex items-center gap-2 px-3 py-2 rounded-full bg-white/[0.05] hover:bg-white/[0.08] backdrop-blur-sm transition-colors cursor-pointer max-w-[200px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5a9aaa] focus-visible:ring-offset-2 focus-visible:ring-offset-void"
+      className="flex items-center gap-2 px-3 py-2 rounded-full bg-white/[0.05] hover:bg-white/[0.08] backdrop-blur-sm transition-colors cursor-pointer max-w-[200px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-cyan focus-visible:ring-offset-2 focus-visible:ring-offset-void"
       aria-label={dir === 'left' ? `Previous event: ${event.title}` : `Next event: ${event.title}`}
       whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
       {dir === 'left' && <ChevronLeft size={14} className="text-text-muted shrink-0" aria-hidden="true" />}
@@ -1117,9 +1121,13 @@ function RelatedCard({ event, onSelect }: { event: HistoricalEvent; onSelect: (i
       whileHover={{ borderColor: `${cat?.color ?? '#8a8a9a'}25`, backgroundColor: 'rgba(255,255,255,0.02)', x: 4 }}
       whileTap={{ scale: 0.98 }}>
       {thumb ? (
-        <div className="w-12 h-12 rounded-lg overflow-hidden bg-[#0a0a12] shrink-0">
-          <img src={getIllustrationUrl(thumb.slug, thumb.num)} alt="" className="w-full h-full object-cover" loading="lazy"
-            onError={(e) => { (e.target as HTMLImageElement).parentElement!.style.display = 'none'; }} />
+        <div
+          className="relative w-12 h-12 rounded-lg overflow-hidden shrink-0 flex items-center justify-center text-2xl"
+          style={{ background: (cat?.color ?? '#8a8a9a') + '12' }}
+        >
+          <span aria-hidden="true">{icon}</span>
+          <img src={getIllustrationUrl(thumb.slug, thumb.num)} alt="" className="absolute inset-0 w-full h-full object-cover" loading="lazy"
+            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
         </div>
       ) : (
         <span className="text-2xl w-11 h-11 flex items-center justify-center rounded-lg shrink-0"

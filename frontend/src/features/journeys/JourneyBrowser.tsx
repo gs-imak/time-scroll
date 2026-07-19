@@ -8,6 +8,7 @@ import {
 import { JOURNEYS } from '@/shared/data/journeys';
 import { useProgressStore } from '@/shared/stores/progressStore';
 import { useEventsStore } from '@/shared/stores/eventsStore';
+import { Card } from '@/shared/components/Card';
 import type { Journey } from '@/shared/data/journeys';
 
 /* ══════════════════════════════════════════
@@ -51,29 +52,10 @@ const DIFFICULTY_ORDER: Difficulty[] = ['beginner', 'intermediate', 'advanced'];
    SUB-COMPONENTS
    ══════════════════════════════════════════ */
 
-function GlassCard({
-  children,
-  className,
-  strong,
-  style,
-  ...props
-}: React.HTMLAttributes<HTMLDivElement> & { strong?: boolean }) {
-  return (
-    <div
-      className={`rounded-xl transition-all duration-200 ${className ?? ''}`}
-      style={{
-        background: strong ? 'var(--glass-strong-bg)' : 'var(--glass-bg)',
-        backdropFilter: strong ? 'blur(40px)' : 'blur(24px)',
-        border: '1px solid var(--color-border-subtle)',
-        boxShadow: 'inset 0 1px 0 var(--glass-inset)',
-        ...style,
-      }}
-      {...props}
-    >
-      {children}
-    </div>
-  );
-}
+/** 44px-tall invisible ::after hit area so slim filter pills meet the
+    design-system 44px minimum touch target while staying visually compact. */
+const PILL_HIT_AREA =
+  "relative after:absolute after:inset-x-0 after:top-1/2 after:h-11 after:-translate-y-1/2 after:content-['']";
 
 function SectionHeading({
   icon: Icon,
@@ -116,7 +98,7 @@ function StatCard({
 }) {
   return (
     <motion.div variants={scaleIn} custom={index}>
-      <GlassCard className="p-5 sm:p-6 relative overflow-hidden cursor-default">
+      <Card variant="glass" className="rounded-xl p-5 sm:p-6 relative overflow-hidden cursor-default">
         <div
           className="absolute top-0 left-0 right-0 h-[2px]"
           style={{ background: `linear-gradient(90deg, transparent, ${color}40, transparent)` }}
@@ -138,20 +120,20 @@ function StatCard({
         <div className="flex items-baseline gap-1">
           <span
             className="text-2xl sm:text-[28px] font-bold"
-            style={{ fontFamily: "'JetBrains Mono', monospace", color: 'var(--color-text-primary)' }}
+            style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-text-primary)' }}
           >
             {value}
           </span>
           {suffix && (
             <span
               className="text-sm font-medium"
-              style={{ fontFamily: "'JetBrains Mono', monospace", color: 'var(--color-text-muted)' }}
+              style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-text-muted)' }}
             >
               {suffix}
             </span>
           )}
         </div>
-      </GlassCard>
+      </Card>
     </motion.div>
   );
 }
@@ -172,7 +154,7 @@ function FilterPill({
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className="px-3 py-1.5 rounded-full text-[11px] font-medium cursor-pointer transition-colors"
+      className={`px-3 py-1.5 rounded-full text-[11px] font-medium cursor-pointer transition-colors ${PILL_HIT_AREA}`}
       style={{
         background: active ? `${color}20` : 'var(--glass-bg)',
         border: `1px solid ${active ? `${color}50` : 'var(--color-border-subtle)'}`,
@@ -204,6 +186,8 @@ function JourneyCard({
   const progress = total > 0 ? viewedInJourney / total : 0;
   const started = viewedInJourney > 0;
   const complete = viewedInJourney === total && total > 0;
+  const [imgFailed, setImgFailed] = useState(false);
+  const showImage = Boolean(heroImage) && !imgFailed;
 
   return (
     <motion.button
@@ -212,7 +196,8 @@ function JourneyCard({
       variants={scaleIn}
       className="
         group relative rounded-2xl overflow-hidden text-left cursor-pointer
-        focus-visible:outline-none focus-visible:ring-2
+        focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold
+        focus-visible:ring-offset-2 focus-visible:ring-offset-void
       "
       style={{
         background: 'var(--glass-bg)',
@@ -228,28 +213,29 @@ function JourneyCard({
       whileTap={{ scale: 0.99 }}
       transition={{ duration: 0.25, ease: EASE }}
     >
-      {/* Hero image */}
+      {/* Hero image — gradient + journey glyph underlay always renders; the
+          <img> covers it when it loads and unmounts on error (no broken
+          glyph, no layout jump: the 180px box is constant). */}
       <div className="relative h-[180px] overflow-hidden">
-        {heroImage ? (
-          <div
-            className="absolute inset-0 transition-transform duration-500 group-hover:scale-[1.06]"
-            style={{
-              backgroundImage: `url(${heroImage})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-            }}
+        <div
+          className="absolute inset-0 flex items-center justify-center"
+          style={{
+            background: `linear-gradient(135deg, ${diff.color}25 0%, ${diff.color}08 100%)`,
+            fontSize: '64px',
+          }}
+          aria-hidden="true"
+        >
+          <span>{journey.icon}</span>
+        </div>
+        {showImage && (
+          <img
+            src={heroImage!}
+            alt=""
+            loading="lazy"
+            className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.06]"
+            onError={() => setImgFailed(true)}
             aria-hidden="true"
           />
-        ) : (
-          <div
-            className="absolute inset-0 flex items-center justify-center"
-            style={{
-              background: `linear-gradient(135deg, ${diff.color}25 0%, ${diff.color}08 100%)`,
-              fontSize: '64px',
-            }}
-          >
-            <span aria-hidden="true">{journey.icon}</span>
-          </div>
         )}
 
         {/* Gradient overlay for legibility */}
@@ -371,7 +357,7 @@ function JourneyCard({
             <span
               className="flex items-center gap-1"
               style={{
-                fontFamily: "'JetBrains Mono', monospace",
+                fontFamily: 'var(--font-mono)',
                 fontSize: '11px',
                 color: 'var(--color-text-muted)',
               }}
@@ -382,7 +368,7 @@ function JourneyCard({
             <span
               className="flex items-center gap-1"
               style={{
-                fontFamily: "'JetBrains Mono', monospace",
+                fontFamily: 'var(--font-mono)',
                 fontSize: '11px',
                 color: 'var(--color-text-muted)',
               }}
@@ -518,7 +504,9 @@ export default function JourneyBrowser() {
         `,
       }}
     >
-      <div className="w-full max-w-[1100px] mx-auto px-5 sm:px-8 md:px-10 py-10 md:py-14">
+      {/* pt-20 below lg clears the fixed mobile nav button: 12px offset + 44px
+          button + 24px (xl) gap = 80px. Desktop sidebar appears at lg. */}
+      <div className="w-full max-w-[1100px] mx-auto px-5 sm:px-8 md:px-10 pt-20 lg:pt-14 pb-10 md:pb-14">
         {/* ─────────────────────────────────
             SECTION 1 — Hero Header
            ───────────────────────────────── */}
@@ -570,7 +558,7 @@ export default function JourneyBrowser() {
               Follow{' '}
               <span
                 style={{
-                  fontFamily: "'JetBrains Mono', monospace",
+                  fontFamily: 'var(--font-mono)',
                   color: 'var(--color-accent-gold)',
                   fontWeight: 600,
                 }}
@@ -580,7 +568,7 @@ export default function JourneyBrowser() {
               curated paths through history — connecting{' '}
               <span
                 style={{
-                  fontFamily: "'JetBrains Mono', monospace",
+                  fontFamily: 'var(--font-mono)',
                   color: 'var(--color-accent-gold)',
                   fontWeight: 600,
                 }}
@@ -606,7 +594,7 @@ export default function JourneyBrowser() {
                 <span
                   className="text-[12px] font-semibold"
                   style={{
-                    fontFamily: "'JetBrains Mono', monospace",
+                    fontFamily: 'var(--font-mono)',
                     color: 'var(--color-accent-gold)',
                   }}
                 >
@@ -660,7 +648,7 @@ export default function JourneyBrowser() {
             <span
               className="text-[11px] font-medium"
               style={{
-                fontFamily: "'JetBrains Mono', monospace",
+                fontFamily: 'var(--font-mono)',
                 color: 'var(--color-text-muted)',
               }}
             >
@@ -691,11 +679,11 @@ export default function JourneyBrowser() {
             SECTION 4 — Journey Grid
            ───────────────────────────────── */}
         {filteredJourneys.length === 0 ? (
-          <GlassCard className="p-10 text-center">
+          <Card variant="glass" className="rounded-xl p-10 text-center">
             <p className="text-[14px]" style={{ color: 'var(--color-text-secondary)' }}>
               No journeys match this filter.
             </p>
-          </GlassCard>
+          </Card>
         ) : (
           <motion.div
             className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5"

@@ -2,14 +2,16 @@ import { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { motion } from 'framer-motion';
 import {
-  ArrowLeft, Clock, Filter, Layers, Sparkles, Scroll,
+  Clock, Filter, Layers, Sparkles, Scroll,
   CheckCircle2, ChevronRight, Compass, X,
+  Swords, Palette, Landmark, Hammer, Leaf, Image as ImageIcon,
 } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { useEventsStore } from '@/shared/stores/eventsStore';
 import { useProgressStore } from '@/shared/stores/progressStore';
-import { ERAS } from '@/shared/utils/constants';
-import { EVENT_ICONS } from '@/features/globe/eventMarkers';
+import { ERAS, ERA_COUNT, TIMELINE_YEAR_SPAN } from '@/shared/utils/constants';
 import { formatYear } from '@/shared/utils/format';
+import { Card } from '@/shared/components/Card';
 import type { EventCategory, HistoricalEvent } from '@/shared/types/events';
 
 /* ══════════════════════════════════════════
@@ -57,33 +59,24 @@ const CATEGORY_LABELS: { id: EventCategory; label: string }[] = [
   { id: 'natural', label: 'Natural' },
 ];
 
+/** Lucide icon per category — image placeholders (no broken-image glyphs). */
+const CATEGORY_ICONS: Record<string, LucideIcon> = {
+  war: Swords,
+  discovery: Compass,
+  cultural: Palette,
+  political: Landmark,
+  construction: Hammer,
+  natural: Leaf,
+};
+
+/** 44px-tall invisible ::after hit area so slim filter pills meet the
+    design-system 44px minimum touch target while staying visually compact. */
+const PILL_HIT_AREA =
+  "relative after:absolute after:inset-x-0 after:top-1/2 after:h-11 after:-translate-y-1/2 after:content-['']";
+
 /* ══════════════════════════════════════════
    SUB-COMPONENTS
    ══════════════════════════════════════════ */
-
-function GlassCard({
-  children,
-  className,
-  strong,
-  style,
-  ...props
-}: React.HTMLAttributes<HTMLDivElement> & { strong?: boolean }) {
-  return (
-    <div
-      className={`rounded-xl transition-all duration-200 ${className ?? ''}`}
-      style={{
-        background: strong ? 'var(--glass-strong-bg)' : 'var(--glass-bg)',
-        backdropFilter: strong ? 'blur(40px)' : 'blur(24px)',
-        border: '1px solid var(--color-border-subtle)',
-        boxShadow: 'inset 0 1px 0 var(--glass-inset)',
-        ...style,
-      }}
-      {...props}
-    >
-      {children}
-    </div>
-  );
-}
 
 function SectionHeading({
   icon: Icon,
@@ -126,7 +119,7 @@ function StatCard({
 }) {
   return (
     <motion.div variants={scaleIn} custom={index}>
-      <GlassCard className="p-5 sm:p-6 group cursor-default relative overflow-hidden">
+      <Card variant="glass" className="rounded-xl p-5 sm:p-6 group cursor-default relative overflow-hidden">
         <div
           className="absolute top-0 left-0 right-0 h-[2px]"
           style={{ background: `linear-gradient(90deg, transparent, ${color}40, transparent)` }}
@@ -148,20 +141,20 @@ function StatCard({
         <div className="flex items-baseline gap-1">
           <span
             className="text-2xl sm:text-[28px] font-bold"
-            style={{ fontFamily: "'JetBrains Mono', monospace", color: 'var(--color-text-primary)' }}
+            style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-text-primary)' }}
           >
             {value}
           </span>
           {suffix && (
             <span
               className="text-sm font-medium"
-              style={{ fontFamily: "'JetBrains Mono', monospace", color: 'var(--color-text-muted)' }}
+              style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-text-muted)' }}
             >
               {suffix}
             </span>
           )}
         </div>
-      </GlassCard>
+      </Card>
     </motion.div>
   );
 }
@@ -182,7 +175,7 @@ function FilterPill({
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className="px-3 py-1.5 rounded-full text-[11px] font-medium cursor-pointer transition-colors"
+      className={`px-3 py-1.5 rounded-full text-[11px] font-medium cursor-pointer transition-colors ${PILL_HIT_AREA}`}
       style={{
         background: active ? `${color}20` : 'var(--glass-bg)',
         border: `1px solid ${active ? `${color}50` : 'var(--color-border-subtle)'}`,
@@ -213,8 +206,9 @@ function EventCard({
   onOpen: (id: string) => void;
 }) {
   const color = CATEGORY_HEX[event.category] ?? '#8a8a9a';
-  const icon = EVENT_ICONS[event.id] ?? '●';
-  const hasImage = Boolean(event.imageUrl);
+  const CategoryIcon = CATEGORY_ICONS[event.category] ?? ImageIcon;
+  const [imgFailed, setImgFailed] = useState(false);
+  const showImage = Boolean(event.imageUrl) && !imgFailed;
 
   /* Each row hosts:
      - The card (takes exactly 50% width on desktop)
@@ -291,7 +285,8 @@ function EventCard({
         className="
           group relative flex items-stretch gap-3 w-full
           rounded-xl text-left cursor-pointer overflow-hidden
-          focus-visible:outline-none focus-visible:ring-2
+          focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold
+          focus-visible:ring-offset-2 focus-visible:ring-offset-void
         "
         style={{
           background: 'var(--glass-bg)',
@@ -310,38 +305,37 @@ function EventCard({
         whileTap={{ scale: 0.99 }}
         transition={{ duration: 0.2, ease: EASE }}
       >
-        {/* Thumbnail or emoji fallback */}
-        {hasImage ? (
-          <div
-            className="relative w-[92px] shrink-0 self-stretch"
-            style={{
-              backgroundImage: `url(${event.imageUrl})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-            }}
-            aria-hidden="true"
-          >
-            <div
-              className="absolute inset-0"
-              style={{
-                background:
-                  'linear-gradient(90deg, transparent 45%, var(--glass-bg) 100%)',
-              }}
-            />
-          </div>
-        ) : (
-          <div
-            className="flex items-center justify-center w-[92px] shrink-0 self-stretch"
-            style={{
-              background: `${color}14`,
-              borderRight: `1px solid ${color}22`,
-              fontSize: '32px',
-            }}
-            aria-hidden="true"
-          >
-            {icon}
-          </div>
-        )}
+        {/* Thumbnail — era-tinted gradient + category icon underneath; the
+            <img> covers it when it loads and unmounts on error (no broken
+            glyph, no layout jump: the 92px box is constant). */}
+        <div
+          className="relative flex items-center justify-center w-[92px] shrink-0 self-stretch overflow-hidden"
+          style={{
+            background: `linear-gradient(135deg, ${eraColor}30, ${eraColor}10)`,
+            borderRight: `1px solid ${color}22`,
+          }}
+          aria-hidden="true"
+        >
+          <CategoryIcon size={24} style={{ color: `${eraColor}90` }} />
+          {showImage && (
+            <>
+              <img
+                src={event.imageUrl!}
+                alt=""
+                loading="lazy"
+                className="absolute inset-0 w-full h-full object-cover"
+                onError={() => setImgFailed(true)}
+              />
+              <div
+                className="absolute inset-0"
+                style={{
+                  background:
+                    'linear-gradient(90deg, transparent 45%, var(--glass-bg) 100%)',
+                }}
+              />
+            </>
+          )}
+        </div>
 
         {/* Text block — compact: year + title + category only */}
         <div className="flex-1 min-w-0 flex flex-col justify-center py-3 pr-3.5">
@@ -349,7 +343,7 @@ function EventCard({
           <span
             className="mb-0.5"
             style={{
-              fontFamily: "'JetBrains Mono', monospace",
+              fontFamily: 'var(--font-mono)',
               fontSize: '11px',
               fontWeight: 600,
               color,
@@ -465,7 +459,7 @@ function EraChapter({
             <p
               className="mb-3"
               style={{
-                fontFamily: "'JetBrains Mono', monospace",
+                fontFamily: 'var(--font-mono)',
                 fontSize: '11px',
                 color: 'var(--color-text-muted)',
               }}
@@ -490,7 +484,7 @@ function EraChapter({
             style={{
               background: `${eraColor}15`,
               border: `1px solid ${eraColor}30`,
-              fontFamily: "'JetBrains Mono', monospace",
+              fontFamily: 'var(--font-mono)',
             }}
           >
             <CheckCircle2 size={12} style={{ color: eraColor }} />
@@ -589,21 +583,13 @@ export default function TimelineView() {
 
   const totalCount = events.length;
   const viewedCount = viewedEvents.length;
-  const eraCount = grouped.length;
+  // Defined eras, not eras-with-events — the header advertises ERAS.length, and
+  // grouped.length silently reads 6 while Prehistory has no seeded events.
+  const eraCount = ERA_COUNT;
 
-  const yearSpanLabel = useMemo(() => {
-    const first = events[0];
-    if (!first) return '—';
-    let min = first.year;
-    let max = first.year;
-    for (const e of events) {
-      if (e.year < min) min = e.year;
-      if (e.year > max) max = e.year;
-    }
-    const span = max - min;
-    if (span >= 1000) return `${Math.round(span / 1000)}k`;
-    return `${span}`;
-  }, [events]);
+  // Advertised timeline bounds (10,000 BCE — today), not min/max of seeded
+  // events — the old computation showed "5k" against the "12,000 years" copy.
+  const yearSpanLabel = useMemo(() => `${Math.round(TIMELINE_YEAR_SPAN / 1000)}k`, []);
 
   const filteredCount = filteredEvents.length;
   const filtersActive = selectedCategories.length > 0 || unexploredOnly;
@@ -649,28 +635,15 @@ export default function TimelineView() {
         `,
       }}
     >
-      <div className="w-full max-w-[1000px] mx-auto px-5 sm:px-8 md:px-10 py-10 md:py-14">
+      {/* pt-20 below lg clears the fixed mobile nav button: 12px offset + 44px
+          button + 24px (xl) gap = 80px. Desktop sidebar appears at lg. */}
+      <div className="w-full max-w-[1000px] mx-auto px-5 sm:px-8 md:px-10 pt-20 lg:pt-14 pb-10 md:pb-14">
         {/* ─────────────────────────────────
             SECTION 1 — Hero Header
+            (no back-arrow: the nav drawer / sidebar already navigates)
            ───────────────────────────────── */}
         <motion.header className="mb-8" {...section(0)}>
           <div className="flex items-center gap-4 mb-5">
-            <motion.button
-              type="button"
-              onClick={() => navigate('/dashboard')}
-              className="flex items-center justify-center w-[44px] h-[44px] rounded-[10px] cursor-pointer shrink-0"
-              style={{
-                background: 'var(--glass-bg)',
-                backdropFilter: 'blur(24px)',
-                border: '1px solid var(--color-border-subtle)',
-              }}
-              whileHover={{ scale: 1.08, borderColor: 'rgba(196, 154, 68, 0.3)' }}
-              whileTap={{ scale: 0.93 }}
-              aria-label="Back to dashboard"
-            >
-              <ArrowLeft size={20} style={{ color: 'var(--color-text-secondary)' }} />
-            </motion.button>
-
             <div
               className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
               style={{
@@ -693,7 +666,8 @@ export default function TimelineView() {
             </h1>
           </div>
 
-          <div className="flex items-start sm:items-center justify-between gap-4 flex-col sm:flex-row sm:pl-[60px]">
+          {/* 56px = 40px title icon + 16px (lg) gap — aligns with the title text */}
+          <div className="flex items-start sm:items-center justify-between gap-4 flex-col sm:flex-row sm:pl-[56px]">
             <p
               className="text-[14px] max-w-[560px] leading-relaxed"
               style={{ color: 'var(--color-text-secondary)' }}
@@ -701,7 +675,7 @@ export default function TimelineView() {
               Every event in chronological order —{' '}
               <span
                 style={{
-                  fontFamily: "'JetBrains Mono', monospace",
+                  fontFamily: 'var(--font-mono)',
                   color: 'var(--color-accent-gold)',
                   fontWeight: 600,
                 }}
@@ -711,7 +685,7 @@ export default function TimelineView() {
               moments that shaped human civilization across{' '}
               <span
                 style={{
-                  fontFamily: "'JetBrains Mono', monospace",
+                  fontFamily: 'var(--font-mono)',
                   color: 'var(--color-accent-gold)',
                   fontWeight: 600,
                 }}
@@ -733,7 +707,7 @@ export default function TimelineView() {
               <span
                 className="text-[12px] font-semibold"
                 style={{
-                  fontFamily: "'JetBrains Mono', monospace",
+                  fontFamily: 'var(--font-mono)',
                   color: 'var(--color-accent-gold)',
                 }}
               >
@@ -792,7 +766,7 @@ export default function TimelineView() {
             <span
               className="text-[11px] font-medium"
               style={{
-                fontFamily: "'JetBrains Mono', monospace",
+                fontFamily: 'var(--font-mono)',
                 color: 'var(--color-text-muted)',
               }}
             >
@@ -828,7 +802,7 @@ export default function TimelineView() {
               <motion.button
                 type="button"
                 onClick={clearFilters}
-                className="flex items-center gap-1 px-3 py-1.5 rounded-full text-[11px] font-medium cursor-pointer"
+                className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-[11px] font-medium cursor-pointer ${PILL_HIT_AREA}`}
                 style={{
                   background: 'transparent',
                   border: '1px solid var(--color-border-subtle)',
@@ -867,7 +841,7 @@ export default function TimelineView() {
                 type="button"
                 onClick={() => jumpToEra(era.id)}
                 disabled={disabled}
-                className="px-3 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-wider cursor-pointer transition-colors"
+                className={`px-3 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-wider cursor-pointer transition-colors ${PILL_HIT_AREA}`}
                 style={{
                   background: `${eraColor}12`,
                   border: `1px solid ${eraColor}28`,
@@ -893,7 +867,7 @@ export default function TimelineView() {
             SECTION 5 — Era Chapters
            ───────────────────────────────── */}
         {grouped.length === 0 ? (
-          <GlassCard className="p-10 text-center">
+          <Card variant="glass" className="rounded-xl p-10 text-center">
             <p
               className="text-[14px]"
               style={{ color: 'var(--color-text-secondary)' }}
@@ -918,7 +892,7 @@ export default function TimelineView() {
               <X size={13} />
               Clear filters
             </motion.button>
-          </GlassCard>
+          </Card>
         ) : (
           <div className="space-y-8 md:space-y-10">
             {grouped.map(({ era, events: eraEvents, explored }) => (
@@ -967,7 +941,7 @@ export default function TimelineView() {
             <span
               className="text-[11px]"
               style={{
-                fontFamily: "'JetBrains Mono', monospace",
+                fontFamily: 'var(--font-mono)',
                 color: 'var(--color-text-muted)',
               }}
             >

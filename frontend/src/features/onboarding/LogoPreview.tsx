@@ -160,7 +160,7 @@ function Row({
           width: 200,
           flexShrink: 0,
           fontSize: 13,
-          color: '#55556a',
+          color: 'var(--color-text-muted)',
         }}
       >
         {label}

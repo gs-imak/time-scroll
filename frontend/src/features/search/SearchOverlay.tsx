@@ -4,11 +4,14 @@ import { Search, MapPin, Scroll, Command, Landmark, X, Sparkles } from 'lucide-r
 import { useNavigate } from 'react-router';
 import { useEventsStore } from '@/shared/stores/eventsStore';
 import { useUIStore } from '@/shared/stores/uiStore';
+import { useTimeStore } from '@/shared/stores/timeStore';
+import { useFocusTrap } from '@/shared/hooks/useFocusTrap';
 import { useGlobeCamera } from '@/features/globe/useGlobeCamera';
 import { LOCATIONS, ERAS } from '@/shared/utils/constants';
 import { formatYear } from '@/shared/utils/format';
 import { ALL_CIVILIZATION_LABELS } from '@/shared/data/civilizationLabels';
 import type { CivDescription } from '@/shared/data/civDescriptions';
+import { CIV_ALIASES } from '@/shared/data/civAliases';
 import type { EventCategory } from '@/shared/types/events';
 
 /* ── Constants ── */
@@ -84,6 +87,8 @@ export function SearchOverlay() {
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const backdropRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(panelRef, isOpen);
 
   const events = useEventsStore((s) => s.events);
   const selectEvent = useEventsStore((s) => s.selectEvent);
@@ -114,6 +119,13 @@ export function SearchOverlay() {
         e.preventDefault();
         if (isOpen) close();
         else open();
+        return;
+      }
+      // Window-level (not just the input's own onKeyDown) so Escape still
+      // closes the overlay even if focus isn't literally in the input.
+      if (e.key === 'Escape' && isOpen) {
+        e.preventDefault();
+        close();
       }
     }
     window.addEventListener('keydown', handleKeyDown);
@@ -123,6 +135,25 @@ export function SearchOverlay() {
   useEffect(() => {
     if (isOpen) {
       requestAnimationFrame(() => inputRef.current?.focus());
+    }
+  }, [isOpen]);
+
+  // Pause timeline playback while the overlay is open so events don't
+  // scroll past unseen while the user is searching; resume only if it was
+  // actually playing before (never start playback the user hadn't begun).
+  const wasPlayingRef = useRef(false);
+  useEffect(() => {
+    if (isOpen) {
+      const { isPlaying, togglePlay } = useTimeStore.getState();
+      if (isPlaying) {
+        wasPlayingRef.current = true;
+        togglePlay();
+      } else {
+        wasPlayingRef.current = false;
+      }
+    } else if (wasPlayingRef.current) {
+      useTimeStore.getState().togglePlay();
+      wasPlayingRef.current = false;
     }
   }, [isOpen]);
 
@@ -141,6 +172,9 @@ export function SearchOverlay() {
         .replace(/^ancient-/, '')
         .replace(/^kingdom-of-/, '')
         .replace(/-empire$/, '');
+      // Mark the normalized description key as seen too, or loop 2 re-adds the
+      // same civilization under a key-derived name (13 dupes: Rome, Greece, ...).
+      seen.add(descSlug);
       const desc = CIV_DESCRIPTIONS[descSlug] ?? CIV_DESCRIPTIONS[label.slug];
       all.push({
         type: 'civ',
@@ -156,17 +190,19 @@ export function SearchOverlay() {
       const normSlug = key.toLowerCase().replace(/[^a-z0-9]/g, '-');
       if (seen.has(normSlug)) continue;
       seen.add(normSlug);
-      // Derive a display name from the key
-      const displayName = key
-        .replace(/[_']/g, ' ')
-        .replace(/-/g, ' ')
-        .replace(/\b\w/g, (c) => c.toUpperCase());
+      // Prefer the curated display name — key-derived title-casing destroys
+      // acronyms ('hre' -> 'Hre' instead of 'Holy Roman Empire').
+      const displayName = CIV_ALIASES[key]?.displayName
+        ?? key
+          .replace(/[_']/g, ' ')
+          .replace(/-/g, ' ')
+          .replace(/\b\w/g, (c) => c.toUpperCase());
       all.push({
         type: 'civ',
         slug: normSlug,
         name: displayName,
         summary: desc.summary,
-        imageUrl: desc.imageUrl,
+        imageUrl: desc.imageUrl ?? null,
       });
     }
 
@@ -261,11 +297,8 @@ export function SearchOverlay() {
   );
 
   function handleKeyDown(e: React.KeyboardEvent) {
-    if (e.key === 'Escape') {
-      e.preventDefault();
-      close();
-      return;
-    }
+    // Escape is handled by the window-level listener above so it works
+    // regardless of exactly where focus is inside the overlay.
     if (e.key === 'ArrowDown') {
       e.preventDefault();
       setActiveIndex((i) => (i < flatResults.length - 1 ? i + 1 : 0));
@@ -316,6 +349,7 @@ export function SearchOverlay() {
 
           {/* Search panel */}
           <motion.div
+            ref={panelRef}
             className="relative w-full max-w-[580px] mx-4"
             style={{
               background: 'var(--glass-strong-bg)',
@@ -376,7 +410,7 @@ export function SearchOverlay() {
               <kbd
                 className="hidden sm:flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-semibold shrink-0"
                 style={{
-                  fontFamily: "'JetBrains Mono', monospace",
+                  fontFamily: 'var(--font-mono)',
                   background: 'var(--glass-bg)',
                   color: 'var(--color-text-muted)',
                   border: '1px solid var(--color-border-subtle)',
@@ -423,7 +457,7 @@ export function SearchOverlay() {
                     <p
                       className="text-[11px]"
                       style={{
-                        fontFamily: "'JetBrains Mono', monospace",
+                        fontFamily: 'var(--font-mono)',
                         color: 'var(--color-text-muted)',
                       }}
                     >
@@ -487,7 +521,7 @@ export function SearchOverlay() {
                               </span>
                               <span
                                 style={{
-                                  fontFamily: "'JetBrains Mono', monospace",
+                                  fontFamily: 'var(--font-mono)',
                                   fontSize: '10px',
                                   color: 'var(--color-text-muted)',
                                 }}
@@ -563,7 +597,7 @@ export function SearchOverlay() {
                                 className="text-[10px]"
                                 style={{
                                   color: 'var(--color-text-muted)',
-                                  fontFamily: "'JetBrains Mono', monospace",
+                                  fontFamily: 'var(--font-mono)',
                                 }}
                               >
                                 Civilization
@@ -609,7 +643,7 @@ export function SearchOverlay() {
                             <span
                               className="text-[10px]"
                               style={{
-                                fontFamily: "'JetBrains Mono', monospace",
+                                fontFamily: 'var(--font-mono)',
                                 color: 'var(--color-text-muted)',
                               }}
                             >
@@ -712,7 +746,7 @@ function GroupLabel({
       <span
         className="text-[10px] font-semibold"
         style={{
-          fontFamily: "'JetBrains Mono', monospace",
+          fontFamily: 'var(--font-mono)',
           color: 'var(--color-text-muted)',
           opacity: 0.7,
         }}
@@ -758,9 +792,12 @@ function ResultRow({
       role="option"
       aria-selected={isActive}
       data-active={isActive}
+      // Roving aria-activedescendant model: DOM focus stays on the input,
+      // arrow keys move `activeIndex`. Rows must not be Tab-stoppable.
+      tabIndex={-1}
       onClick={onClick}
       onMouseEnter={onHover}
-      className="w-full flex items-center gap-3 rounded-[10px] text-left cursor-pointer transition-colors focus-visible:outline-none"
+      className="w-full flex items-center gap-3 rounded-[10px] text-left cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold focus-visible:ring-offset-2 focus-visible:ring-offset-void"
       style={{
         padding: '8px 10px',
         background: isActive ? `${accentColor}14` : 'transparent',
@@ -819,7 +856,7 @@ function KbdHint({
       <kbd
         className="inline-flex items-center px-1.5 py-0.5 rounded"
         style={{
-          fontFamily: "'JetBrains Mono', monospace",
+          fontFamily: 'var(--font-mono)',
           background: 'var(--glass-bg)',
           border: '1px solid var(--color-border-subtle)',
           color: 'var(--color-text-muted)',

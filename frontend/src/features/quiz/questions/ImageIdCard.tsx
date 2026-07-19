@@ -18,9 +18,10 @@ export function ImageIdCard({ question, selected, isAnswered, eliminatedOptions,
 
       {/* Image display */}
       <div className="mx-auto mb-6 max-w-[400px] rounded-xl overflow-hidden bg-[#0a0a12]">
+        {/* The image IS the question — describe without revealing the answer */}
         <img
           src={getIllustrationUrl(question.imageSlug, question.imageNum)}
-          alt=""
+          alt="Historical illustration — identify the subject"
           className="w-full h-auto object-contain max-h-[280px]"
           loading="eager"
           onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
@@ -83,6 +84,15 @@ export function ImageIdCard({ question, selected, isAnswered, eliminatedOptions,
             </motion.button>
           );
         })}
+      </div>
+
+      {/* Screen-reader result announcement (WCAG 4.1.3) */}
+      <div aria-live="polite" className="sr-only">
+        {isAnswered
+          ? selected === question.correctIndex
+            ? 'Correct'
+            : `Incorrect. Correct answer: ${question.options[question.correctIndex] ?? ''}`
+          : ''}
       </div>
 
       <AnimatePresence>

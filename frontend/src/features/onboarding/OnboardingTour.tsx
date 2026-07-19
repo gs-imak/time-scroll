@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMapStore } from '@/shared/stores/mapStore';
+import { useFocusTrap } from '@/shared/hooks/useFocusTrap';
 
 const STORAGE_KEY = 'time-scroll-onboarding-complete';
 const EASE_OUT: [number, number, number, number] = [0.16, 1, 0.3, 1];
@@ -90,45 +91,70 @@ const STEPS: TourStep[] = [
   },
 ];
 
+/** Card is never wider than the viewport minus a 16px (lg) gutter each side. */
+const CARD_MAX_WIDTH = 'min(400px, calc(100vw - 32px))';
+
 function getTooltipPosition(
   step: TourStep,
   target: DOMRect | null,
-): { top: number; left: number; transformOrigin: string } {
+): { top: number; left: number; transform: string; transformOrigin: string } {
   const vw = window.innerWidth;
   const vh = window.innerHeight;
+  // Effective card width after the max-width clamp (380px centered / 320px anchored).
+  const cardW = Math.min(step.placement === 'center' ? 380 : 320, vw - 32);
 
   if (!target || step.placement === 'center') {
     return {
       top: vh / 2,
       left: vw / 2,
+      transform: 'translate(-50%, -50%)',
       transformOrigin: 'center center',
     };
   }
 
   const cx = target.left + target.width / 2;
   const cy = target.top + target.height / 2;
+  // Clamp the card's horizontal center so it stays fully inside the viewport
+  // with a 16px (lg) gutter on both sides.
+  const clampCenter = (v: number) =>
+    Math.min(Math.max(v, cardW / 2 + 16), vw - cardW / 2 - 16);
 
-  switch (step.placement) {
+  // 'right' placement cannot fit beside the target on narrow screens —
+  // fall back to placing the card below the target instead.
+  const placement =
+    step.placement === 'right' && target.right + step.padding + 16 + cardW > vw - 16
+      ? 'below'
+      : step.placement;
+
+  switch (placement) {
     case 'above':
       return {
         top: target.top - step.padding - 16,
-        left: Math.min(Math.max(cx, 180), vw - 180),
+        left: clampCenter(cx),
+        transform: 'translate(-50%, -100%)',
         transformOrigin: 'bottom center',
       };
     case 'below':
       return {
         top: target.bottom + step.padding + 16,
-        left: Math.min(Math.max(cx, 180), vw - 180),
+        left: clampCenter(cx),
+        transform: 'translate(-50%, 0%)',
         transformOrigin: 'top center',
       };
     case 'right':
       return {
         top: cy,
         left: target.right + step.padding + 16,
+        transform: 'translate(0%, -50%)',
         transformOrigin: 'left center',
       };
     default:
-      return { top: vh / 2, left: vw / 2, transformOrigin: 'center center' };
+      return {
+        top: vh / 2,
+        left: vw / 2,
+        transform: 'translate(-50%, -50%)',
+        transformOrigin: 'center center',
+      };
   }
 }
 
@@ -138,6 +164,10 @@ export function OnboardingTour() {
   const [currentStep, setCurrentStep] = useState(0);
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
   const rafRef = useRef(0);
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  // Keep keyboard focus inside the tour dialog while it is open.
+  useFocusTrap(dialogRef, active);
 
   // Determine if the tour should show
   useEffect(() => {
@@ -193,6 +223,16 @@ export function OnboardingTour() {
       if (e.key === 'Escape') {
         completeTour();
       } else if (e.key === 'Enter' || e.key === 'ArrowRight') {
+        // The focus trap keeps focus on the card's buttons, and a focused
+        // button already handles Enter itself — advancing here too would
+        // double-fire Next or override Skip.
+        if (
+          e.key === 'Enter' &&
+          e.target instanceof HTMLElement &&
+          e.target.closest('button')
+        ) {
+          return;
+        }
         handleNext();
       }
     }
@@ -211,6 +251,7 @@ export function OnboardingTour() {
     <AnimatePresence>
       {active && (
         <motion.div
+          ref={dialogRef}
           className="fixed inset-0 z-50"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -296,13 +337,7 @@ export function OnboardingTour() {
               style={{
                 top: tooltipPos.top,
                 left: tooltipPos.left,
-                transform: isCentered
-                  ? 'translate(-50%, -50%)'
-                  : step.placement === 'above'
-                    ? 'translate(-50%, -100%)'
-                    : step.placement === 'below'
-                      ? 'translate(-50%, 0%)'
-                      : 'translate(0%, -50%)',
+                transform: tooltipPos.transform,
                 transformOrigin: tooltipPos.transformOrigin,
                 zIndex: 51,
               }}
@@ -312,13 +347,10 @@ export function OnboardingTour() {
               transition={{ duration: 0.35, ease: EASE_OUT }}
             >
               <div
-                className="flex flex-col"
+                className="flex flex-col glass-strong"
                 style={{
                   width: isCentered ? 380 : 320,
-                  background: 'var(--glass-strong-bg)',
-                  backdropFilter: 'blur(24px)',
-                  WebkitBackdropFilter: 'blur(24px)',
-                  border: '1px solid var(--color-border-subtle)',
+                  maxWidth: CARD_MAX_WIDTH,
                   borderRadius: 16,
                   padding: 24,
                   boxShadow:
@@ -390,69 +422,42 @@ export function OnboardingTour() {
 
                 {/* Actions */}
                 <div className="flex items-center justify-between">
+                  {/* Text color via CSS :hover with tokens — never JS style
+                      mutation (the old onMouseLeave restored #55556a, the
+                      failed-contrast hex tokens.css explicitly rejects). */}
                   <button
                     onClick={handleSkip}
-                    className="cursor-pointer"
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      padding: '8px 0',
-                      fontSize: 13,
-                      fontWeight: 400,
-                      color: 'var(--color-text-muted)',
-                      transition: 'color 200ms',
-                    }}
-                    onMouseEnter={(e) => {
-                      (e.target as HTMLButtonElement).style.color = '#8a8a9a';
-                    }}
-                    onMouseLeave={(e) => {
-                      (e.target as HTMLButtonElement).style.color = '#55556a';
-                    }}
+                    className="cursor-pointer min-h-11 py-2 rounded-[10px] text-[13px] font-normal text-text-muted hover:text-text-secondary transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold focus-visible:ring-offset-2 focus-visible:ring-offset-void"
                     aria-label="Skip tour"
                   >
                     Skip tour
                   </button>
 
-                  <button
+                  <motion.button
                     onClick={handleNext}
-                    className="cursor-pointer"
+                    className="cursor-pointer min-h-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold focus-visible:ring-offset-2 focus-visible:ring-offset-void"
                     style={{
                       background:
                         'linear-gradient(135deg, #c49a44, #a97e2e)',
                       border: 'none',
                       borderRadius: 10,
-                      padding: '10px 24px',
+                      padding: '10px 20px',
                       fontSize: 14,
                       fontWeight: 600,
                       color: '#08080c',
                       letterSpacing: '0.01em',
-                      transition: 'all 200ms cubic-bezier(0.16, 1, 0.3, 1)',
                       boxShadow: '0 2px 12px rgba(196, 154, 68, 0.2)',
                     }}
-                    onMouseEnter={(e) => {
-                      const btn = e.target as HTMLButtonElement;
-                      btn.style.transform = 'scale(1.04)';
-                      btn.style.boxShadow =
-                        '0 4px 20px rgba(196, 154, 68, 0.35)';
+                    whileHover={{
+                      scale: 1.04,
+                      boxShadow: '0 4px 20px rgba(196, 154, 68, 0.35)',
                     }}
-                    onMouseLeave={(e) => {
-                      const btn = e.target as HTMLButtonElement;
-                      btn.style.transform = 'scale(1)';
-                      btn.style.boxShadow =
-                        '0 2px 12px rgba(196, 154, 68, 0.2)';
-                    }}
-                    onMouseDown={(e) => {
-                      (e.target as HTMLButtonElement).style.transform =
-                        'scale(0.97)';
-                    }}
-                    onMouseUp={(e) => {
-                      (e.target as HTMLButtonElement).style.transform =
-                        'scale(1.04)';
-                    }}
+                    whileTap={{ scale: 0.97 }}
+                    transition={{ duration: 0.2, ease: EASE_OUT }}
                     aria-label={isLastStep ? 'Start exploring' : 'Next step'}
                   >
                     {isLastStep ? 'Start Exploring' : 'Next'}
-                  </button>
+                  </motion.button>
                 </div>
               </div>
             </motion.div>

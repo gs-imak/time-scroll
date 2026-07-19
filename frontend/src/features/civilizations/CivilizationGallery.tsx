@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { motion } from 'framer-motion';
 import {
@@ -12,6 +12,7 @@ import type { CivDescription } from '@/shared/data/civDescriptions';
 import { SEED_EVENTS, ERAS } from '@/shared/utils/constants';
 import { formatYear } from '@/shared/utils/format';
 import { useEventsStore } from '@/shared/stores/eventsStore';
+import { Card } from '@/shared/components/Card';
 
 const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
@@ -38,33 +39,6 @@ const section = (delay: number) => ({
   initial: { opacity: 0, y: 20 },
   animate: { opacity: 1, y: 0, transition: { duration: 0.55, delay, ease: EASE } },
 });
-
-/* ══════════════════════════════════════════
-   GLASS CARD
-   ══════════════════════════════════════════ */
-
-function GlassCard({
-  children,
-  className,
-  style,
-  ...props
-}: React.HTMLAttributes<HTMLDivElement>) {
-  return (
-    <div
-      className={`rounded-xl transition-all duration-200 ${className ?? ''}`}
-      style={{
-        background: 'var(--glass-bg)',
-        backdropFilter: 'blur(24px)',
-        border: '1px solid var(--color-border-subtle)',
-        boxShadow: 'inset 0 1px 0 var(--glass-inset)',
-        ...style,
-      }}
-      {...props}
-    >
-      {children}
-    </div>
-  );
-}
 
 /* ══════════════════════════════════════════
    LOOKUP HELPERS
@@ -224,6 +198,8 @@ export default function CivilizationGallery() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const events = useEventsStore((s) => s.events);
+  // Hero image may point at a dead URL (data now allows null/dead imageUrl).
+  const [heroImgFailed, setHeroImgFailed] = useState(false);
 
   const civData: CivData | null = useMemo(() => {
     if (!slug) return null;
@@ -315,7 +291,7 @@ export default function CivilizationGallery() {
           `,
         }}
       >
-        <GlassCard className="p-10 text-center max-w-md">
+        <Card variant="glass" className="rounded-xl p-10 text-center max-w-md">
           <div
             className="w-14 h-14 rounded-xl flex items-center justify-center mx-auto mb-4"
             style={{
@@ -364,7 +340,7 @@ export default function CivilizationGallery() {
             <ArrowLeft size={15} />
             Back to Civilizations
           </motion.button>
-        </GlassCard>
+        </Card>
       </div>
     );
   }
@@ -389,27 +365,25 @@ export default function CivilizationGallery() {
     >
       {/* ═══════════════ HERO ═══════════════ */}
       <div className="relative">
-        {/* Hero image background */}
-        {civData.imageUrl ? (
-          <div
-            className="absolute inset-0"
-            style={{
-              backgroundImage: `url(${civData.imageUrl})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center 25%',
-              opacity: 0.35,
-              filter: 'blur(1px)',
-            }}
-            aria-hidden="true"
-          />
-        ) : (
-          <div
-            className="absolute inset-0"
-            style={{
-              background: `linear-gradient(135deg, ${civData.eraColor}18 0%, ${civData.eraColor}04 100%)`,
-            }}
-            aria-hidden="true"
-          />
+        {/* Hero background — era gradient always renders underneath; the
+            <img> covers it when it loads and unmounts on error. */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background: `linear-gradient(135deg, ${civData.eraColor}18 0%, ${civData.eraColor}04 100%)`,
+          }}
+          aria-hidden="true"
+        />
+        {civData.imageUrl && !heroImgFailed && (
+          <div className="absolute inset-0 overflow-hidden" aria-hidden="true">
+            <img
+              src={civData.imageUrl}
+              alt=""
+              className="w-full h-full object-cover"
+              style={{ objectPosition: 'center 25%', opacity: 0.35, filter: 'blur(1px)' }}
+              onError={() => setHeroImgFailed(true)}
+            />
+          </div>
         )}
 
         {/* Dark gradient overlay */}
@@ -422,7 +396,8 @@ export default function CivilizationGallery() {
           aria-hidden="true"
         />
 
-        <div className="relative w-full max-w-[1100px] mx-auto px-5 sm:px-8 md:px-10 pt-10 md:pt-14 pb-20 md:pb-28">
+        {/* pt-20 below lg clears the fixed mobile nav button (12+44+24 = 80px) */}
+        <div className="relative w-full max-w-[1100px] mx-auto px-5 sm:px-8 md:px-10 pt-20 lg:pt-14 pb-20 md:pb-28">
           {/* Back button */}
           <motion.button
             type="button"
@@ -507,7 +482,7 @@ export default function CivilizationGallery() {
                 <span
                   className="text-[11px] font-semibold"
                   style={{
-                    fontFamily: "'JetBrains Mono', monospace",
+                    fontFamily: 'var(--font-mono)',
                     color: 'var(--color-text-secondary)',
                   }}
                 >
@@ -528,7 +503,7 @@ export default function CivilizationGallery() {
                 <span
                   className="text-[11px] font-semibold"
                   style={{
-                    fontFamily: "'JetBrains Mono', monospace",
+                    fontFamily: 'var(--font-mono)',
                     color: 'var(--color-text-secondary)',
                   }}
                 >
@@ -549,7 +524,7 @@ export default function CivilizationGallery() {
                 <span
                   className="text-[11px] font-semibold"
                   style={{
-                    fontFamily: "'JetBrains Mono', monospace",
+                    fontFamily: 'var(--font-mono)',
                     color: 'var(--color-text-secondary)',
                   }}
                 >
@@ -566,7 +541,7 @@ export default function CivilizationGallery() {
       <div className="w-full max-w-[1100px] mx-auto px-5 sm:px-8 md:px-10 pb-20 -mt-8 relative z-10">
         {/* ── Summary card ── */}
         <motion.section className="mb-10" {...section(0.3)}>
-          <GlassCard className="p-6 md:p-8" style={{ background: 'var(--glass-strong-bg)' }}>
+          <Card variant="glass-strong" className="rounded-xl p-6 md:p-8">
             <p
               style={{
                 fontFamily: 'var(--font-display)',
@@ -578,7 +553,7 @@ export default function CivilizationGallery() {
             >
               {civData.summary}
             </p>
-          </GlassCard>
+          </Card>
         </motion.section>
 
         {/* ── Detail + Key Facts ── */}
@@ -587,7 +562,7 @@ export default function CivilizationGallery() {
             {civData.detail && (
               <div className="lg:col-span-2">
                 <SectionHeading icon={BookOpen} label="Background" />
-                <GlassCard className="p-6">
+                <Card variant="glass" className="rounded-xl p-6">
                   <p
                     style={{
                       fontFamily: 'var(--font-display)',
@@ -598,7 +573,7 @@ export default function CivilizationGallery() {
                   >
                     {civData.detail}
                   </p>
-                </GlassCard>
+                </Card>
               </div>
             )}
 
@@ -650,7 +625,7 @@ export default function CivilizationGallery() {
         {civData.knownFor && (
           <motion.section className="mb-10" {...section(0.4)}>
             <SectionHeading icon={Crown} label="Known For" />
-            <GlassCard className="p-5 md:p-6">
+            <Card variant="glass" className="rounded-xl p-5 md:p-6">
               <p
                 className="italic"
                 style={{
@@ -662,7 +637,7 @@ export default function CivilizationGallery() {
               >
                 {civData.knownFor}
               </p>
-            </GlassCard>
+            </Card>
           </motion.section>
         )}
 
@@ -704,7 +679,7 @@ export default function CivilizationGallery() {
                       <span
                         className="text-[10px] font-semibold text-center"
                         style={{
-                          fontFamily: "'JetBrains Mono', monospace",
+                          fontFamily: 'var(--font-mono)',
                           color: civData.eraColor,
                         }}
                       >
@@ -728,7 +703,7 @@ export default function CivilizationGallery() {
                         <p
                           className="truncate mt-0.5"
                           style={{
-                            fontFamily: "'JetBrains Mono', monospace",
+                            fontFamily: 'var(--font-mono)',
                             fontSize: '11px',
                             color: 'var(--color-text-muted)',
                           }}
@@ -765,19 +740,21 @@ export default function CivilizationGallery() {
                 <motion.div
                   key={i}
                   variants={scaleIn}
-                  className="relative aspect-square rounded-lg overflow-hidden cursor-pointer group"
+                  className="relative aspect-square rounded-lg overflow-hidden cursor-pointer group flex items-center justify-center"
                   style={{
-                    background: 'var(--glass-strong-bg)',
+                    background: `linear-gradient(135deg, ${civData.eraColor}20, ${civData.eraColor}06)`,
                     border: '1px solid var(--color-border-subtle)',
                   }}
                   whileHover={{ scale: 1.04, y: -2 }}
                   transition={{ duration: 0.2, ease: EASE }}
                 >
+                  {/* Underlay icon shows through if the img fails to load */}
+                  <Landmark size={24} style={{ color: `${civData.eraColor}70` }} aria-hidden="true" />
                   <img
                     src={url}
                     alt={`${civData.name} illustration ${i + 1}`}
                     loading="lazy"
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.08]"
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.08]"
                     onError={(e) => {
                       e.currentTarget.style.display = 'none';
                     }}
@@ -791,7 +768,7 @@ export default function CivilizationGallery() {
                     <span
                       className="px-3 py-2 text-[10px] font-semibold"
                       style={{
-                        fontFamily: "'JetBrains Mono', monospace",
+                        fontFamily: 'var(--font-mono)',
                         color: '#fff',
                       }}
                     >

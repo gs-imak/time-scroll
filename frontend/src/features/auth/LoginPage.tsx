@@ -90,19 +90,21 @@ export default function LoginPage() {
               {/* Email */}
               <div className="mb-4">
                 <label
+                  htmlFor="login-email"
                   className="block text-[11px] font-semibold uppercase tracking-wider text-text-muted mb-2"
-                  style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                  style={{ fontFamily: 'var(--font-mono)' }}
                 >
                   Email
                 </label>
                 <div className="relative">
                   <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted" />
                   <input
+                    id="login-email"
                     type="email"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                     placeholder="explorer@timemachine.com"
-                    className="w-full h-[48px] pl-11 pr-4 rounded-xl text-[14px] text-text-primary placeholder:text-text-muted outline-none transition-all duration-200 focus:ring-2 focus:ring-accent-gold/30"
+                    className="w-full h-[48px] pl-11 pr-4 rounded-xl text-[14px] text-text-primary placeholder:text-text-muted outline-none transition-all duration-200 focus:ring-2 focus:ring-accent-gold focus:ring-offset-2 focus:ring-offset-void"
                     style={{
                       background: 'var(--glass-bg)',
                       border: '1px solid var(--color-border-subtle)',
@@ -115,19 +117,21 @@ export default function LoginPage() {
               {/* Password */}
               <div className="mb-6">
                 <label
+                  htmlFor="login-password"
                   className="block text-[11px] font-semibold uppercase tracking-wider text-text-muted mb-2"
-                  style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                  style={{ fontFamily: 'var(--font-mono)' }}
                 >
                   Password
                 </label>
                 <div className="relative">
                   <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted" />
                   <input
+                    id="login-password"
                     type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={e => setPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full h-[48px] pl-11 pr-11 rounded-xl text-[14px] text-text-primary placeholder:text-text-muted outline-none transition-all duration-200 focus:ring-2 focus:ring-accent-gold/30"
+                    className="w-full h-[48px] pl-11 pr-11 rounded-xl text-[14px] text-text-primary placeholder:text-text-muted outline-none transition-all duration-200 focus:ring-2 focus:ring-accent-gold focus:ring-offset-2 focus:ring-offset-void"
                     style={{
                       background: 'var(--glass-bg)',
                       border: '1px solid var(--color-border-subtle)',
@@ -138,6 +142,8 @@ export default function LoginPage() {
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-md cursor-pointer text-text-muted hover:text-text-secondary transition-colors"
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    aria-pressed={showPassword}
                   >
                     {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
@@ -174,7 +180,7 @@ export default function LoginPage() {
             {/* Divider */}
             <motion.div className="flex items-center gap-3 my-6" variants={stagger.item}>
               <div className="flex-1 h-px bg-border-subtle" />
-              <span className="text-[11px] text-text-muted uppercase tracking-wider" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+              <span className="text-[11px] text-text-muted uppercase tracking-wider" style={{ fontFamily: 'var(--font-mono)' }}>
                 or
               </span>
               <div className="flex-1 h-px bg-border-subtle" />
@@ -218,7 +224,7 @@ export default function LoginPage() {
 
         {/* Footer */}
         <div className="absolute bottom-6 left-0 right-0 text-center">
-          <p className="text-[10px] text-text-muted" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+          <p className="text-[10px] text-text-muted" style={{ fontFamily: 'var(--font-mono)' }}>
             Journey through 12,000 years of civilization
           </p>
         </div>

@@ -1,9 +1,12 @@
+import { useEffect, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { X, Calendar, Navigation, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useEventsStore } from '@/shared/stores/eventsStore';
 import { useUIStore } from '@/shared/stores/uiStore';
+import { useTimeStore } from '@/shared/stores/timeStore';
 import { formatYear } from '@/shared/utils/format';
 import { IconButton } from '@/shared/components';
+import { useFocusTrap } from '@/shared/hooks/useFocusTrap';
 import { useGlobeCamera } from '@/features/globe/useGlobeCamera';
 import { ERAS } from '@/shared/utils/constants';
 
@@ -32,15 +35,39 @@ export function EventDetailSheet() {
   const prevEvent = currentIdx > 0 ? events[currentIdx - 1] : null;
   const nextEvent = currentIdx < events.length - 1 ? events[currentIdx + 1] : null;
 
+  const isOpen = Boolean(event);
+  const sheetRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(sheetRef, isOpen);
+
   const onClose = () => selectEvent(null);
   const onFlyTo = () => {
     if (event) flyTo(event.longitude, event.latitude, 8);
   };
 
+  // Window-level Escape-to-close, active only while the sheet is open.
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') selectEvent(null);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [isOpen, selectEvent]);
+
+  // Reading an event while the timeline plays would scroll it out of the
+  // current-year window — pause on open
+  useEffect(() => {
+    if (!isOpen) return;
+    useTimeStore.getState().pause();
+  }, [isOpen]);
+
   return (
     <AnimatePresence>
       {event && cat && (
         <motion.div
+          ref={sheetRef}
+          role="dialog"
+          aria-label={event.title}
           className={
             isMobile
               ? 'fixed bottom-44 left-3 right-3 z-40 rounded-2xl max-h-[calc(100vh-200px)] overflow-y-auto'
@@ -82,7 +109,7 @@ export function EventDetailSheet() {
                   {formatYear(event.year)}
                 </span>
               </div>
-              <IconButton icon={X} onClick={onClose} />
+              <IconButton icon={X} onClick={onClose} aria-label="Close" />
             </div>
 
             {/* Title */}
@@ -106,7 +133,7 @@ export function EventDetailSheet() {
             {/* Fly to button — neutral glass, not colored */}
             <button
               onClick={onFlyTo}
-              className="w-full flex items-center justify-center gap-2 h-11 rounded-lg text-[13px] font-medium transition-all cursor-pointer hover:bg-white/[0.08] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-cyan/50"
+              className="w-full flex items-center justify-center gap-2 h-11 rounded-lg text-[13px] font-medium transition-all cursor-pointer hover:bg-white/[0.08] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-cyan focus-visible:ring-offset-2 focus-visible:ring-offset-void"
               style={{
                 background: 'rgba(255, 255, 255, 0.04)',
                 border: '1px solid var(--color-border-subtle)',

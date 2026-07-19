@@ -2,18 +2,17 @@ import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, MapPin, Brain, Trophy } from 'lucide-react';
-import { ERAS } from '@/shared/utils/constants';
+import { ERAS, EVENT_COUNT } from '@/shared/utils/constants';
+import { formatYear } from '@/shared/utils/format';
 import { cn } from '@/shared/utils/cn';
 
 const ERA_COLORS: Record<string, string> = { prehistory: '#8d7b68', ancient: '#c49a44', classical: '#b85454', medieval: '#8b6faa', renaissance: '#5a7fb5', industrial: '#7a9e5a', modern: '#5a9aaa' };
 
 const FEATURES = [
-  { icon: MapPin, label: '27 Historical Events', desc: 'Pinned on a 3D globe' },
+  { icon: MapPin, label: `${EVENT_COUNT} Historical Events`, desc: 'Pinned on a 3D globe' },
   { icon: Brain, label: 'Interactive Quizzes', desc: 'Test your knowledge' },
   { icon: Trophy, label: 'Earn Achievements', desc: 'Unlock as you explore' },
 ] as const;
-
-function formatYear(y: number) { return y < 0 ? `${Math.abs(y)} BCE` : `${y} CE`; }
 
 function StarField() {
   const stars = useMemo(() => Array.from({ length: 90 }, (_, i) => ({
@@ -288,7 +287,7 @@ export default function LandingPage() {
                       style={{
                         fontSize: '12px',
                         color: 'var(--color-text-muted)',
-                        fontFamily: "'JetBrains Mono', monospace",
+                        fontFamily: 'var(--font-mono)',
                       }}
                     >
                       {f.desc}
@@ -305,7 +304,7 @@ export default function LandingPage() {
                 style={{
                   fontSize: '11px',
                   color: 'var(--color-text-muted)',
-                  fontFamily: "'JetBrains Mono', monospace",
+                  fontFamily: 'var(--font-mono)',
                 }}
               >
                 Choose your starting era
@@ -380,8 +379,8 @@ export default function LandingPage() {
                         className="mt-1 tracking-wider"
                         style={{
                           fontSize: '10px',
-                          color: isSelected ? `${color}aa` : '#55556a',
-                          fontFamily: "'JetBrains Mono', monospace",
+                          color: isSelected ? `${color}aa` : 'var(--color-text-muted)',
+                          fontFamily: 'var(--font-mono)',
                         }}
                       >
                         {formatYear(era.startYear)} — {formatYear(era.endYear)}
@@ -461,7 +460,7 @@ export default function LandingPage() {
                 style={{
                   fontSize: '11px',
                   color: 'var(--color-text-muted)',
-                  fontFamily: "'JetBrains Mono', monospace",
+                  fontFamily: 'var(--font-mono)',
                 }}
               >
                 {selectedEraData

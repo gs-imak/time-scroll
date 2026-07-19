@@ -74,17 +74,16 @@ function ToastCard({
       animate={{ x: 0, opacity: 1, scale: 1 }}
       exit={{ x: 120, opacity: 0, scale: 0.9 }}
       transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-      className="pointer-events-auto"
+      className="pointer-events-auto glass-strong"
       style={{
-        background: 'var(--glass-strong-bg)',
-        backdropFilter: 'blur(24px)',
-        WebkitBackdropFilter: 'blur(24px)',
+        // Gold-tinted border is a deliberate achievement accent, kept as an
+        // override on top of the .glass-strong class (which supplies the
+        // correct background/blur/shadow — see DESIGN_SYSTEM.md Glass Effects).
         border: '1px solid rgba(196, 154, 68, 0.2)',
         borderRadius: 12,
         padding: '16px 20px',
         minWidth: 260,
         maxWidth: 340,
-        boxShadow: '0 8px 32px var(--glass-shadow), 0 0 0 1px rgba(255, 255, 255, 0.04)',
       }}
     >
       <div className="flex items-start gap-3">

@@ -24,15 +24,23 @@ interface Props {
   onToggleCategory: (cat: EventCategory) => void;
 }
 
+/** 44px-tall invisible ::after hit area so slim filter pills meet the
+    design-system 44px minimum touch target while staying visually compact. */
+const PILL_HIT_AREA =
+  "relative after:absolute after:inset-x-0 after:top-1/2 after:h-11 after:-translate-y-1/2 after:content-['']";
+
 function Pill({ label, color, active, onClick }: { label: string; color: string; active: boolean; onClick: () => void }) {
   return (
     <motion.button
       onClick={onClick}
-      className="px-3 py-1.5 rounded-full text-[11px] font-medium cursor-pointer transition-all"
+      aria-pressed={active}
+      className={`px-3 py-1.5 rounded-full text-[11px] font-medium cursor-pointer transition-all ${PILL_HIT_AREA}`}
       style={{
         background: active ? `${color}20` : 'rgba(255,255,255,0.03)',
         border: `1px solid ${active ? `${color}40` : 'rgba(255,255,255,0.06)'}`,
-        color: active ? color : '#55556a',
+        // Muted token, NOT #55556a — that hex is the failed-contrast value
+        // tokens.css explicitly rejects.
+        color: active ? color : 'var(--color-text-muted)',
       }}
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}

@@ -3,6 +3,7 @@ import { Settings, Sun, Moon, Volume2, VolumeX, Globe, Trash2, RotateCcw, Info }
 import { useThemeStore } from '@/shared/stores/themeStore';
 import { useProgressStore } from '@/shared/stores/progressStore';
 import { useState, useCallback } from 'react';
+import { cn } from '@/shared/utils/cn';
 
 const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
@@ -41,11 +42,31 @@ function SettingRow({ icon: Icon, label, description, children }: {
   );
 }
 
-function Toggle({ checked, onChange }: { checked: boolean; onChange: () => void }) {
+function Toggle({
+  checked,
+  onChange,
+  label,
+  disabled = false,
+}: {
+  checked: boolean;
+  onChange: () => void;
+  label: string;
+  disabled?: boolean;
+}) {
   return (
     <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      aria-label={label}
+      disabled={disabled}
+      aria-disabled={disabled}
       onClick={onChange}
-      className="relative w-11 h-6 rounded-full cursor-pointer transition-colors duration-200"
+      className={cn(
+        'relative w-11 h-6 rounded-full transition-colors duration-200',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold focus-visible:ring-offset-2 focus-visible:ring-offset-void',
+        disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer',
+      )}
       style={{
         background: checked ? 'var(--color-accent-gold)' : 'rgba(255,255,255,0.1)',
         border: '1px solid ' + (checked ? 'var(--color-accent-gold)' : 'var(--color-border-active)'),
@@ -116,7 +137,7 @@ export default function SettingsPage() {
         <motion.section className="mb-8" {...section(0.15)}>
           <h2
             className="uppercase tracking-[0.15em] mb-4"
-            style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', fontWeight: 600, color: 'var(--color-text-muted)' }}
+            style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', fontWeight: 600, color: 'var(--color-text-muted)' }}
           >
             Appearance
           </h2>
@@ -126,7 +147,7 @@ export default function SettingsPage() {
               label="Dark Mode"
               description="Switch between dark and light themes"
             >
-              <Toggle checked={theme === 'dark'} onChange={toggleTheme} />
+              <Toggle checked={theme === 'dark'} onChange={toggleTheme} label="Dark Mode" />
             </SettingRow>
           </div>
         </motion.section>
@@ -135,7 +156,7 @@ export default function SettingsPage() {
         <motion.section className="mb-8" {...section(0.2)}>
           <h2
             className="uppercase tracking-[0.15em] mb-4"
-            style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', fontWeight: 600, color: 'var(--color-text-muted)' }}
+            style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', fontWeight: 600, color: 'var(--color-text-muted)' }}
           >
             Globe
           </h2>
@@ -145,14 +166,19 @@ export default function SettingsPage() {
               label="Auto-play Spotlight"
               description="Automatically play territory evolution in Spotlight mode"
             >
-              <Toggle checked={autoPlay} onChange={() => setAutoPlay(!autoPlay)} />
+              <Toggle checked={autoPlay} onChange={() => setAutoPlay(!autoPlay)} label="Auto-play Spotlight" />
             </SettingRow>
             <SettingRow
               icon={soundEnabled ? Volume2 : VolumeX}
               label="Sound Effects"
               description="Play sounds on interactions (coming soon)"
             >
-              <Toggle checked={soundEnabled} onChange={() => setSoundEnabled(!soundEnabled)} />
+              <Toggle
+                checked={soundEnabled}
+                onChange={() => setSoundEnabled(!soundEnabled)}
+                label="Sound Effects"
+                disabled
+              />
             </SettingRow>
           </div>
         </motion.section>
@@ -161,7 +187,7 @@ export default function SettingsPage() {
         <motion.section className="mb-8" {...section(0.25)}>
           <h2
             className="uppercase tracking-[0.15em] mb-4"
-            style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', fontWeight: 600, color: 'var(--color-text-muted)' }}
+            style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', fontWeight: 600, color: 'var(--color-text-muted)' }}
           >
             Data & Storage
           </h2>
@@ -220,7 +246,7 @@ export default function SettingsPage() {
         <motion.section className="mb-12" {...section(0.3)}>
           <h2
             className="uppercase tracking-[0.15em] mb-4"
-            style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', fontWeight: 600, color: 'var(--color-text-muted)' }}
+            style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', fontWeight: 600, color: 'var(--color-text-muted)' }}
           >
             About
           </h2>

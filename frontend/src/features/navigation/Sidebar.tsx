@@ -1,21 +1,55 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Globe, Search, Settings, Menu, X, LayoutDashboard, Clock, BookOpen, BrainCircuit, Sun, Moon, Landmark, CircleUser } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router';
 import { useUIStore } from '@/shared/stores/uiStore';
 import { useThemeStore } from '@/shared/stores/themeStore';
+import { useFocusTrap } from '@/shared/hooks/useFocusTrap';
 import { cn } from '@/shared/utils/cn';
 import type { LucideIcon } from 'lucide-react';
 
 interface NavItemConfig {
   icon: LucideIcon;
   label: string;
-  action?: () => void;
+  /** Route to navigate to. Omitted for action-only items (e.g. Search). */
+  path?: string;
+  /** Extra action to run on select, alongside (or instead of) navigation. */
+  onSelect?: () => void;
   tourId?: string;
 }
 
 const SIDEBAR_COLLAPSED = 64;
 const SIDEBAR_EXPANDED = 240;
+
+function dispatchSearchShortcut() {
+  window.dispatchEvent(
+    new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, bubbles: true }),
+  );
+}
+
+/** Single shared nav config — was previously duplicated (and had drifted)
+ * between DesktopSidebar and MobileDrawer. */
+const NAV_ITEMS: NavItemConfig[] = [
+  { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard', tourId: 'dashboard' },
+  { icon: Clock, label: 'Timeline', path: '/timeline', tourId: 'timeline' },
+  { icon: Globe, label: 'Explore', path: '/explore', tourId: 'explore' },
+  { icon: BookOpen, label: 'Journeys', path: '/journeys', tourId: 'journeys' },
+  { icon: Landmark, label: 'Civilizations', path: '/civilizations', tourId: 'civilizations' },
+  { icon: BrainCircuit, label: 'Quiz', path: '/quiz', tourId: 'quiz' },
+  { icon: Search, label: 'Search', onSelect: dispatchSearchShortcut, tourId: 'search' },
+];
+
+const BOTTOM_NAV_ITEMS: NavItemConfig[] = [
+  { icon: Settings, label: 'Settings', path: '/settings', tourId: 'settings' },
+  { icon: CircleUser, label: 'Profile', path: '/profile', tourId: 'profile' },
+];
+
+/** Single isActive implementation shared by desktop + mobile nav (the old
+ * mobile version keyed off item.label and was missing a Civilizations
+ * entry, so it never highlighted as active). */
+function isNavItemActive(pathname: string, item: NavItemConfig): boolean {
+  return item.path ? pathname.startsWith(item.path) : false;
+}
 
 function NavItem({
   icon: Icon,
@@ -44,7 +78,7 @@ function NavItem({
           'relative flex items-center w-full h-11 rounded-xl',
           'transition-all duration-200 cursor-pointer',
           'active:scale-[0.97]',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-void',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold focus-visible:ring-offset-2 focus-visible:ring-offset-void',
           active
             ? 'text-text-primary'
             : 'text-text-secondary hover:text-text-primary',
@@ -64,7 +98,7 @@ function NavItem({
           />
         )}
         <span className="shrink-0 flex items-center justify-center w-5 h-5">
-          <Icon size={20} />
+          <Icon size={20} aria-hidden="true" />
         </span>
         <AnimatePresence>
           {expanded && (
@@ -110,7 +144,7 @@ function MobileNavItem({
         'relative flex items-center w-full h-11 rounded-[10px] px-3 gap-3',
         'transition-all duration-200 cursor-pointer',
         'active:scale-[0.97]',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-void',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold focus-visible:ring-offset-2 focus-visible:ring-offset-void',
         active
           ? 'text-text-primary bg-border-subtle'
           : 'text-text-secondary hover:text-text-primary hover:bg-border-subtle',
@@ -121,7 +155,7 @@ function MobileNavItem({
       {active && (
         <span className="absolute left-0 top-[10px] bottom-[10px] w-[3px] rounded-r-full bg-accent-gold" />
       )}
-      <Icon size={20} className="shrink-0" />
+      <Icon size={20} className="shrink-0" aria-hidden="true" />
       <span className="text-[14px] font-medium">{label}</span>
     </button>
   );
@@ -143,10 +177,11 @@ function ThemeToggle({ expanded, mobile }: { expanded: boolean; mobile?: boolean
           'transition-all duration-200 cursor-pointer',
           'text-text-secondary hover:text-text-primary hover:bg-border-subtle',
           'active:scale-[0.97]',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold focus-visible:ring-offset-2 focus-visible:ring-offset-void',
         )}
         aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
       >
-        <Icon size={20} className="shrink-0" />
+        <Icon size={20} className="shrink-0" aria-hidden="true" />
         <span className="text-[14px] font-medium">{isDark ? 'Light Mode' : 'Dark Mode'}</span>
       </button>
     );
@@ -163,13 +198,14 @@ function ThemeToggle({ expanded, mobile }: { expanded: boolean; mobile?: boolean
           'transition-all duration-200 cursor-pointer',
           'text-text-secondary hover:text-text-primary',
           'active:scale-[0.97]',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold focus-visible:ring-offset-2 focus-visible:ring-offset-void',
           hovered && 'bg-border-subtle',
         )}
         style={{ paddingLeft: 12, paddingRight: 12 }}
         aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
       >
         <span className="shrink-0 flex items-center justify-center w-5 h-5">
-          <Icon size={20} />
+          <Icon size={20} aria-hidden="true" />
         </span>
         <AnimatePresence>
           {expanded && (
@@ -202,55 +238,19 @@ function DesktopSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const dispatchSearch = useCallback(() => {
-    window.dispatchEvent(
-      new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, bubbles: true }),
-    );
-  }, []);
-
-  const goToDashboard = useCallback(() => { navigate('/dashboard'); }, [navigate]);
-  const goToTimeline = useCallback(() => { navigate('/timeline'); }, [navigate]);
-  const goToJourneys = useCallback(() => { navigate('/journeys'); }, [navigate]);
-  const goToCivilizations = useCallback(() => { navigate('/civilizations'); }, [navigate]);
-  const goToQuiz = useCallback(() => { navigate('/quiz'); }, [navigate]);
-  const goToSettings = useCallback(() => { navigate('/settings'); }, [navigate]);
-
-  const goToExplore = useCallback(() => { navigate('/explore'); }, [navigate]);
-  const goToProfile = useCallback(() => { navigate('/profile'); }, [navigate]);
-
-  const navItems: NavItemConfig[] = [
-    { icon: LayoutDashboard, label: 'Dashboard', action: goToDashboard, tourId: 'dashboard' },
-    { icon: Clock, label: 'Timeline', action: goToTimeline, tourId: 'timeline' },
-    { icon: Globe, label: 'Explore', action: goToExplore, tourId: 'explore' },
-    { icon: BookOpen, label: 'Journeys', action: goToJourneys, tourId: 'journeys' },
-    { icon: Landmark, label: 'Civilizations', action: goToCivilizations, tourId: 'civilizations' },
-    { icon: BrainCircuit, label: 'Quiz', action: goToQuiz, tourId: 'quiz' },
-    { icon: Search, label: 'Search', action: dispatchSearch, tourId: 'search' },
-  ];
-
-  const bottomItems: NavItemConfig[] = [
-    { icon: Settings, label: 'Settings', action: goToSettings, tourId: 'settings' },
-    { icon: CircleUser, label: 'Profile', action: goToProfile, tourId: 'profile' },
-  ];
-
   function handleClick(item: NavItemConfig) {
-    if (item.action) {
-      item.action();
-    }
+    if (item.path) navigate(item.path);
+    item.onSelect?.();
   }
 
-  function isActive(item: NavItemConfig): boolean {
-    if (item.tourId) {
-      const routeMap: Record<string, string> = {
-        dashboard: '/dashboard', timeline: '/timeline',
-        explore: '/explore', journeys: '/journeys',
-        civilizations: '/civilizations',
-        quiz: '/quiz', settings: '/settings', profile: '/profile',
-      };
-      const route = routeMap[item.tourId];
-      if (route) return location.pathname.startsWith(route);
+  // Hover-only expansion locks out keyboard users. Expand on focus too, and
+  // only collapse once focus actually leaves the nav (not when it moves
+  // between two items inside it) — mirrors :focus-within, but JS-driven
+  // since `expanded` also drives the width animation below.
+  function handleBlur(e: React.FocusEvent<HTMLElement>) {
+    if (!e.currentTarget.contains(e.relatedTarget)) {
+      setExpanded(false);
     }
-    return false;
   }
 
   return (
@@ -269,6 +269,8 @@ function DesktopSidebar() {
       }}
       onMouseEnter={() => setExpanded(true)}
       onMouseLeave={() => setExpanded(false)}
+      onFocus={() => setExpanded(true)}
+      onBlur={handleBlur}
       aria-label="Main navigation"
     >
       <div className="flex flex-col flex-1 pt-4 pb-4 px-2 gap-1">
@@ -299,12 +301,12 @@ function DesktopSidebar() {
 
         <div className="mx-2 mb-2 h-px bg-border-subtle" />
 
-        {navItems.map(item => (
+        {NAV_ITEMS.map(item => (
           <NavItem
             key={item.label}
             icon={item.icon}
             label={item.label}
-            active={isActive(item)}
+            active={isNavItemActive(location.pathname, item)}
             expanded={expanded}
             onClick={() => handleClick(item)}
             tourId={item.tourId}
@@ -317,14 +319,15 @@ function DesktopSidebar() {
 
         <ThemeToggle expanded={expanded} />
 
-        {bottomItems.map(item => (
+        {BOTTOM_NAV_ITEMS.map(item => (
           <NavItem
             key={item.label}
             icon={item.icon}
             label={item.label}
-            active={isActive(item)}
+            active={isNavItemActive(location.pathname, item)}
             expanded={expanded}
             onClick={() => handleClick(item)}
+            tourId={item.tourId}
           />
         ))}
       </div>
@@ -336,53 +339,13 @@ function MobileDrawer() {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-
-  const dispatchSearch = useCallback(() => {
-    window.dispatchEvent(
-      new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, bubbles: true }),
-    );
-  }, []);
-
-  const goToDashboard = useCallback(() => { navigate('/dashboard'); }, [navigate]);
-  const goToTimeline = useCallback(() => { navigate('/timeline'); }, [navigate]);
-  const goToJourneys = useCallback(() => { navigate('/journeys'); }, [navigate]);
-  const goToCivilizations = useCallback(() => { navigate('/civilizations'); }, [navigate]);
-  const goToQuiz = useCallback(() => { navigate('/quiz'); }, [navigate]);
-  const goToExplore = useCallback(() => { navigate('/explore'); }, [navigate]);
-  const goToSettings = useCallback(() => { navigate('/settings'); }, [navigate]);
-  const goToProfile = useCallback(() => { navigate('/profile'); }, [navigate]);
-
-  const navItems: NavItemConfig[] = [
-    { icon: LayoutDashboard, label: 'Dashboard', action: goToDashboard },
-    { icon: Clock, label: 'Timeline', action: goToTimeline },
-    { icon: Globe, label: 'Explore', action: goToExplore },
-    { icon: BookOpen, label: 'Journeys', action: goToJourneys },
-    { icon: Landmark, label: 'Civilizations', action: goToCivilizations },
-    { icon: BrainCircuit, label: 'Quiz', action: goToQuiz },
-    { icon: Search, label: 'Search', action: dispatchSearch },
-  ];
-
-  const bottomItems: NavItemConfig[] = [
-    { icon: Settings, label: 'Settings', action: goToSettings, tourId: 'settings' },
-    { icon: CircleUser, label: 'Profile', action: goToProfile, tourId: 'profile' },
-  ];
+  const drawerRef = useRef<HTMLElement>(null);
+  useFocusTrap(drawerRef, open);
 
   function handleClick(item: NavItemConfig) {
-    if (item.action) {
-      item.action();
-    }
+    if (item.path) navigate(item.path);
+    item.onSelect?.();
     setOpen(false);
-  }
-
-  function isActive(item: NavItemConfig): boolean {
-    const routeMap: Record<string, string> = {
-      Dashboard: '/dashboard', Timeline: '/timeline',
-      Explore: '/explore', Journeys: '/journeys',
-      Quiz: '/quiz', Settings: '/settings', Profile: '/profile',
-    };
-    const route = routeMap[item.label];
-    if (route) return location.pathname.startsWith(route);
-    return false;
   }
 
   useEffect(() => {
@@ -397,7 +360,7 @@ function MobileDrawer() {
   return (
     <>
       <motion.button
-        className="fixed top-3 left-3 z-40 flex items-center justify-center w-11 h-11 rounded-[10px] cursor-pointer glass-strong text-text-secondary"
+        className="fixed top-3 left-3 z-40 flex items-center justify-center w-11 h-11 rounded-[10px] cursor-pointer glass-strong text-text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold focus-visible:ring-offset-2 focus-visible:ring-offset-void"
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.3, duration: 0.25 }}
@@ -406,7 +369,7 @@ function MobileDrawer() {
         aria-expanded={open}
         aria-controls="mobile-nav-drawer"
       >
-        <Menu size={20} />
+        <Menu size={20} aria-hidden="true" />
       </motion.button>
 
       <AnimatePresence>
@@ -423,6 +386,7 @@ function MobileDrawer() {
             />
 
             <motion.nav
+              ref={drawerRef}
               id="mobile-nav-drawer"
               className="fixed top-0 left-0 z-50 h-full w-[260px] flex flex-col bg-surface/95 backdrop-blur-2xl border-r border-border-subtle shadow-2xl"
               initial={{ x: -260 }}
@@ -440,6 +404,7 @@ function MobileDrawer() {
                     style={{
                       background: 'linear-gradient(135deg, rgba(196, 154, 68, 0.15), rgba(196, 154, 68, 0.05))',
                     }}
+                    aria-hidden="true"
                   >
                     <span className="text-[14px] font-bold text-accent-gold">T</span>
                   </div>
@@ -447,22 +412,22 @@ function MobileDrawer() {
                 </div>
                 <button
                   onClick={() => setOpen(false)}
-                  className="flex items-center justify-center w-11 h-11 rounded-[10px] cursor-pointer transition-colors duration-200 hover:bg-border-subtle text-text-secondary"
+                  className="flex items-center justify-center w-11 h-11 rounded-[10px] cursor-pointer transition-colors duration-200 hover:bg-border-subtle text-text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold focus-visible:ring-offset-2 focus-visible:ring-offset-void"
                   aria-label="Close navigation menu"
                 >
-                  <X size={18} />
+                  <X size={18} aria-hidden="true" />
                 </button>
               </div>
 
               <div className="mx-3 h-px bg-border-subtle" />
 
               <div className="flex flex-col flex-1 px-3 py-3 gap-1">
-                {navItems.map(item => (
+                {NAV_ITEMS.map(item => (
                   <MobileNavItem
                     key={item.label}
                     icon={item.icon}
                     label={item.label}
-                    active={isActive(item)}
+                    active={isNavItemActive(location.pathname, item)}
                     onClick={() => handleClick(item)}
                   />
                 ))}
@@ -473,12 +438,12 @@ function MobileDrawer() {
 
                 <ThemeToggle expanded={true} mobile />
 
-                {bottomItems.map(item => (
+                {BOTTOM_NAV_ITEMS.map(item => (
                   <MobileNavItem
                     key={item.label}
                     icon={item.icon}
                     label={item.label}
-                    active={isActive(item)}
+                    active={isNavItemActive(location.pathname, item)}
                     onClick={() => handleClick(item)}
                   />
                 ))}
@@ -492,17 +457,11 @@ function MobileDrawer() {
 }
 
 export function Sidebar() {
+  // isMobile is derived solely from uiStore now (single source, set by
+  // app/providers.tsx's useMediaQuery('(max-width: 768px)') effect). This
+  // component used to run its own 1024px resize listener in parallel,
+  // which raced the 768px one and made isMobile flicker between the two
+  // thresholds on every resize.
   const isMobile = useUIStore(s => s.isMobile);
-  const setMobile = useUIStore(s => s.setMobile);
-
-  useEffect(() => {
-    function handleResize() {
-      setMobile(window.innerWidth < 1024);
-    }
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [setMobile]);
-
   return isMobile ? <MobileDrawer /> : <DesktopSidebar />;
 }

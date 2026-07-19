@@ -13,6 +13,7 @@ interface TimeStore {
   nextEra: () => void;
   prevEra: () => void;
   togglePlay: () => void;
+  pause: () => void;
   setPlaybackSpeed: (speed: number) => void;
 }
 
@@ -51,5 +52,6 @@ export const useTimeStore = create<TimeStore>((set, get) => ({
   },
 
   togglePlay: () => set(s => ({ isPlaying: !s.isPlaying })),
+  pause: () => set({ isPlaying: false }),
   setPlaybackSpeed: (speed: number) => set({ playbackSpeed: speed }),
 }));

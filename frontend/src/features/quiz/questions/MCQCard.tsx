@@ -85,6 +85,15 @@ export function MCQCard({ question, selected, isAnswered, eliminatedOptions, onS
         })}
       </div>
 
+      {/* Screen-reader result announcement (WCAG 4.1.3) */}
+      <div aria-live="polite" className="sr-only">
+        {isAnswered
+          ? selected === question.correctIndex
+            ? 'Correct'
+            : `Incorrect. Correct answer: ${question.options[question.correctIndex] ?? ''}`
+          : ''}
+      </div>
+
       {/* Explanation */}
       <AnimatePresence>
         {isAnswered && question.explanation && (

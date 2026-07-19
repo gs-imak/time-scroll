@@ -318,6 +318,37 @@ function renderClusterCanvas(count: number, color: string): HTMLCanvasElement {
   return canvas;
 }
 
+// ── Texture cache ─────────────────────────────────────────────────
+// A pin/cluster badge is fully determined by its drawing inputs, so build the
+// canvas + CanvasTexture once and share it across every marker with the same
+// badge. three-globe's custom layer removes (but never disposes) markers on data
+// churn — see ThreeDigest.onRemoveObj — so a shared texture is never torn out
+// from under a live marker. Mirrors GlobeView's capMaterialCache.
+const pinTextureCache = new Map<string, THREE.CanvasTexture>();
+const clusterTextureCache = new Map<string, THREE.CanvasTexture>();
+
+function getPinTexture(icon: string, color: string, shape: MarkerShape): THREE.CanvasTexture {
+  const key = `${icon}|${color}|${shape}`;
+  let tex = pinTextureCache.get(key);
+  if (tex) return tex;
+  tex = new THREE.CanvasTexture(renderPinCanvas(icon, color, shape));
+  tex.minFilter = THREE.LinearFilter;
+  tex.magFilter = THREE.LinearFilter;
+  pinTextureCache.set(key, tex);
+  return tex;
+}
+
+function getClusterTexture(count: number, color: string): THREE.CanvasTexture {
+  const key = `${count}|${color}`;
+  let tex = clusterTextureCache.get(key);
+  if (tex) return tex;
+  tex = new THREE.CanvasTexture(renderClusterCanvas(count, color));
+  tex.minFilter = THREE.LinearFilter;
+  tex.magFilter = THREE.LinearFilter;
+  clusterTextureCache.set(key, tex);
+  return tex;
+}
+
 // ── Cluster 3D marker ─────────────────────────────────────────────
 
 export function createClusterMarker(cluster: {
@@ -365,11 +396,8 @@ export function createClusterMarker(cluster: {
   pin.position.y = pinH / 2;
   group.add(pin);
 
-  // Cluster badge sprite
-  const canvas = renderClusterCanvas(cluster.count, colorHex);
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.minFilter = THREE.LinearFilter;
-  texture.magFilter = THREE.LinearFilter;
+  // Cluster badge sprite (cached texture — identical per count+color)
+  const texture = getClusterTexture(cluster.count, colorHex);
 
   const sprite = new THREE.Sprite(
     new THREE.SpriteMaterial({
@@ -438,11 +466,8 @@ export function createEventMarker(event: {
   pin.position.y = pinH / 2;
   group.add(pin);
 
-  // ── Shaped badge sprite ──
-  const canvas = renderPinCanvas(icon, colorHex, shape);
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.minFilter = THREE.LinearFilter;
-  texture.magFilter = THREE.LinearFilter;
+  // ── Shaped badge sprite (cached texture — identical per icon+color+shape) ──
+  const texture = getPinTexture(icon, colorHex, shape);
 
   const sprite = new THREE.Sprite(
     new THREE.SpriteMaterial({

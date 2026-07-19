@@ -112,13 +112,13 @@ export function WarEntryButtons() {
         <WarCard
           war="wwi"
           title="WORLD WAR I"
-          span="1914 — 1919"
-          blurb="From the spark in Sarajevo to the Treaty of Versailles. Six years of trench warfare that redrew the map of Europe and ended four empires."
+          span="1914 — 1918"
+          blurb="From the spark in Sarajevo to the Armistice. Four years of trench warfare that redrew the map of Europe and ended four empires."
         />
         <WarCard
           war="wwii"
           title="WORLD WAR II"
-          span="1938 — 1945"
+          span="1939 — 1945"
           blurb="From the Anschluss to V-E Day. The largest conflict in human history — borders shifted year by year as the Axis advanced and the Allies pushed back."
         />
       </div>

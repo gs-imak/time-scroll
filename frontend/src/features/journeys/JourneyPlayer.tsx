@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { motion, AnimatePresence, type Variants } from 'framer-motion';
-import { ArrowLeft, ArrowRight, X, Check, Clock, BookOpen } from 'lucide-react';
+import { ArrowLeft, ArrowRight, X, Check, Clock, BookOpen, Image as ImageIcon } from 'lucide-react';
 import { JOURNEYS } from '@/shared/data/journeys';
 import { useEventsStore } from '@/shared/stores/eventsStore';
 import { useProgressStore } from '@/shared/stores/progressStore';
@@ -175,15 +175,17 @@ export default function JourneyPlayer() {
         />
       </div>
 
-      {/* Top nav */}
+      {/* Top nav — pl-14 (<lg) clears the fixed 44px mobile nav button at
+          left-3 (12+44 = 56px); the bar is sticky so vertical padding alone
+          would not help once scrolled. */}
       <div className="sticky top-0 z-20 px-6 md:px-10 py-4">
-        <div className="max-w-[900px] mx-auto flex items-center justify-between">
+        <div className="max-w-[900px] mx-auto flex items-center justify-between pl-14 lg:pl-0">
           <button
             onClick={() => navigate('/journeys')}
             className={cn(
               'flex items-center gap-2 h-[44px] px-4 rounded-[10px] cursor-pointer',
               'transition-all duration-200 hover:bg-white/[0.04]',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold/50',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold focus-visible:ring-offset-2 focus-visible:ring-offset-void',
             )}
             style={{
               background: 'var(--glass-strong-bg)',
@@ -193,7 +195,7 @@ export default function JourneyPlayer() {
             aria-label="Exit journey"
           >
             <X size={16} style={{ color: 'var(--color-text-secondary)' }} />
-            <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: 'var(--color-text-secondary)' }}>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--color-text-secondary)' }}>
               Exit
             </span>
           </button>
@@ -213,7 +215,7 @@ export default function JourneyPlayer() {
             >
               {journey.title}
             </span>
-            <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', color: 'var(--color-text-muted)' }}>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-text-muted)' }}>
               {currentEventIndex + 1} of {journey.eventIds.length}
             </span>
           </div>
@@ -287,13 +289,13 @@ export default function JourneyPlayer() {
               <div className="flex items-center justify-center gap-6 mb-6">
                 <div className="flex items-center gap-2">
                   <BookOpen size={16} style={{ color: 'var(--color-text-muted)' }} />
-                  <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: 'var(--color-text-secondary)' }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--color-text-secondary)' }}>
                     {journey.eventIds.length} events
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Clock size={16} style={{ color: 'var(--color-text-muted)' }} />
-                  <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: 'var(--color-text-secondary)' }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--color-text-secondary)' }}>
                     ~{journey.estimatedMinutes} min
                   </span>
                 </div>
@@ -331,7 +333,7 @@ export default function JourneyPlayer() {
             className={cn(
               'flex items-center gap-2 h-[44px] px-5 rounded-[10px] cursor-pointer',
               'transition-all duration-200',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold/50',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold focus-visible:ring-offset-2 focus-visible:ring-offset-void',
               isFirstStep && 'opacity-30 cursor-not-allowed',
             )}
             style={{
@@ -380,7 +382,7 @@ export default function JourneyPlayer() {
             className={cn(
               'flex items-center gap-2 h-[44px] px-5 rounded-[10px] cursor-pointer',
               'transition-all duration-200',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold/50',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold focus-visible:ring-offset-2 focus-visible:ring-offset-void',
             )}
             style={{
               fontFamily: 'var(--font-display)',
@@ -432,17 +434,23 @@ function EventCard({
       transition={{ duration: 0.35, ease: EASE }}
       aria-label={`Event ${stepNumber} of ${totalEvents}: ${event.title}`}
     >
-      {/* Event image */}
+      {/* Event image — tinted underlay + icon shows if the img errors
+          (fixed 21/9 box, no layout jump) */}
       {event.imageUrl && (
         <div
-          className="w-full aspect-[21/9] rounded-[16px] overflow-hidden mb-6 relative"
-          style={{ border: '1px solid var(--color-border-subtle)' }}
+          className="w-full aspect-[21/9] rounded-[16px] overflow-hidden mb-6 relative flex items-center justify-center"
+          style={{
+            border: '1px solid var(--color-border-subtle)',
+            background: `linear-gradient(135deg, ${catColor}30, ${catColor}10)`,
+          }}
         >
+          <ImageIcon size={24} style={{ color: `${catColor}90` }} aria-hidden="true" />
           <img
             src={event.imageUrl}
             alt={event.title}
-            className="w-full h-full object-cover"
+            className="absolute inset-0 w-full h-full object-cover"
             loading="eager"
+            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
           />
           <div
             className="absolute inset-0"
@@ -457,13 +465,13 @@ function EventCard({
           className="w-2.5 h-2.5 rounded-full flex-shrink-0"
           style={{ background: catColor, boxShadow: `0 0 8px ${catColor}60` }}
         />
-        <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: 'var(--color-text-muted)' }}>
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--color-text-muted)' }}>
           {formatYear(event.year)}
         </span>
         {event.locationName && (
           <>
             <span style={{ color: 'var(--color-text-muted)' }}>&middot;</span>
-            <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: 'var(--color-text-muted)' }}>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--color-text-muted)' }}>
               {event.locationName}
             </span>
           </>
@@ -512,7 +520,7 @@ function EventCard({
         >
           <span
             className="block mb-1"
-            style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '10px', fontWeight: 600, color: '#c49a44', textTransform: 'uppercase', letterSpacing: '0.1em' }}
+            style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', fontWeight: 600, color: '#c49a44', textTransform: 'uppercase', letterSpacing: '0.1em' }}
           >
             Did you know?
           </span>
@@ -550,7 +558,7 @@ function TransitionCard({
     >
       {/* From label */}
       <div className="flex items-center gap-3 mb-6">
-        <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', color: 'var(--color-text-muted)' }}>
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-text-muted)' }}>
           {formatYear(fromEvent.year)}
         </span>
         <span
@@ -598,7 +606,7 @@ function TransitionCard({
 
       {/* To label */}
       <div className="flex items-center gap-3">
-        <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', color: 'var(--color-text-muted)' }}>
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-text-muted)' }}>
           {formatYear(toEvent.year)}
         </span>
         <span

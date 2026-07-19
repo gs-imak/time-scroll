@@ -1,26 +1,14 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { RotateCcw, ArrowLeft, CheckCircle, XCircle, Trophy, Flame, Lightbulb, Clock } from 'lucide-react';
 import { ScoreRing } from './components/ScoreRing';
+import { Card } from '@/shared/components/Card';
 import type { QuizSessionResult, QuizQuestion } from './types';
 
 const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
 const DIFFICULTY_COLORS: Record<string, string> = { easy: '#6d9476', medium: '#c49a44', hard: '#b85454' };
 const TYPE_LABEL: Record<string, string> = { mcq: 'MCQ', 'true-false': 'T/F', 'image-id': 'Image', 'timeline-order': 'Timeline' };
-
-function GlassCard({ children, className }: { children: React.ReactNode; className?: string }) {
-  return (
-    <div className={className} style={{
-      background: 'var(--glass-bg)', backdropFilter: 'blur(24px)',
-      border: '1px solid var(--color-border-subtle)',
-      boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.03)',
-      borderRadius: 12,
-    }}>
-      {children}
-    </div>
-  );
-}
 
 function formatAnswer(q: QuizQuestion, answer: number | boolean | number[]): string {
   switch (q.type) {
@@ -68,9 +56,20 @@ export function QuizResults({ result, onRetry, onBackToHub }: Props) {
     return s >= 60 ? `${Math.floor(s / 60)}m ${s % 60}s` : `${s}s`;
   }, [result.totalTimeMs]);
 
+  // Announce the final score to screen readers (WCAG 4.1.3). Filled after
+  // mount so the live region exists in the DOM before its content changes.
+  const [scoreAnnouncement, setScoreAnnouncement] = useState('');
+  useEffect(() => {
+    setScoreAnnouncement(
+      `Quiz finished. ${result.correctCount} of ${result.totalQuestions} correct. ${result.score} points earned.`,
+    );
+  }, [result.correctCount, result.totalQuestions, result.score]);
+
   return (
     <div className="min-h-screen w-full overflow-x-hidden overflow-y-auto lg:pl-[64px]">
-      <div className="w-full max-w-[720px] mx-auto px-5 md:px-8 py-10 md:py-16">
+      <div aria-live="polite" className="sr-only">{scoreAnnouncement}</div>
+      {/* pt-20 below lg clears the fixed mobile nav button (12+44+24 = 80px) */}
+      <div className="w-full max-w-[720px] mx-auto px-5 md:px-8 pt-20 lg:pt-16 pb-10 md:pb-16">
         {/* Score hero */}
         <motion.div
           className="text-center mb-10"
@@ -111,11 +110,11 @@ export function QuizResults({ result, onRetry, onBackToHub }: Props) {
             { icon: Lightbulb, label: 'Hints Used', value: `${result.hintsUsed}`, color: '#8b80b0' },
             { icon: Clock, label: 'Time', value: timeStr, color: '#5a8fa5' },
           ].map((stat) => (
-            <GlassCard key={stat.label} className="p-4 text-center">
+            <Card variant="glass" key={stat.label} className="rounded-[12px] p-4 text-center">
               <stat.icon size={16} className="mx-auto mb-2" style={{ color: stat.color }} />
               <p className="text-[16px] font-bold text-text-primary">{stat.value}</p>
               <p className="text-[10px] uppercase tracking-wider text-text-muted mt-1">{stat.label}</p>
-            </GlassCard>
+            </Card>
           ))}
         </motion.div>
 
@@ -159,7 +158,7 @@ export function QuizResults({ result, onRetry, onBackToHub }: Props) {
               const isCorrect = answer?.correct ?? false;
 
               return (
-                <GlassCard key={q.id} className="p-5">
+                <Card variant="glass" key={q.id} className="rounded-[12px] p-5">
                   {/* Header */}
                   <div className="flex items-center gap-2 mb-3">
                     <span className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold"
@@ -215,7 +214,7 @@ export function QuizResults({ result, onRetry, onBackToHub }: Props) {
                       </p>
                     </div>
                   )}
-                </GlassCard>
+                </Card>
               );
             })}
           </div>

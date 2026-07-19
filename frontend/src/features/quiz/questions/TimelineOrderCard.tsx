@@ -145,6 +145,18 @@ export function TimelineOrderCard({ question, isAnswered, onSubmit }: Props) {
         })}
       </div>
 
+      {/* Screen-reader result announcement (WCAG 4.1.3) */}
+      <div aria-live="polite" className="sr-only">
+        {isAnswered
+          ? order.every((itemIdx, pos) => correctOrder[pos] === itemIdx)
+            ? 'Correct'
+            : `Incorrect. Correct answer: ${correctOrder
+                .map((idx) => question.items[idx]?.label)
+                .filter(Boolean)
+                .join(', then ')}`
+          : ''}
+      </div>
+
       {/* Submit button (only for timeline - needs explicit submit since no single answer click) */}
       {!isAnswered && (
         <div className="mt-5 flex justify-center">

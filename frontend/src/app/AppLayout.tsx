@@ -15,7 +15,9 @@ export function AppLayout() {
   return (
     <div className="relative h-full w-full bg-void">
       <Sidebar />
-      <Outlet />
+      <main className="h-full w-full">
+        <Outlet />
+      </main>
       <SearchOverlay />
       <KeyboardHelp />
     </div>

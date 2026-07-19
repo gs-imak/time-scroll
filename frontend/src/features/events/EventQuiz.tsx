@@ -68,8 +68,24 @@ export function EventQuiz({ eventId, eventTitle, categoryColor, onComplete }: Ev
     setFinished(false);
   }, []);
 
+  // Screen-reader announcements (WCAG 4.1.3). Rendered as the first child of
+  // every branch so the live region stays mounted across screen switches and
+  // content changes are reliably announced.
+  const liveMessage = finished
+    ? `Quiz finished. You got ${correctCount} out of ${total} correct.`
+    : answered && question
+      ? selected === question.correctIndex
+        ? 'Correct'
+        : `Incorrect. Correct answer: ${question.options[question.correctIndex] ?? ''}`
+      : '';
+  const liveRegion = (
+    <div aria-live="polite" className="sr-only">{liveMessage}</div>
+  );
+
   if (!started) {
     return (
+      <>
+      {liveRegion}
       <motion.div
         className="rounded-2xl p-8 text-center"
         style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid var(--color-border-subtle)' }}
@@ -83,7 +99,7 @@ export function EventQuiz({ eventId, eventTitle, categoryColor, onComplete }: Ev
         </p>
         <motion.button
           onClick={() => setStarted(true)}
-          className="px-6 py-3 rounded-xl text-[13px] font-semibold cursor-pointer transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-void"
+          className="px-6 py-3 rounded-xl text-[13px] font-semibold cursor-pointer transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold focus-visible:ring-offset-2 focus-visible:ring-offset-void"
           style={{ background: categoryColor + '20', color: categoryColor, border: `1px solid ${categoryColor}30` }}
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.97 }}
@@ -91,6 +107,7 @@ export function EventQuiz({ eventId, eventTitle, categoryColor, onComplete }: Ev
           Start Quiz
         </motion.button>
       </motion.div>
+      </>
     );
   }
 
@@ -99,6 +116,8 @@ export function EventQuiz({ eventId, eventTitle, categoryColor, onComplete }: Ev
     const message = scorePercent === 100 ? 'Perfect Score!' : scorePercent >= 66 ? 'Great Job!' : scorePercent >= 33 ? 'Good Effort!' : 'Keep Learning!';
 
     return (
+      <>
+      {liveRegion}
       <motion.div
         className="rounded-2xl p-8 text-center"
         style={{ background: 'rgba(255,255,255,0.02)', border: `1px solid ${categoryColor}20` }}
@@ -150,7 +169,7 @@ export function EventQuiz({ eventId, eventTitle, categoryColor, onComplete }: Ev
         <div className="flex items-center justify-center gap-3">
           <motion.button
             onClick={handleRestart}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-[12px] font-medium cursor-pointer transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-void"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-[12px] font-medium cursor-pointer transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold focus-visible:ring-offset-2 focus-visible:ring-offset-void"
             style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--color-border-subtle)', color: 'var(--color-text-secondary)' }}
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
@@ -160,10 +179,13 @@ export function EventQuiz({ eventId, eventTitle, categoryColor, onComplete }: Ev
           </motion.button>
         </div>
       </motion.div>
+      </>
     );
   }
 
   return (
+    <>
+    {liveRegion}
     <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid var(--color-border-subtle)' }}>
       {/* Progress header */}
       <div className="px-6 py-4 flex items-center justify-between" style={{ background: 'rgba(255,255,255,0.02)' }}>
@@ -227,7 +249,7 @@ export function EventQuiz({ eventId, eventTitle, categoryColor, onComplete }: Ev
                     key={i}
                     onClick={() => handleSelect(i)}
                     disabled={answered}
-                    className="w-full flex items-center gap-3 p-4 rounded-xl text-left transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-void"
+                    className="w-full flex items-center gap-3 p-4 rounded-xl text-left transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold focus-visible:ring-offset-2 focus-visible:ring-offset-void"
                     style={{ background: bg, border: `1px solid ${border}` }}
                     whileHover={!answered ? { scale: 1.01, borderColor: `${categoryColor}40` } : {}}
                     whileTap={!answered ? { scale: 0.99 } : {}}
@@ -271,7 +293,7 @@ export function EventQuiz({ eventId, eventTitle, categoryColor, onComplete }: Ev
             >
               <motion.button
                 onClick={handleNext}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-[13px] font-medium cursor-pointer transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-void"
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-[13px] font-medium cursor-pointer transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold focus-visible:ring-offset-2 focus-visible:ring-offset-void"
                 style={{ background: categoryColor + '18', color: categoryColor, border: `1px solid ${categoryColor}25` }}
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
@@ -284,5 +306,6 @@ export function EventQuiz({ eventId, eventTitle, categoryColor, onComplete }: Ev
         </AnimatePresence>
       </div>
     </div>
+    </>
   );
 }

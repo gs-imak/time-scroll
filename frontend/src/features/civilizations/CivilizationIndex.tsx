@@ -11,6 +11,7 @@ import type { CivDescription } from '@/shared/data/civDescriptions';
 import { ERAS, SEED_EVENTS } from '@/shared/utils/constants';
 import { formatYear } from '@/shared/utils/format';
 import { useEventsStore } from '@/shared/stores/eventsStore';
+import { Card } from '@/shared/components/Card';
 
 /* ══════════════════════════════════════════
    ANIMATION PRESETS
@@ -47,13 +48,12 @@ const ERA_HEX: Record<string, string> = {
 };
 
 /** Direct image overrides for orphan labels (no description entry).
- *  Keyed by the label slug from ALL_CIVILIZATION_LABELS. */
+ *  Keyed by the label slug from ALL_CIVILIZATION_LABELS.
+ *  'ancient-arabia' has no entry on purpose: its pack images depict Arabia while
+ *  the label's events center on Giza, and no local Egypt pack exists — the styled
+ *  placeholder is more honest than a wrong-civilization photo. */
 const ORPHAN_LABEL_IMAGES: Record<string, string> = {
-  // "Ancient Arabia" pack is actually centered on Giza (data quirk from civilizationAssets.ts)
-  'ancient-arabia':
-    'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Great_Pyramid_of_Giza_-_Pyramid_of_Khufu.jpg/960px-Great_Pyramid_of_Giza_-_Pyramid_of_Khufu.jpg',
-  'mauryan-empire':
-    'https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/East_Gateway_-_Stupa_1_-_Sanchi_Hill_2013-02-21_4398.JPG/960px-East_Gateway_-_Stupa_1_-_Sanchi_Hill_2013-02-21_4398.JPG',
+  'mauryan-empire': '/assets/civilizations/mauryan-empire/3.webp',
 };
 
 /* Name overrides for CIV_DESCRIPTIONS keys that don't derive nicely from their slug */
@@ -195,29 +195,10 @@ function parseEarliestYearFromText(text: string): number | null {
    SUB-COMPONENTS
    ══════════════════════════════════════════ */
 
-function GlassCard({
-  children,
-  className,
-  strong,
-  style,
-  ...props
-}: React.HTMLAttributes<HTMLDivElement> & { strong?: boolean }) {
-  return (
-    <div
-      className={`rounded-xl transition-all duration-200 ${className ?? ''}`}
-      style={{
-        background: strong ? 'var(--glass-strong-bg)' : 'var(--glass-bg)',
-        backdropFilter: strong ? 'blur(40px)' : 'blur(24px)',
-        border: '1px solid var(--color-border-subtle)',
-        boxShadow: 'inset 0 1px 0 var(--glass-inset)',
-        ...style,
-      }}
-      {...props}
-    >
-      {children}
-    </div>
-  );
-}
+/** 44px-tall invisible ::after hit area so slim filter pills meet the
+    design-system 44px minimum touch target while staying visually compact. */
+const PILL_HIT_AREA =
+  "relative after:absolute after:inset-x-0 after:top-1/2 after:h-11 after:-translate-y-1/2 after:content-['']";
 
 function SectionHeading({
   icon: Icon,
@@ -258,9 +239,13 @@ function StatCard({
   suffix?: string;
   index: number;
 }) {
+  // Long text values (e.g. a civilization name) wrap at the era-name size
+  // (18px per the typography table) instead of truncating mid-word.
+  const isLongText = typeof value === 'string' && value.length > 8;
+
   return (
     <motion.div variants={scaleIn} custom={index}>
-      <GlassCard className="p-5 sm:p-6 relative overflow-hidden cursor-default">
+      <Card variant="glass" className="rounded-xl p-5 sm:p-6 relative overflow-hidden cursor-default">
         <div
           className="absolute top-0 left-0 right-0 h-[2px]"
           style={{ background: `linear-gradient(90deg, transparent, ${color}40, transparent)` }}
@@ -279,23 +264,27 @@ function StatCard({
             {label}
           </span>
         </div>
-        <div className="flex items-baseline gap-1">
+        <div className="flex items-baseline gap-1 min-w-0">
           <span
-            className="text-2xl sm:text-[28px] font-bold"
-            style={{ fontFamily: "'JetBrains Mono', monospace", color: 'var(--color-text-primary)' }}
+            className={
+              isLongText
+                ? 'text-[18px] font-semibold leading-tight break-words min-w-0'
+                : 'text-2xl sm:text-[28px] font-bold'
+            }
+            style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-text-primary)' }}
           >
             {value}
           </span>
           {suffix && (
             <span
               className="text-sm font-medium"
-              style={{ fontFamily: "'JetBrains Mono', monospace", color: 'var(--color-text-muted)' }}
+              style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-text-muted)' }}
             >
               {suffix}
             </span>
           )}
         </div>
-      </GlassCard>
+      </Card>
     </motion.div>
   );
 }
@@ -316,7 +305,7 @@ function FilterPill({
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className="px-3 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-wider cursor-pointer transition-colors"
+      className={`px-3 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-wider cursor-pointer transition-colors ${PILL_HIT_AREA}`}
       style={{
         background: active ? `${color}20` : 'var(--glass-bg)',
         border: `1px solid ${active ? `${color}50` : 'var(--color-border-subtle)'}`,
@@ -352,6 +341,9 @@ function CivCard({
   civ: Civ;
   onOpen: (slug: string) => void;
 }) {
+  const [imgFailed, setImgFailed] = useState(false);
+  const showImage = Boolean(civ.imageUrl) && !imgFailed;
+
   return (
     <motion.button
       type="button"
@@ -359,13 +351,19 @@ function CivCard({
       variants={scaleIn}
       className="
         group relative rounded-2xl overflow-hidden text-left cursor-pointer
-        focus-visible:outline-none focus-visible:ring-2
+        focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold
+        focus-visible:ring-offset-2 focus-visible:ring-offset-void
       "
       style={{
         background: 'var(--glass-bg)',
         backdropFilter: 'blur(24px)',
         border: '1px solid var(--color-border-subtle)',
         boxShadow: 'inset 0 1px 0 var(--glass-inset)',
+        // CSS-only virtualization: with ~200 cards on one page, skip
+        // rendering work for off-screen cards. The intrinsic size estimate
+        // (~320px tall) keeps the scrollbar stable while skipped.
+        contentVisibility: 'auto',
+        containIntrinsicSize: 'auto 320px',
       }}
       whileHover={{
         y: -4,
@@ -375,27 +373,29 @@ function CivCard({
       whileTap={{ scale: 0.99 }}
       transition={{ duration: 0.25, ease: EASE }}
     >
-      {/* Hero image */}
+      {/* Hero image — era-gradient + Landmark underlay always renders; the
+          <img> covers it when it loads and unmounts on error (fixed 160px
+          box, no broken glyph, no layout jump). */}
       <div className="relative h-[160px] overflow-hidden">
-        {civ.imageUrl ? (
-          <div
-            className="absolute inset-0 transition-transform duration-500 group-hover:scale-[1.06]"
-            style={{
-              backgroundImage: `url(${civ.imageUrl})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center 25%',
-            }}
+        <div
+          className="absolute inset-0 flex items-center justify-center"
+          style={{
+            background: `linear-gradient(135deg, ${civ.eraColor}25 0%, ${civ.eraColor}08 100%)`,
+          }}
+          aria-hidden="true"
+        >
+          <Landmark size={48} style={{ color: `${civ.eraColor}80` }} />
+        </div>
+        {showImage && (
+          <img
+            src={civ.imageUrl!}
+            alt=""
+            loading="lazy"
+            className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.06]"
+            style={{ objectPosition: 'center 25%' }}
+            onError={() => setImgFailed(true)}
             aria-hidden="true"
           />
-        ) : (
-          <div
-            className="absolute inset-0 flex items-center justify-center"
-            style={{
-              background: `linear-gradient(135deg, ${civ.eraColor}25 0%, ${civ.eraColor}08 100%)`,
-            }}
-          >
-            <Landmark size={48} style={{ color: `${civ.eraColor}80` }} />
-          </div>
         )}
 
         {/* Gradient overlay */}
@@ -450,7 +450,7 @@ function CivCard({
           <p
             className="text-[11px]"
             style={{
-              fontFamily: "'JetBrains Mono', monospace",
+              fontFamily: 'var(--font-mono)',
               color: 'rgba(255,255,255,0.75)',
               textShadow: '0 1px 4px rgba(0,0,0,0.6)',
             }}
@@ -495,7 +495,7 @@ function CivCard({
           <span
             className="flex items-center gap-1"
             style={{
-              fontFamily: "'JetBrains Mono', monospace",
+              fontFamily: 'var(--font-mono)',
               fontSize: '11px',
               color: 'var(--color-text-muted)',
             }}
@@ -770,7 +770,9 @@ export default function CivilizationIndex() {
         `,
       }}
     >
-      <div className="w-full max-w-[1200px] mx-auto px-5 sm:px-8 md:px-10 py-10 md:py-14">
+      {/* pt-20 below lg clears the fixed mobile nav button: 12px offset + 44px
+          button + 24px (xl) gap = 80px. Desktop sidebar appears at lg. */}
+      <div className="w-full max-w-[1200px] mx-auto px-5 sm:px-8 md:px-10 pt-20 lg:pt-14 pb-10 md:pb-14">
         {/* ─────────────────────────────────
             SECTION 1 — Hero Header
            ───────────────────────────────── */}
@@ -821,7 +823,7 @@ export default function CivilizationIndex() {
             Explore the{' '}
             <span
               style={{
-                fontFamily: "'JetBrains Mono', monospace",
+                fontFamily: 'var(--font-mono)',
                 color: 'var(--color-accent-gold)',
                 fontWeight: 600,
               }}
@@ -832,7 +834,7 @@ export default function CivilizationIndex() {
             societies to the modern nation-state. Grouped chronologically across{' '}
             <span
               style={{
-                fontFamily: "'JetBrains Mono', monospace",
+                fontFamily: 'var(--font-mono)',
                 color: 'var(--color-accent-gold)',
                 fontWeight: 600,
               }}
@@ -868,10 +870,11 @@ export default function CivilizationIndex() {
             index={1}
           />
           <StatCard icon={Layers} label="Eras" value={eraCount} color="#5a9aaa" index={2} />
+          {/* Full name — StatCard wraps long text; never mid-word ellipsis */}
           <StatCard
             icon={Crown}
             label="Oldest"
-            value={oldestCivName.length > 10 ? `${oldestCivName.slice(0, 10)}…` : oldestCivName}
+            value={oldestCivName}
             color="#b87a60"
             index={3}
           />
@@ -886,7 +889,7 @@ export default function CivilizationIndex() {
             <span
               className="text-[11px] font-medium"
               style={{
-                fontFamily: "'JetBrains Mono', monospace",
+                fontFamily: 'var(--font-mono)',
                 color: 'var(--color-text-muted)',
               }}
             >
@@ -920,7 +923,7 @@ export default function CivilizationIndex() {
               <button
                 type="button"
                 onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer"
+                className="absolute right-0 top-1/2 -translate-y-1/2 w-11 h-11 flex items-center justify-center cursor-pointer"
                 aria-label="Clear search"
               >
                 <X size={13} style={{ color: 'var(--color-text-muted)' }} />
@@ -946,7 +949,7 @@ export default function CivilizationIndex() {
               <motion.button
                 type="button"
                 onClick={clearFilters}
-                className="flex items-center gap-1 px-3 py-1.5 rounded-full text-[11px] font-medium cursor-pointer"
+                className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-[11px] font-medium cursor-pointer ${PILL_HIT_AREA}`}
                 style={{
                   background: 'transparent',
                   border: '1px solid var(--color-border-subtle)',
@@ -966,7 +969,7 @@ export default function CivilizationIndex() {
             SECTION 4 — Era-grouped Civ Grid
            ───────────────────────────────── */}
         {grouped.length === 0 ? (
-          <GlassCard className="p-10 text-center">
+          <Card variant="glass" className="rounded-xl p-10 text-center">
             <p className="text-[14px] mb-4" style={{ color: 'var(--color-text-secondary)' }}>
               No civilizations match your filters.
             </p>
@@ -988,7 +991,7 @@ export default function CivilizationIndex() {
               <X size={13} />
               Clear filters
             </motion.button>
-          </GlassCard>
+          </Card>
         ) : (
           <div className="space-y-10 md:space-y-12">
             {grouped.map(({ era, civs }) => {
@@ -1024,7 +1027,7 @@ export default function CivilizationIndex() {
                       </h2>
                       <p
                         style={{
-                          fontFamily: "'JetBrains Mono', monospace",
+                          fontFamily: 'var(--font-mono)',
                           fontSize: '11px',
                           color: 'var(--color-text-muted)',
                         }}
@@ -1072,7 +1075,7 @@ export default function CivilizationIndex() {
             <span
               className="text-[11px]"
               style={{
-                fontFamily: "'JetBrains Mono', monospace",
+                fontFamily: 'var(--font-mono)',
                 color: 'var(--color-text-muted)',
                 letterSpacing: '0.08em',
               }}

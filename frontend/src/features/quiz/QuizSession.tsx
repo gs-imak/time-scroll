@@ -49,7 +49,8 @@ export function QuizSession({ state, onSelectAnswer, onConfirmAnswer, onUseHint,
 
   return (
     <div className="min-h-screen w-full overflow-x-hidden overflow-y-auto lg:pl-[64px]">
-      <div className="w-full max-w-[720px] mx-auto px-5 md:px-8 py-8 md:py-12">
+      {/* pt-20 below lg clears the fixed mobile nav button (12+44+24 = 80px) */}
+      <div className="w-full max-w-[720px] mx-auto px-5 md:px-8 pt-20 lg:pt-12 pb-8 md:pb-12">
         {/* Top bar */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">

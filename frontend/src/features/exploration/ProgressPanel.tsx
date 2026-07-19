@@ -45,6 +45,7 @@ export function ProgressPanel() {
                 icon={X}
                 size={16}
                 onClick={() => setActivePanel('none')}
+                aria-label="Close"
               />
             </div>
 
@@ -160,7 +161,7 @@ export function ProgressPanel() {
                       <p
                         className="text-[12px] font-semibold leading-tight truncate"
                         style={{
-                          color: unlocked ? '#e0e0e6' : '#55556a',
+                          color: unlocked ? 'var(--color-text-primary)' : 'var(--color-text-muted)',
                         }}
                       >
                         {unlocked ? achievement.title : '???'}
@@ -169,7 +170,7 @@ export function ProgressPanel() {
                     <p
                       className="text-[10px] leading-snug"
                       style={{
-                        color: unlocked ? '#8a8a9a' : '#55556a',
+                        color: unlocked ? 'var(--color-text-secondary)' : 'var(--color-text-muted)',
                       }}
                     >
                       {achievement.desc}
