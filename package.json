@@ -11,5 +11,11 @@
   "devDependencies": {
     "adm-zip": "^0.5.17",
     "sharp": "^0.34.5"
+  },
+  "optionalDependencies": {
+    "@esbuild/linux-x64": "0.25.12",
+    "@rollup/rollup-linux-x64-gnu": "4.60.1",
+    "@tailwindcss/oxide-linux-x64-gnu": "4.2.2",
+    "lightningcss-linux-x64-gnu": "1.32.0"
   }
 }
