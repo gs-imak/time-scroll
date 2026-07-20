@@ -13,7 +13,8 @@ export function useSpotlightPlayback() {
   useEffect(() => {
     if (!active || !isPlaying || snapshotYears.length === 0) return;
 
-    // Pause 3s / speed between steps — gives the 2s polygon transition time to complete
+    // Pause 3s / speed between steps — reading time for the stage card, with the
+    // 800ms border transition comfortably inside it.
     const interval = 3000 / playSpeed;
 
     const timer = setInterval(() => {

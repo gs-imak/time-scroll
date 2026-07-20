@@ -7,7 +7,8 @@ import { useTimeStore } from '@/shared/stores/timeStore';
 import { useEventsStore } from '@/shared/stores/eventsStore';
 import { useJourneyArcsStore } from '@/shared/stores/journeyArcsStore';
 import { useCameraStore, altitudeToZoom } from '@/shared/stores/cameraStore';
-import { closestBoundaryYear, assignStableIds } from '@/shared/utils/geo';
+import { closestBoundaryYear, assignStableIds, mergeStableFeatures } from '@/shared/utils/geo';
+import type { BoundaryFeature } from '@/shared/types/geo';
 import { formatYear } from '@/shared/utils/format';
 import { BOUNDARY_YEAR_MAP } from '@/shared/utils/constants';
 import { getVisibleCivilizationLabels } from '@/shared/data/civilizationLabels';
@@ -430,8 +431,10 @@ export function GlobeView({ children }: GlobeViewProps) {
   const spotlightCenterLng = useSpotlightStore(s => s.centerLng);
   useEffect(() => {
     if (!spotlightActive || !globeRef.current || !spotlightCivId) return;
+    // Aim ~12° south of the territory so it frames in the upper half of the
+    // viewport — the bottom-anchored stage card occupies the lower half.
     globeRef.current.pointOfView(
-      { lat: spotlightCenterLat, lng: spotlightCenterLng, altitude: 1.2 },
+      { lat: spotlightCenterLat - 12, lng: spotlightCenterLng, altitude: 1.2 },
       1500,
     );
   }, [spotlightActive, spotlightCivId, spotlightCenterLat, spotlightCenterLng]);
@@ -506,7 +509,8 @@ export function GlobeView({ children }: GlobeViewProps) {
 
       const cached = getWarGeoJson(warYear);
       if (cached) {
-        setPolygonsData(assignStableIds(cached));
+        setPolygonsData(prev =>
+          mergeStableFeatures(prev as BoundaryFeature[], assignStableIds(cached)));
         loadedFileRef.current = fileName;
         return;
       }
@@ -520,7 +524,8 @@ export function GlobeView({ children }: GlobeViewProps) {
           // A newer year was requested while this response was in flight — discard.
           if (requestedFileRef.current !== fileName) return;
           const features = geojson.features || [];
-          setPolygonsData(assignStableIds(features));
+          setPolygonsData(prev =>
+            mergeStableFeatures(prev as BoundaryFeature[], assignStableIds(features)));
           loadedFileRef.current = fileName;
         } catch { /* skip */ }
       })();
@@ -535,7 +540,8 @@ export function GlobeView({ children }: GlobeViewProps) {
 
     const cached = getGeoJsonFromCache(fileName);
     if (cached) {
-      setPolygonsData(assignStableIds(cached));
+      setPolygonsData(prev =>
+        mergeStableFeatures(prev as BoundaryFeature[], assignStableIds(cached)));
       loadedFileRef.current = fileName;
       return;
     }
@@ -550,7 +556,8 @@ export function GlobeView({ children }: GlobeViewProps) {
         // instant), but only paint it if this is still the current request.
         cacheGeoJson(fileName, features);
         if (requestedFileRef.current !== fileName) return;
-        setPolygonsData(assignStableIds(features));
+        setPolygonsData(prev =>
+          mergeStableFeatures(prev as BoundaryFeature[], assignStableIds(features)));
         loadedFileRef.current = fileName;
       } catch { /* skip */ }
     })();
@@ -842,7 +849,10 @@ export function GlobeView({ children }: GlobeViewProps) {
                 </div>
               </div>`;
             }}
-            polygonsTransitionDuration={2000}
+            // 800ms: long enough to read a border change as motion, short enough
+            // that only genuinely-changed polygons (post identity-merge) animate
+            // without the whole map feeling in permanent flux during playback.
+            polygonsTransitionDuration={800}
             onPolygonClick={(d: any) => {
               const name = d.properties?.NAME;
               if (!name || name === '?') return;

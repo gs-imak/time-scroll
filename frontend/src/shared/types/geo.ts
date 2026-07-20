@@ -17,4 +17,6 @@ export interface BoundaryFeature {
   };
   /** Stable id assigned at load time so react-globe.gl can tween polygons. */
   __id?: string;
+  /** Memoized structural fingerprint of the geometry (see geometrySignature). */
+  __sig?: string;
 }

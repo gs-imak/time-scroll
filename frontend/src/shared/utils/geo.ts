@@ -116,7 +116,57 @@ export function rewindFeatures(features: BoundaryFeature[]): BoundaryFeature[] {
  * borders keep the same id (zero redraw) and only changed shapes crossfade.
  * A per-(name,hash) counter keeps split MultiPolygon pieces uniquely ided.
  */
+/**
+ * Cheap structural fingerprint of a feature's geometry: type + ring count +
+ * total vertex count + first vertex. Two features with equal signatures are
+ * treated as the same shape (collision odds are negligible for map data).
+ * Memoized on the feature object — computed at most once per parse.
+ */
+function geometrySignature(f: BoundaryFeature): string {
+  if (f.__sig) return f.__sig;
+  const g = f.geometry;
+  const polys = (g.type === 'MultiPolygon'
+    ? g.coordinates
+    : [g.coordinates]) as number[][][][];
+  let rings = 0;
+  let verts = 0;
+  let first: number[] | undefined;
+  for (const poly of polys) {
+    for (const ring of poly) {
+      rings++;
+      verts += ring.length;
+      if (!first) first = ring[0];
+    }
+  }
+  const sig = `${g.type}:${rings}:${verts}:${first?.[0]},${first?.[1]}`;
+  f.__sig = sig;
+  return sig;
+}
+
+/**
+ * Reuse the previous snapshot's feature OBJECTS for shapes that didn't change
+ * between two boundary datasets. three-globe keys polygons by datum identity
+ * (`__threeObj` is stamped on the datum), so a reused object skips mesh
+ * teardown + rebuild + enter-animation entirely. Between adjacent historical
+ * snapshots most borders are identical — this turns a full-map rebuild into a
+ * only-what-changed rebuild, which is what makes playback smooth.
+ */
+export function mergeStableFeatures(
+  prev: BoundaryFeature[],
+  next: BoundaryFeature[],
+): BoundaryFeature[] {
+  if (!prev.length) return next;
+  const prevById = new Map(prev.map((f) => [f.__id, f]));
+  return next.map((nf) => {
+    const pf = prevById.get(nf.__id);
+    return pf && geometrySignature(pf) === geometrySignature(nf) ? pf : nf;
+  });
+}
+
 export function assignStableIds(features: BoundaryFeature[]): BoundaryFeature[] {
+  // Drop null-geometry features first — simplification can collapse tiny shapes
+  // to empty geometries, and three-globe crashes reading `.type` on null.
+  features = features.filter((f) => f?.geometry);
   rewindFeatures(features);
   const counts = new Map<string, number>();
   return features.map((f) => {

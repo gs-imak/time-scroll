@@ -9,6 +9,9 @@ export default defineConfig({
     alias: {
       '@': resolve(__dirname, './src'),
     },
+    // A single three instance: react-globe.gl/three-globe must share the app's
+    // (root-overridden) copy, or dev prebundling duplicates it.
+    dedupe: ['three'],
   },
   build: {
     rollupOptions: {

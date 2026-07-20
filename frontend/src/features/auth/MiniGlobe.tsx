@@ -182,7 +182,7 @@ export function MiniGlobe() {
       .then(r => r.json())
       .then(data => {
         const filtered = (data.features || []).filter(
-          (f: any) => FEATURED_CIVS.has(f.properties?.NAME)
+          (f: any) => f?.geometry && FEATURED_CIVS.has(f.properties?.NAME)
         );
         setPolygons(filtered);
       })
