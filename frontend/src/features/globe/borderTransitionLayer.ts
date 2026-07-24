@@ -141,7 +141,7 @@ const FRAG = /* glsl */ `
     float n = vnoise(vUv * vec2(140.0, 70.0)) * 0.6 + vnoise(vUv * vec2(24.0, 12.0)) * 0.4;
     // progress runs 0→1; each texel flips when the widened front passes its
     // noise threshold, giving a soft creeping edge ~0.25 wide.
-    float t = smoothstep(0.0, 1.0, (progress * 1.5 - n * 0.5) / 0.25 - 0.5);
+    float t = smoothstep(0.0, 1.0, (progress * 1.6 - n * 0.6) / 0.4 - 0.5);
     t = clamp(t, 0.0, 1.0);
     vec4 c = mix(a, b, t);
     gl_FragColor = vec4(c.rgb, c.a * fade);
@@ -158,9 +158,30 @@ export class BorderTransitionLayer {
   private hasCurrent = false;
   private rafId = 0;
 
-  constructor(scene: THREE.Scene) {
+  // Interrupt continuity: when a new snapshot arrives mid-dissolve, the
+  // visible blend is baked into a render target and becomes the new "from"
+  // state — without this, rapid scrubbing snaps to the previous target
+  // before each new dissolve. Two RTs ping-pong so a capture never samples
+  // the target it writes.
+  private renderer: THREE.WebGLRenderer | null;
+  private captureRTs: [THREE.WebGLRenderTarget, THREE.WebGLRenderTarget];
+  private lastCaptureIdx = 0;
+  private captureScene: THREE.Scene;
+  private captureCamera: THREE.OrthographicCamera;
+  private captureQuad: THREE.Mesh;
+
+  constructor(scene: THREE.Scene, renderer: THREE.WebGLRenderer | null) {
+    this.renderer = renderer;
     this.bufA = makeBuffer();
     this.bufB = makeBuffer();
+    this.captureRTs = [
+      new THREE.WebGLRenderTarget(TEX_W, TEX_H, { depthBuffer: false }),
+      new THREE.WebGLRenderTarget(TEX_W, TEX_H, { depthBuffer: false }),
+    ];
+    this.captureCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+    this.captureScene = new THREE.Scene();
+    this.captureQuad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2));
+    this.captureScene.add(this.captureQuad);
     this.material = new THREE.ShaderMaterial({
       uniforms: {
         texA: { value: this.bufA.texture },
@@ -207,16 +228,35 @@ export class BorderTransitionLayer {
    * layer just records the state and stays hidden (the initial mesh build has
    * its own entrance animation).
    */
+  /** Bake the currently-visible blend into a render target for continuity. */
+  private captureCurrentBlend(): THREE.Texture | null {
+    if (!this.renderer) return null;
+    const idx = this.lastCaptureIdx === 0 ? 1 : 0;
+    const rt = this.captureRTs[idx]!;
+    this.captureQuad.material = this.material;
+    const prevTarget = this.renderer.getRenderTarget();
+    this.renderer.setRenderTarget(rt);
+    this.renderer.clear();
+    this.renderer.render(this.captureScene, this.captureCamera);
+    this.renderer.setRenderTarget(prevTarget);
+    this.lastCaptureIdx = idx;
+    return rt.texture;
+  }
+
   transitionTo(features: BoundaryFeature[], styleFor: PaintStyleFn, durationMs: number): void {
     if (!this.hasCurrent) {
       this.prime(features, styleFor);
       return;
     }
+    // If a dissolve is still running, continue from what's on screen now.
+    const interrupted = this.rafId !== 0;
+    const capturedPrev = interrupted ? this.captureCurrentBlend() : null;
+
     const next = this.current === 'A' ? this.bufB : this.bufA;
     rasterize(next, features, styleFor);
 
     const prev = this.current === 'A' ? this.bufA : this.bufB;
-    this.material.uniforms.texA!.value = prev.texture;
+    this.material.uniforms.texA!.value = capturedPrev ?? prev.texture;
     this.material.uniforms.texB!.value = next.texture;
     this.material.uniforms.progress!.value = 0;
     this.material.uniforms.fade!.value = 1;
@@ -225,7 +265,7 @@ export class BorderTransitionLayer {
 
     if (this.rafId) cancelAnimationFrame(this.rafId);
     const start = performance.now();
-    const FADE_OUT = 250; // reveal the live meshes after the dissolve settles
+    const FADE_OUT = 400; // reveal the live meshes after the dissolve settles
     const tick = () => {
       const elapsed = performance.now() - start;
       const p = Math.min(1, elapsed / durationMs);
@@ -251,5 +291,9 @@ export class BorderTransitionLayer {
     this.material.dispose();
     this.bufA.texture.dispose();
     this.bufB.texture.dispose();
+    this.captureRTs[0].dispose();
+    this.captureRTs[1].dispose();
+    this.captureQuad.geometry.dispose();
+    this.renderer = null;
   }
 }

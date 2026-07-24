@@ -85,6 +85,21 @@ function getCivColor(name: string | undefined): string {
   return CIV_PALETTE[Math.abs(hash) % CIV_PALETTE.length]!;
 }
 
+/**
+ * Ease-out birth scale so markers grow in over ~400ms instead of popping.
+ * Stamped once per THREE object lifetime — objects that persist across
+ * frames (stable event data) animate only on first appearance.
+ */
+function markerBirthScale(obj: THREE.Object3D): number {
+  let bornAt = obj.userData.bornAt as number | undefined;
+  if (bornAt === undefined) {
+    bornAt = performance.now();
+    obj.userData.bornAt = bornAt;
+  }
+  const t = Math.min(1, (performance.now() - bornAt) / 400);
+  return 1 - (1 - t) ** 3;
+}
+
 /** Lighten a #rrggbb hex by an additive amount — matches the stroke accessors. */
 function lightenHex(hex: string, amount: number): string {
   const r = Math.min(255, parseInt(hex.slice(1, 3), 16) + amount);
@@ -272,7 +287,7 @@ export function GlobeView({ children }: GlobeViewProps) {
     const layer = transitionLayerRef.current;
     if (layer) {
       const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      if (dissolve && !reduceMotion) layer.transitionTo(merged, styleForTransition, 1100);
+      if (dissolve && !reduceMotion) layer.transitionTo(merged, styleForTransition, 1600);
       else layer.prime(merged, styleForTransition);
     }
     polygonsRef.current = merged;
@@ -427,8 +442,13 @@ export function GlobeView({ children }: GlobeViewProps) {
         };
         cloudRafRef.current = requestAnimationFrame(animateClouds);
 
-        // Paint-dissolve shell for boundary snapshot changes
-        transitionLayerRef.current = new BorderTransitionLayer(scene);
+        // Paint-dissolve shell for boundary snapshot changes. The renderer
+        // enables mid-dissolve captures (interrupt continuity); it may be
+        // null in exotic setups, which just disables that refinement.
+        transitionLayerRef.current = new BorderTransitionLayer(
+          scene,
+          globeRef.current.renderer() ?? null,
+        );
       }
 
       // Capture the renderer + canvas so we can dispose the WebGL context on
@@ -756,9 +776,9 @@ export function GlobeView({ children }: GlobeViewProps) {
         updateDiffOverlayDisc(obj as THREE.Mesh, performance.now());
       } else if (d.type === 'event' && d.groupSize > 1) {
         const densityScale = Math.max(0.35, 1 / (1 + d.groupSize * 0.25));
-        obj.scale.setScalar(densityScale);
+        obj.scale.setScalar(densityScale * markerBirthScale(obj));
       } else if (d.type !== 'cluster' && d.type !== 'war-marker' && d.type !== 'war-diff' && d.type !== 'war-pulse') {
-        obj.scale.setScalar(1);
+        obj.scale.setScalar(markerBirthScale(obj));
       }
     }
   }, []);
