@@ -465,22 +465,6 @@ export function EventStory() {
                 <span className="text-[100px]" style={{ opacity: 0.08 }}>{icon}</span>
               </motion.div>
 
-              {/* Left: Vertical decorative line */}
-              <motion.div
-                className="absolute left-[5%] top-[1500px] z-[1]"
-                style={{ y: sideLeftY1, opacity: sideOpacity2 }}
-              >
-                <div className="w-px h-[250px]" style={{ background: `linear-gradient(180deg, transparent, ${cat.color}20, transparent)` }} />
-              </motion.div>
-
-              {/* Right: Vertical decorative line */}
-              <motion.div
-                className="absolute right-[5%] top-[850px] z-[1]"
-                style={{ y: sideRightY1, opacity: sideOpacity1 }}
-              >
-                <div className="w-px h-[200px]" style={{ background: `linear-gradient(180deg, transparent, ${cat.color}20, transparent)` }} />
-              </motion.div>
-
               {/* Left: Location name */}
               {event.locationName && (
                 <motion.div

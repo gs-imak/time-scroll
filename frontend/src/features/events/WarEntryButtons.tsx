@@ -46,12 +46,6 @@ function WarCard({ war, title, span, blurb }: WarCardProps) {
       whileTap={isMobile ? {} : { scale: 0.98 }}
       transition={{ duration: 0.3, ease: EASE }}
     >
-      {/* Top accent stripe */}
-      <div
-        className="absolute top-0 left-0 right-0 h-[3px]"
-        style={{ background: `linear-gradient(to right, transparent, ${ACCENT}, transparent)` }}
-      />
-
       <div className="flex items-center gap-3 mb-3">
         <div
           className="w-11 h-11 rounded-xl flex items-center justify-center"

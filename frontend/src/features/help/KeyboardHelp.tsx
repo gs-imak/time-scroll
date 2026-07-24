@@ -131,16 +131,6 @@ export function KeyboardHelp() {
             aria-modal="true"
             aria-label="Keyboard shortcuts"
           >
-            {/* Subtle gradient stripe at top */}
-            <div
-              className="absolute top-0 left-0 right-0 h-[2px]"
-              style={{
-                background:
-                  'linear-gradient(90deg, transparent, rgba(196,154,68,0.5), transparent)',
-              }}
-              aria-hidden="true"
-            />
-
             {/* Header */}
             <div className="flex items-center justify-between px-7 pt-6 pb-5">
               <div className="flex items-center gap-3">

@@ -110,11 +110,6 @@ function StatCard({
   return (
     <motion.div variants={scaleIn} custom={index}>
       <Card variant="glass" className="rounded-xl p-5 sm:p-6 group hover:border-border-active cursor-default relative overflow-hidden transition-all duration-200">
-        {/* Subtle colored glow at top */}
-        <div
-          className="absolute top-0 left-0 right-0 h-[2px]"
-          style={{ background: `linear-gradient(90deg, transparent, ${color}40, transparent)` }}
-        />
         <div className="flex items-center gap-2 mb-3">
           <div
             className="w-8 h-8 rounded-lg flex items-center justify-center"

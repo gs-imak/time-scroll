@@ -519,14 +519,6 @@ export function EventMapVisual({ eventId }: EventMapVisualProps) {
         ))}
       </div>
 
-      {/* Bottom flourish line */}
-      <motion.div
-        className="mt-5 h-[1px] mx-auto rounded-full"
-        style={{ background: 'linear-gradient(90deg, transparent, rgba(196, 154, 68, 0.2), transparent)' }}
-        initial={{ width: '0%', opacity: 0 }}
-        animate={inView ? { width: '80%', opacity: 1 } : {}}
-        transition={{ duration: 1.2, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
-      />
     </motion.section>
   );
 }
