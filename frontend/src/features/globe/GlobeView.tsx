@@ -9,6 +9,7 @@ import { useJourneyArcsStore } from '@/shared/stores/journeyArcsStore';
 import { useCameraStore, altitudeToZoom } from '@/shared/stores/cameraStore';
 import { closestBoundaryYear, assignStableIds, mergeStableFeatures } from '@/shared/utils/geo';
 import type { BoundaryFeature } from '@/shared/types/geo';
+import { BorderTransitionLayer, type FeaturePaintStyle } from './borderTransitionLayer';
 import { formatYear } from '@/shared/utils/format';
 import { BOUNDARY_YEAR_MAP } from '@/shared/utils/constants';
 import { getVisibleCivilizationLabels } from '@/shared/data/civilizationLabels';
@@ -82,6 +83,14 @@ function getCivColor(name: string | undefined): string {
   let hash = 0;
   for (let i = 0; i < name.length; i++) hash = ((hash << 5) - hash + name.charCodeAt(i)) | 0;
   return CIV_PALETTE[Math.abs(hash) % CIV_PALETTE.length]!;
+}
+
+/** Lighten a #rrggbb hex by an additive amount — matches the stroke accessors. */
+function lightenHex(hex: string, amount: number): string {
+  const r = Math.min(255, parseInt(hex.slice(1, 3), 16) + amount);
+  const g = Math.min(255, parseInt(hex.slice(3, 5), 16) + amount);
+  const b = Math.min(255, parseInt(hex.slice(5, 7), 16) + amount);
+  return `rgb(${r}, ${g}, ${b})`;
 }
 
 // Deterministic hash for per-civ altitude stratification
@@ -213,6 +222,62 @@ export function GlobeView({ children }: GlobeViewProps) {
   const spotlightActive = useSpotlightStore(s => s.active);
   const spotlightAliasSet = useSpotlightStore(s => s.aliasSet);
   const spotlightColor = useSpotlightStore(s => s.civColor);
+
+  // Paint-dissolve transition layer for boundary snapshot changes (created in
+  // onGlobeReady once the scene exists; disposed with the other GL resources).
+  const transitionLayerRef = useRef<BorderTransitionLayer | null>(null);
+  // Mirror of polygonsData for computing merges outside setState updaters.
+  const polygonsRef = useRef<BoundaryFeature[]>([]);
+  // The boundary effect's closures must see the CURRENT selection at paint
+  // time, not the value captured when the effect last ran.
+  const selectedTerritoryRef = useRef<string | null>(null);
+  useEffect(() => { selectedTerritoryRef.current = selectedTerritory; }, [selectedTerritory]);
+  // Dissolving between unrelated datasets (war <-> normal) looks wrong — track
+  // the mode so the first paint after a switch swaps without a transition.
+  const boundaryModeRef = useRef<'normal' | 'war' | null>(null);
+
+  /** Rasterization style for the transition layer — mirrors the live
+   *  polygonCapMaterial / polygonStrokeColor accessors below. */
+  const styleForTransition = useCallback((f: BoundaryFeature): FeaturePaintStyle => {
+    const name = f.properties?.NAME;
+    const isNamed = !!name && name !== '?';
+    const sp = useSpotlightStore.getState();
+    if (sp.active) {
+      if (name && sp.aliasSet.has(name)) {
+        const hex = sp.civColor || '#c49a44';
+        return { fill: hex, fillAlpha: 0.45, stroke: lightenHex(hex, 80), strokeAlpha: 1 };
+      }
+      return { fill: '#191923', fillAlpha: 0.03, stroke: 'rgb(30, 30, 40)', strokeAlpha: 0.02 };
+    }
+    const sel = selectedTerritoryRef.current;
+    if (sel) {
+      if (name === sel) {
+        const hex = getCivColor(name);
+        return { fill: hex, fillAlpha: 0.55, stroke: lightenHex(hex, 80), strokeAlpha: 1 };
+      }
+      return { fill: '#191923', fillAlpha: 0.04, stroke: 'rgb(30, 30, 40)', strokeAlpha: 0.05 };
+    }
+    if (!isNamed) {
+      return { fill: getCivColor(name), fillAlpha: 0.02, stroke: 'rgb(60, 60, 70)', strokeAlpha: 0.15 };
+    }
+    const hex = getCivColor(name);
+    return { fill: hex, fillAlpha: 0.25, stroke: lightenHex(hex, 50), strokeAlpha: 0.9 };
+  }, []);
+
+  /** Single entry point for boundary snapshot changes: merges for object
+   *  identity (unchanged shapes skip rebuild), runs the paint-dissolve when
+   *  transitioning within the same dataset, and respects reduced motion. */
+  const applyBoundaries = useCallback((raw: BoundaryFeature[], dissolve: boolean) => {
+    const merged = mergeStableFeatures(polygonsRef.current, assignStableIds(raw));
+    const layer = transitionLayerRef.current;
+    if (layer) {
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (dissolve && !reduceMotion) layer.transitionTo(merged, styleForTransition, 1100);
+      else layer.prime(merged, styleForTransition);
+    }
+    polygonsRef.current = merged;
+    setPolygonsData(merged);
+  }, [styleForTransition]);
 
   // War mode state
   const warActive = useWarStore(s => s.active);
@@ -361,6 +426,9 @@ export function GlobeView({ children }: GlobeViewProps) {
           cloudRafRef.current = requestAnimationFrame(animateClouds);
         };
         cloudRafRef.current = requestAnimationFrame(animateClouds);
+
+        // Paint-dissolve shell for boundary snapshot changes
+        transitionLayerRef.current = new BorderTransitionLayer(scene);
       }
 
       // Capture the renderer + canvas so we can dispose the WebGL context on
@@ -399,6 +467,8 @@ export function GlobeView({ children }: GlobeViewProps) {
       d.cloudGeo?.dispose();
       d.cloudMat?.dispose();
       d.cloudTexture?.dispose();
+      transitionLayerRef.current?.dispose();
+      transitionLayerRef.current = null;
       if (d.renderer) {
         d.renderer.dispose();
         d.renderer.forceContextLoss?.();
@@ -500,17 +570,22 @@ export function GlobeView({ children }: GlobeViewProps) {
   // In War Mode we load from the CShapes-derived snapshots in /assets/geo-war/;
   // the aourednik timeline data is untouched.
   useEffect(() => {
+    // Dissolve only within the same dataset — the first paint after entering
+    // or leaving war mode swaps hard (blending unrelated maps looks wrong).
+    const mode: 'normal' | 'war' = warActive ? 'war' : 'normal';
+    const dissolve = boundaryModeRef.current === mode;
+
     if (warActive) {
       const warYear = closestWarYear(currentYear);
       const fileName = `war_${warYear}`;
       if (fileName === loadedFileRef.current) return;
+      boundaryModeRef.current = mode;
       // Record this as the latest intent so an in-flight older fetch bails.
       requestedFileRef.current = fileName;
 
       const cached = getWarGeoJson(warYear);
       if (cached) {
-        setPolygonsData(prev =>
-          mergeStableFeatures(prev as BoundaryFeature[], assignStableIds(cached)));
+        applyBoundaries(cached, dissolve);
         loadedFileRef.current = fileName;
         return;
       }
@@ -523,9 +598,7 @@ export function GlobeView({ children }: GlobeViewProps) {
           const geojson = await res.json();
           // A newer year was requested while this response was in flight — discard.
           if (requestedFileRef.current !== fileName) return;
-          const features = geojson.features || [];
-          setPolygonsData(prev =>
-            mergeStableFeatures(prev as BoundaryFeature[], assignStableIds(features)));
+          applyBoundaries(geojson.features || [], dissolve);
           loadedFileRef.current = fileName;
         } catch { /* skip */ }
       })();
@@ -536,12 +609,12 @@ export function GlobeView({ children }: GlobeViewProps) {
     const year = closestBoundaryYear(currentYear, SORTED_BOUNDARY_YEARS);
     const fileName = BOUNDARY_YEAR_MAP[year];
     if (!fileName || fileName === loadedFileRef.current) return;
+    boundaryModeRef.current = mode;
     requestedFileRef.current = fileName;
 
     const cached = getGeoJsonFromCache(fileName);
     if (cached) {
-      setPolygonsData(prev =>
-        mergeStableFeatures(prev as BoundaryFeature[], assignStableIds(cached)));
+      applyBoundaries(cached, dissolve);
       loadedFileRef.current = fileName;
       return;
     }
@@ -556,12 +629,11 @@ export function GlobeView({ children }: GlobeViewProps) {
         // instant), but only paint it if this is still the current request.
         cacheGeoJson(fileName, features);
         if (requestedFileRef.current !== fileName) return;
-        setPolygonsData(prev =>
-          mergeStableFeatures(prev as BoundaryFeature[], assignStableIds(features)));
+        applyBoundaries(features, dissolve);
         loadedFileRef.current = fileName;
       } catch { /* skip */ }
     })();
-  }, [currentYear, warActive]);
+  }, [currentYear, warActive, applyBoundaries]);
 
   // Get visible events, then filter by zoom tier, then cluster nearby ones.
   // Memoized so the array keeps a stable reference across the many GlobeView
